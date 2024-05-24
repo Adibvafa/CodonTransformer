@@ -37,7 +37,7 @@ def load_model(
         device (torch.device, optional): The device to load the model onto.
         num_organisms (int, optional): Number of organisms, needed if loading from a checkpoint that requires this.
         remove_prefix (bool, optional): Whether to remove the "model." prefix from the keys in the state dict.
-        attention_type (str, optional): The type of attention to use in the BigBird Transformer.
+        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
 
     Returns:
         torch.nn.Module: The loaded model.
@@ -60,7 +60,6 @@ def load_model(
 
     # Load model directly
     elif path.endswith('.pt'):
-        
         state_dict = torch.load(path)
         config = state_dict.pop('self.config')
         model = transformers.BigBirdForMaskedLM(config=config)
@@ -154,23 +153,41 @@ def predict_dna_sequence(
         tokenizer_path: str = '',
         tokenizer_object: PreTrainedTokenizerFast = None,
         model_path: str = '',
-        model_object: torch.nn.Module = None
+        model_object: torch.nn.Module = None,
+        attention_type: str = 'original_full'
 ) -> str:
     """
     Return the predicted dna sequence for a given protein based on a Transformer model.
     Uses INDEX2TOKEN dictionary which maps each index to respective token of tokenizer.
+
+    Args:
+        protein (str): The protein sequence to predict the dna sequence for.
+        organism_id (int): The organism id to predict the dna sequence for.
+        device (torch.device): The device to run the model on.
+        tokenizer_path (str, optional): The path to the tokenizer file.
+        tokenizer_object (PreTrainedTokenizerFast, optional): The tokenizer object.
+        model_path (str, optional): The path to the model file.
+        model_object (torch.nn.Module, optional): The model object.
+        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
+    
+    Returns:
+        str: The predicted dna sequence.
     """
     if not tokenizer_object:
         tokenizer_object = load_tokenizer(tokenizer_path)
 
     if not model_object:
         model_object = load_model(model_path, device)
-    
+
     if protein == '' or protein is None:
         raise ValueError("Protein sequence cannot be empty.")
     
     if not isinstance(organism_id, int) or organism_id < 0 or organism_id >= NUM_ORGANISMS:
         raise ValueError("Invalid organism ID. Please select a valid organism id.")
+    
+    model_object.bert.set_attention_type(attention_type) 
+    model_object.eval()
+    model_object.to(device)
 
     with torch.no_grad():
         merged_seq = get_merged_seq(protein=protein, dna='')
@@ -181,7 +198,7 @@ def predict_dna_sequence(
         tokenized_input = tokenize([input_dict],
                                    tokenizer_object=tokenizer_object).to(device)
 
-        output_dict = model_object(**tokenized_input)
+        output_dict = model_object(**tokenized_input, return_dict=True)
         output = output_dict.logits.detach().cpu().numpy()
 
         predicted_dna = list((map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist())))
