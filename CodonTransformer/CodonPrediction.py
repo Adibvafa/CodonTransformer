@@ -6,17 +6,12 @@ helper functions related to processing data for passing to the model.
 """
 
 from typing import Any, List, Dict, Tuple
-from tqdm import tqdm
 import onnxruntime as rt
 
 import torch
 import transformers
 from transformers import BatchEncoding, PreTrainedTokenizerFast, BigBirdConfig
 import numpy as np
-import pandas as pd
-
-from Bio.Seq import Seq
-from Bio.Seq import translate
 
 from CodonTransformer.CodonData import get_codon_table, get_amino_acid_sequence, get_merged_seq
 from CodonTransformer.CodonUtils import TOKEN2INDEX, INDEX2TOKEN, NUM_ORGANISMS

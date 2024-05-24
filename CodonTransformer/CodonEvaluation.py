@@ -4,11 +4,9 @@ File: CodonEvaluation.py
 Includes functions to calculate various evaluation metrics along with helper functions.
 """
 
-import numpy as np
 import pandas as pd
 
 from CAI import relative_adaptiveness
-from Bio.Seq import Seq
 
 from typing import List, Dict, Tuple
 from tqdm import tqdm
