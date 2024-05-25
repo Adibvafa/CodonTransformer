@@ -7,6 +7,7 @@ Includes constants and helper functions used by other Python scripts.
 import os
 import re
 import pickle
+import requests
 import itertools
 
 import torch
@@ -157,3 +158,11 @@ def sort_amino2codon_skeleton(amino2codon: AMINO2CODON_TYPE) -> AMINO2CODON_TYPE
                    for amino, (codons, frequencies) in amino2codon.items()}
 
     return amino2codon
+
+def load_pkl_from_url(url):
+    """
+    Download a Pickle file from a URL and return the loaded object.
+    """
+    response = requests.get(url)
+    response.raise_for_status()  # Ensure the request was successful
+    return pickle.loads(response.content)
