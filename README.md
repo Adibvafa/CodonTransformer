@@ -2,6 +2,8 @@
 The ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms.
 Whether you are a researcher or a practitioner in genetic engineering, CodonTransformer provides a comprehensive suite of features to facilitate your work.
 
+https://adibvafa.github.io/CodonTransformer/
+
 
 ## Key Features
 
