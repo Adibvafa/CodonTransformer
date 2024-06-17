@@ -11,6 +11,9 @@ from CAI import relative_adaptiveness
 from typing import List, Dict, Tuple
 from tqdm import tqdm
 
+from CodonTransformer.CodonUtils import AMINO2CODON_TYPE
+from CodonTransformer.CodonData import build_amino2codon_skeleton, get_codon_frequencies
+
 
 def get_organism_to_CAI_weights(
     dataset: pd.DataFrame, organisms: List[str]
@@ -27,10 +30,11 @@ def get_organism_to_CAI_weights(
     """
     organism2weights = {}
 
+    # Iterate through each organism to calculate its CAI weights
     for organism in tqdm(organisms, desc="Calculating CAI Weights: ", unit="Organism"):
         organism_data = dataset.loc[dataset["organism"] == organism]
         sequences = organism_data["dna"].to_list()
-        weights = relative_adaptiveness(sequences=sequences)
+        weights = relative_adaptiveness(sequences=sequences)  # Calculate CAI weights
         organism2weights[organism] = weights
 
     return organism2weights
@@ -77,6 +81,7 @@ def get_cfd(
 
     cfd = 0
 
+    # Iterate through the DNA sequence in steps of 3 to process each codon
     for i in range(0, len(dna), 3):
         codon = dna[i : i + 3]
         codon_frequency = codon2frequency[codon]
@@ -85,6 +90,68 @@ def get_cfd(
             cfd += 1
 
     return cfd / (len(dna) / 3) * 100
+
+
+def get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float:
+    """
+    Calculate the cousin score between a DNA sequence and reference frequencies.
+
+    Args:
+        dna (str): DNA sequence.
+        organism (str): Name of the organism.
+        ref_freq (AMINO2CODON_TYPE): Reference frequencies.
+
+    Returns:
+        float: Cousin score.
+    """
+    que_freq = get_codon_frequencies([dna], organism=organism)
+
+    weight_ref = build_amino2codon_skeleton(organism)
+    weight_ref = {amino: [0] for amino in weight_ref}
+
+    weight_que = build_amino2codon_skeleton(organism)
+    weight_que = {amino: [0] for amino in weight_que}
+
+    aminos = []
+
+    # Calculate weighted frequencies for each amino acid
+    for (amino_ref, (codons_ref, frequencies_ref)), (
+        amino_que,
+        (codons_que, frequencies_que),
+    ) in zip(ref_freq.items(), que_freq.items()):
+        if (
+            amino_ref != "_"
+            and len(frequencies_ref) > 1
+            and sum(frequencies_ref) != 0.0
+            and sum(frequencies_que) != 0.0
+        ):
+            aminos.append(amino_ref)
+            weight_ref[amino_ref] = [
+                ref * round((ref - (1 / len(codons_ref))), 3)
+                for (ref, que) in zip(frequencies_ref, frequencies_que)
+            ]
+            weight_que[amino_que] = [
+                que * round((ref - (1 / len(codons_ref))), 3)
+                for (ref, que) in zip(frequencies_ref, frequencies_que)
+            ]
+
+    cousin = 0
+
+    # Calculate the cousin score for the DNA sequence
+    for (amino_ref, ref), (amino_que, que) in zip(
+        weight_ref.items(), weight_que.items()
+    ):
+        if sum(ref) == 0:
+            if amino_ref in aminos:
+                aminos.remove(amino_ref)
+            continue
+
+        cousin_aa = round((sum(que) / (sum(ref) + 1e-100)), 3)
+        # cousin_aa = np.clip(cousin_aa, a_min=-3, a_max=4)
+        cousin += cousin_aa  # round(cousin_aa, 3)
+
+    cousin = cousin / (len(aminos))
+    return cousin
 
 
 def get_min_max_percentage(
@@ -113,8 +180,9 @@ def get_min_max_percentage(
     }
 
     min_max_values = []
-    codons = [dna[i : i + 3] for i in range(0, len(dna), 3)]
+    codons = [dna[i : i + 3] for i in range(0, len(dna), 3)]  # Split DNA into codons
 
+    # Iterate through the DNA sequence using the specified window size
     for i in range(len(codons) - window_size + 1):
         codon_window = codons[
             i : i + window_size
@@ -125,7 +193,7 @@ def get_min_max_percentage(
         Min = 0.0  # Average of the max codon frequencies
         Avg = 0.0  # Average of the averages of all the frequencies associated with each amino acid
 
-        # Sum the frequencies
+        # Sum the frequencies for codons in the current window
         for codon in codon_window:
             aminoacid = codon2amino[codon]
             frequencies = codon_frequencies[aminoacid][1]
@@ -143,9 +211,11 @@ def get_min_max_percentage(
         Min = Min / window_size
         Avg = Avg / window_size
 
+        # Calculate %MinMax
         percentMax = ((Actual - Avg) / (Max - Avg)) * 100
         percentMin = ((Avg - Actual) / (Avg - Min)) * 100
 
+        # Append the appropriate %MinMax value
         if percentMax >= 0:
             min_max_values.append(percentMax)
         else:
@@ -231,7 +301,7 @@ def get_sequence_similarity(
         original = original[: len(predicted)]
 
     if window_length == 1:
-        # Simple comparison for single characters
+        # Simple comparison for amino acid
         for i in range(len(predicted)):
             if original[i] == predicted[i]:
                 identity += 1

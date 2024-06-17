@@ -34,6 +34,7 @@ def get_codon_table(organism: str) -> int:
     Returns:
         int: Codon table number.
     """
+    # Common codon table (Table 1) for many model organisms
     if organism in [
         "Arabidopsis thaliana",
         "Caenorhabditis elegans",
@@ -51,13 +52,15 @@ def get_codon_table(organism: str) -> int:
     ]:
         codon_table = 1
 
+    # Chloroplast codon table (Table 11)
     elif organism in [
         "Chlamydomonas reinhardtii chloroplast",
         "Nicotiana tabacum chloroplast",
     ]:
         codon_table = 11
 
-    else:  # Other Bacteria including E. coli and Archaebacteria
+    # Default to Table 11 for other bacteria and archaea
+    else:
         codon_table = 11
 
     return codon_table
@@ -82,16 +85,20 @@ def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
     """
     merged_seq = ""
 
+    # Replace '*' at the end of protein with STOP_SYMBOL if present
     if protein[-1] == "*":
         protein[-1] = STOP_SYMBOL
 
+    # Append STOP_SYMBOL if it's not already present
     if protein[-1] != STOP_SYMBOL:
         protein += STOP_SYMBOL
 
+    # Clean and standardize the protein sequence
     protein = (
         protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
     )
 
+    # Merge protein and DNA sequences into tokens
     for i, aminoacid in enumerate(protein):
         merged_seq += f'{aminoacid}{separator}{dna[i * 3:i * 3 + 3] if dna else "UNK"} '
 
@@ -118,11 +125,13 @@ def is_correct_seq(dna: str, protein: str, stop_symbol: str = STOP_SYMBOL) -> bo
         bool: True if the sequence is correct, False otherwise.
     """
     return (
-        len(dna) % 3 == 0
-        and dna[:3].upper() in ("ATG", "TTG", "CTG", "GTG")
-        and protein[-1] == stop_symbol
-        and protein.count(stop_symbol) == 1
-        and len(set(dna)) == 4
+        len(dna) % 3 == 0  # Check if DNA length is divisible by 3
+        and dna[:3].upper() in ("ATG", "TTG", "CTG", "GTG")  # Check for initiator codon
+        and protein[-1]
+        == stop_symbol  # Check if the last protein symbol is the stop symbol
+        and protein.count(stop_symbol) == 1  # Check if there is only one stop symbol
+        and len(set(dna))
+        == 4  # Check if DNA consists of 4 unique nucleotides (A, T, C, G)
     )
 
 
@@ -146,9 +155,14 @@ def get_amino_acid_sequence(
                                       otherwise just the protein sequence.
     """
     dna_seq = Seq(dna).strip()
+
+    # Translate the DNA sequence to a protein sequence
     protein_seq = str(
         dna_seq.translate(
-            stop_symbol=stop_symbol, to_stop=False, cds=False, table=codon_table
+            stop_symbol=stop_symbol,  # Symbol to use for stop codons
+            to_stop=False,  # Translate the entire sequence, including any stop codons
+            cds=False,  # Do not assume the input is a coding sequence
+            table=codon_table,  # Codon table to use for translation
         )
     ).strip()
 
@@ -188,23 +202,29 @@ def read_fasta_file(
         "tokenized",
     ]
 
+    # Read the FASTA file and process each sequence record
     with open(input_file, "r") as fasta_file:
         for record in tqdm(
             SeqIO.parse(fasta_file, "fasta"), desc=f"{organism}", unit=" Rows"
         ):
             dna = str(record.seq).strip()
 
+            # Determine the organism from the record if not provided
             if not organism:
                 organism = find_pattern_in_fasta("organism", record.description)
             GeneID = find_pattern_in_fasta("GeneID", record.description)
 
+            # Get the appropriate codon table for the organism
             codon_table = get_codon_table(organism)
+
+            # Translate DNA to protein sequence
             protein, correct_seq = get_amino_acid_sequence(
                 dna, stop_symbol=STOP_SYMBOL, codon_table=codon_table
             )
             description = str(record.description[: record.description.find("[")])
             tokenized = get_merged_seq(protein, dna, seperator=STOP_SYMBOL)
 
+            # Create a data row for the current sequence
             data_row = {
                 "dna": dna,
                 "protein": protein,
@@ -216,6 +236,7 @@ def read_fasta_file(
             }
             buffer.append(data_row)
 
+            # Write buffer to CSV file when buffer size is reached
             if len(buffer) >= buffer_size:
                 buffer_df = pd.DataFrame(buffer, columns=columns)
                 buffer_df.to_csv(
@@ -226,6 +247,7 @@ def read_fasta_file(
                 )
                 buffer = []
 
+        # Write remaining buffer to CSV file
         if buffer:
             buffer_df = pd.DataFrame(buffer, columns=columns)
             buffer_df.to_csv(
@@ -265,8 +287,10 @@ def download_codon_frequencies_from_kazusa(
     if return_original_format:
         return kazusa_amino2codon
 
+    # Replace "*" with STOP_SYMBOL in the codon table
     kazusa_amino2codon[STOP_SYMBOL] = kazusa_amino2codon.pop("*")
 
+    # Create amino2codon dictionary
     amino2codon = {
         aminoacid: (list(codon2freq.keys()), list(codon2freq.values()))
         for aminoacid, codon2freq in kazusa_amino2codon.items()
@@ -293,6 +317,7 @@ def build_amino2codon_skeleton(organism: str) -> AMINO2CODON_TYPE:
         return_correct_seq=False,
     )
 
+    # Initialize the amino2codon skeleton with all possible codons and set their frequencies to 0
     for i, (codon, amino) in enumerate(zip(possible_codons, possible_aminoacids)):
         if amino not in amino2codon:
             amino2codon[amino] = ([], [])
@@ -334,6 +359,7 @@ def get_codon_frequencies(
 
     amino2codon = build_amino2codon_skeleton(organism)
 
+    # Count the frequencies of each codon for each amino acid
     for dna, protein in zip(dna_sequences, protein_sequences):
         for i, amino in enumerate(protein):
             codon = dna[i * 3 : (i + 1) * 3]
@@ -364,6 +390,7 @@ def get_organism_to_codon_frequencies(
     """
     organism2frequencies = {}
 
+    # Calculate codon frequencies for each organism in the dataset
     for organism in tqdm(
         organisms, desc="Calculating Codon Frequencies: ", unit="Organism"
     ):
@@ -376,62 +403,3 @@ def get_organism_to_codon_frequencies(
         organism2frequencies[organism] = codon_frequencies
 
     return organism2frequencies
-
-
-def get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float:
-    """
-    Calculate the cousin score between a DNA sequence and reference frequencies.
-
-    Args:
-        dna (str): DNA sequence.
-        organism (str): Name of the organism.
-        ref_freq (AMINO2CODON_TYPE): Reference frequencies.
-
-    Returns:
-        float: Cousin score.
-    """
-    que_freq = get_codon_frequencies([dna], organism=organism)
-
-    weight_ref = build_amino2codon_skeleton(organism)
-    weight_ref = {amino: [0] for amino in weight_ref}
-
-    weight_que = build_amino2codon_skeleton(organism)
-    weight_que = {amino: [0] for amino in weight_que}
-
-    aminos = []
-
-    for (amino_ref, (codons_ref, frequencies_ref)), (
-        amino_que,
-        (codons_que, frequencies_que),
-    ) in zip(ref_freq.items(), que_freq.items()):
-        if (
-            amino_ref != "_"
-            and len(frequencies_ref) > 1
-            and sum(frequencies_ref) != 0.0
-            and sum(frequencies_que) != 0.0
-        ):
-            aminos.append(amino_ref)
-            weight_ref[amino_ref] = [
-                ref * round((ref - (1 / len(codons_ref))), 3)
-                for (ref, que) in zip(frequencies_ref, frequencies_que)
-            ]
-            weight_que[amino_que] = [
-                que * round((ref - (1 / len(codons_ref))), 3)
-                for (ref, que) in zip(frequencies_ref, frequencies_que)
-            ]
-
-    cousin = 0
-    for (amino_ref, ref), (amino_que, que) in zip(
-        weight_ref.items(), weight_que.items()
-    ):
-        if sum(ref) == 0:
-            if amino_ref in aminos:
-                aminos.remove(amino_ref)
-            continue
-
-        cousin_aa = round((sum(que) / (sum(ref) + 1e-100)), 3)
-        # cousin_aa = np.clip(cousin_aa, a_min=-3, a_max=4)
-        cousin += cousin_aa  # round(cousin_aa, 3)
-
-    cousin = cousin / (len(aminos))
-    return cousin

@@ -51,6 +51,7 @@ def load_model(
         if num_organisms is None:
             num_organisms = NUM_ORGANISMS
 
+        # Load model configuration and instantiate the model
         config = load_bigbird_config(num_organisms)
         model = transformers.BigBirdForMaskedLM(config=config)
         model.load_state_dict(state_dict)
@@ -65,6 +66,7 @@ def load_model(
     else:
         raise ValueError("Unsupported file type. Please provide a .ckpt or .pt file.")
 
+    # Prepare model for evaluation
     model.bert.set_attention_type(attention_type)
     model.eval()
     if device:
@@ -105,6 +107,8 @@ def create_model_from_checkpoint(
     checkpoint = load_model(checkpoint_dir, num_organisms=num_organisms)
     state_dict = checkpoint.state_dict()
     state_dict["self.config"] = load_bigbird_config(num_organisms=num_organisms)
+
+    # Save the model state dict to the output directory
     torch.save(state_dict, output_model_dir)
 
 
@@ -164,6 +168,7 @@ def tokenize(
         return_tensors="pt",
     )
 
+    # Add token type IDs for species
     seq_len = tokenized["input_ids"].shape[-1]
     species_index = torch.tensor([[data["organism"]] for data in batch])
     tokenized["token_type_ids"] = species_index.repeat(1, seq_len)
@@ -214,25 +219,30 @@ def predict_dna_sequence(
     ):
         raise ValueError("Invalid organism ID. Please select a valid organism id.")
 
+    # Prepare model for evaluation
     model_object.bert.set_attention_type(attention_type)
     model_object.eval()
     model_object.to(device)
 
+    # Inference loop
     with torch.no_grad():
+
+        # Tokenize the input sequence
         merged_seq = get_merged_seq(protein=protein, dna="")
         input_dict = {
             "idx": 0,  # sample index
             "codons": merged_seq,
             "organism": organism_id,
         }
-
         tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(
             device
         )
 
+        # Get the model predictions
         output_dict = model_object(**tokenized_input, return_dict=True)
         output = output_dict.logits.detach().cpu().numpy()
 
+        # Decode the predicted DNA sequence from the model output
         predicted_dna = list(
             (map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist()))
         )
@@ -257,6 +267,7 @@ def get_high_frequency_choice_sequence(
     Returns:
         str: The optimized DNA sequence.
     """
+    # Select the most frequent codon for each amino acid in the protein sequence
     dna_codons = [
         codon_frequencies[aminoacid][0][np.argmax(codon_frequencies[aminoacid][1])]
         for aminoacid in protein
@@ -276,6 +287,7 @@ def precompute_most_frequent_codons(
     Returns:
         Dict[str, str]: The most frequent codon for each amino acid.
     """
+    # Create a dictionary mapping each amino acid to its most frequent codon
     return {
         aminoacid: codons[np.argmax(frequencies)]
         for aminoacid, (codons, frequencies) in codon_frequencies.items()
@@ -296,7 +308,9 @@ def get_high_frequency_choice_sequence_optimized(
     Returns:
         str: The optimized DNA sequence.
     """
+    # Precompute the most frequent codons for each amino acid
     most_frequent_codons = precompute_most_frequent_codons(codon_frequencies)
+
     return "".join(most_frequent_codons[aminoacid] for aminoacid in protein)
 
 
@@ -314,6 +328,7 @@ def get_background_frequency_choice_sequence(
     Returns:
         str: The optimized DNA sequence.
     """
+    # Select a random codon for each amino acid based on the codon frequencies probability distribution
     dna_codons = [
         np.random.choice(
             codon_frequencies[aminoacid][0], p=codon_frequencies[aminoacid][1]
@@ -336,8 +351,11 @@ def precompute_cdf(
         Dict[str, Tuple[List[str], Any]]: CDFs for each amino acid.
     """
     cdf = {}
+
+    # Calculate the cumulative distribution function for each amino acid
     for aminoacid, (codons, frequencies) in codon_frequencies.items():
         cdf[aminoacid] = (codons, np.cumsum(frequencies))
+
     return cdf
 
 
@@ -358,6 +376,7 @@ def get_background_frequency_choice_sequence_optimized(
     dna_codons = []
     cdf = precompute_cdf(codon_frequencies)
 
+    # Select a random codon for each amino acid using the precomputed CDFs
     for aminoacid in protein:
         codons, cumulative_prob = cdf[aminoacid]
         selected_codon_index = np.searchsorted(cumulative_prob, np.random.rand())
@@ -380,6 +399,7 @@ def get_uniform_random_choice_sequence(
     Returns:
         str: The optimized DNA sequence.
     """
+    # Select a random codon for each amino acid using a uniform prior distribution
     dna_codons = [
         np.random.choice(codon_frequencies[aminoacid][0]) for aminoacid in protein
     ]

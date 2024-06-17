@@ -338,6 +338,7 @@ def find_pattern_in_fasta(keyword: str, text: str) -> str:
     Returns:
         str: The found pattern or an empty string if not found.
     """
+    # Search for the keyword pattern in the text using regex
     result = re.search(keyword + r"=(.*?)]", text)
     return result.group(1) if result else ""
 
@@ -352,6 +353,7 @@ def get_organism2id_dict(organism_reference: str) -> Dict[str, int]:
     Returns:
         Dict[str, int]: A dictionary mapping organism names to their respective indices.
     """
+    # Read the CSV file and create a dictionary mapping organisms to their indices
     organisms = pd.read_csv(organism_reference, index_col=0, header=None)
     organism2id = {organisms.iloc[i].values[0]: i for i in organisms.index}
 
@@ -373,11 +375,11 @@ def get_taxonomy_id(
     Returns:
         Any: The taxonomy id of the organism or the entire dictionary.
     """
+    # Load the organism-to-taxonomy mapping from a Pickle file
     organism2taxonomy = load_python_object_from_disk(taxonomy_reference)
 
     if return_dict:
-        organism2taxonomy = sorted(organism2taxonomy.items())
-        return dict(organism2taxonomy)
+        return dict(sorted(organism2taxonomy.items()))
 
     return organism2taxonomy[organism]
 
@@ -392,6 +394,7 @@ def sort_amino2codon_skeleton(amino2codon: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The sorted amino2codon dictionary.
     """
+    # Sort the dictionary by amino acid and then by codon name
     amino2codon = dict(sorted(amino2codon.items()))
     amino2codon = {
         amino: (
@@ -417,4 +420,5 @@ def load_pkl_from_url(url: str) -> Any:
     response = requests.get(url)
     response.raise_for_status()  # Ensure the request was successful
 
+    # Load the Pickle object from the response content
     return pickle.loads(response.content)
