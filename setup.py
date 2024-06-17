@@ -10,7 +10,7 @@ def read_requirements():
 
 setup(
     name="CodonTransformer",
-    version="0.2.3",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=read_requirements(),
     dependency_links=[
