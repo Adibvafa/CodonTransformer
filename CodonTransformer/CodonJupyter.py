@@ -4,7 +4,7 @@ File: CodonJupyter.py
 Includes Jupyter-specific functions for displaying interactive widgets.
 """
 
-from typing import Dict
+from typing import Dict, Optional
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
@@ -12,17 +12,29 @@ from CodonTransformer.CodonUtils import FINE_TUNE_ORGANISMS
 
 
 class UserContainer:
-    def __init__(self):
-        self.organism = None
-        self.organism_id = None
-        self.protein_sequence = ''
-        self.predicted_dna = ''
+    """
+    A container class to store user inputs for organism and protein sequence.
+    Attributes:
+        organism (Optional[str]): The selected organism name.
+        organism_id (Optional[int]): The ID corresponding to the selected organism.
+        protein_sequence (str): The input protein sequence.
+        predicted_dna (str): The predicted DNA sequence.
+    """
+    def __init__(self) -> None:
+        self.organism: Optional[str] = None
+        self.organism_id: Optional[int] = None
+        self.protein_sequence: str = ''
+        self.predicted_dna: str = ''
 
 
-def display_organism_dropdown(organism2id: Dict[str, int], container: UserContainer):
+def display_organism_dropdown(organism2id: Dict[str, int], container: UserContainer) -> None:
     """
     Display a dropdown widget for selecting an organism from a list and 
     update the organism ID in the provided container.
+
+    Args:
+        organism2id (Dict[str, int]): A dictionary mapping organism names to their IDs.
+        container (UserContainer): A container to store the selected organism and its ID.
     """
     organism_names = sorted(organism2id.keys())
 
@@ -69,7 +81,13 @@ def display_organism_dropdown(organism2id: Dict[str, int], container: UserContai
     output = widgets.Output()
 
     # Function to display the corresponding ID and update the container
-    def show_organism_id(change):
+    def show_organism_id(change: Dict[str, str]) -> None:
+        """
+        Display the corresponding ID and update the container with the selected organism.
+
+        Args:
+            change (Dict[str, str]): A dictionary containing information about the change in dropdown value.
+        """
         organism = change['new']
         if organism != '':
             organism = organism.strip()
@@ -96,9 +114,12 @@ def display_organism_dropdown(organism2id: Dict[str, int], container: UserContai
     display(widgets.HTML(dropdown_style))
 
 
-def display_protein_sequence_input(container: UserContainer):
+def display_protein_sequence_input(container: UserContainer) -> None:
     """
     Display a widget for entering a protein sequence and save it to the container.
+
+    Args:
+        container (UserContainer): A container to store the entered protein sequence.
     """
     protein_input = widgets.Textarea(
         value='',
@@ -132,7 +153,13 @@ def display_protein_sequence_input(container: UserContainer):
     """
 
     # Function to save the input protein sequence to the container
-    def save_protein_sequence(change):
+    def save_protein_sequence(change: Dict[str, str]) -> None:
+        """
+        Save the input protein sequence to the container.
+
+        Args:
+            change (Dict[str, str]): A dictionary containing information about the change in textarea value.
+        """
         container.protein_sequence = change['new'].upper().strip().replace('\n', '').replace(' ', '').replace('\t', '')
 
     # Attach the function to the input widget
