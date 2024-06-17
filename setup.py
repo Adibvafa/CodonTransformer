@@ -10,7 +10,7 @@ def read_requirements():
 
 setup(
     name="CodonTransformer",
-    version="0.2.0",
+    version="0.2.3",
     packages=find_packages(),
     install_requires=read_requirements(),
     dependency_links=[
@@ -38,5 +38,5 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.9",
 )
