@@ -12,7 +12,9 @@ from typing import List, Dict, Tuple
 from tqdm import tqdm
 
 
-def get_organism_to_CAI_weights(dataset: pd.DataFrame, organisms: List[str]) -> Dict[str, dict]:
+def get_organism_to_CAI_weights(
+    dataset: pd.DataFrame, organisms: List[str]
+) -> Dict[str, dict]:
     """
     Calculate the Codon Adaptation Index (CAI) weights for a list of organisms.
 
@@ -27,7 +29,7 @@ def get_organism_to_CAI_weights(dataset: pd.DataFrame, organisms: List[str]) -> 
 
     for organism in tqdm(organisms, desc="Calculating CAI Weights: ", unit="Organism"):
         organism_data = dataset.loc[dataset["organism"] == organism]
-        sequences = organism_data['dna'].to_list()
+        sequences = organism_data["dna"].to_list()
         weights = relative_adaptiveness(sequences=sequences)
         organism2weights[organism] = weights
 
@@ -50,7 +52,11 @@ def get_GC_content(dna: str, lower: bool = False) -> float:
     return (dna.count("G") + dna.count("C")) / len(dna) * 100
 
 
-def get_cfd(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], threshold: float = 0.3) -> float:
+def get_cfd(
+    dna: str,
+    codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
+    threshold: float = 0.3,
+) -> float:
     """
     Calculate the codon frequency distribution (CFD) metric for a DNA sequence.
 
@@ -63,14 +69,16 @@ def get_cfd(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]
         float: The CFD metric as a percentage.
     """
     # Get a dictionary mapping each codon to its normalized frequency
-    codon2frequency = {codon: freq / max(frequencies)
-                       for amino, (codons, frequencies) in codon_frequencies.items()
-                       for codon, freq in zip(codons, frequencies)}
+    codon2frequency = {
+        codon: freq / max(frequencies)
+        for amino, (codons, frequencies) in codon_frequencies.items()
+        for codon, freq in zip(codons, frequencies)
+    }
 
     cfd = 0
 
     for i in range(0, len(dna), 3):
-        codon = dna[i: i+3]
+        codon = dna[i : i + 3]
         codon_frequency = codon2frequency[codon]
 
         if codon_frequency < threshold:
@@ -79,7 +87,11 @@ def get_cfd(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]
     return cfd / (len(dna) / 3) * 100
 
 
-def get_min_max_percentage(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], window_size: int = 18) -> List[float]:
+def get_min_max_percentage(
+    dna: str,
+    codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
+    window_size: int = 18,
+) -> List[float]:
     """
     Calculate the %MinMax metric for a DNA sequence.
 
@@ -94,20 +106,24 @@ def get_min_max_percentage(dna: str, codon_frequencies: Dict[str, Tuple[List[str
     Credit: https://github.com/chowington/minmax
     """
     # Get a dictionary mapping each codon to its respective amino acid
-    codon2amino = {codon: amino
-                   for amino, (codons, frequencies) in codon_frequencies.items()
-                   for codon in codons}
+    codon2amino = {
+        codon: amino
+        for amino, (codons, frequencies) in codon_frequencies.items()
+        for codon in codons
+    }
 
     min_max_values = []
-    codons = [dna[i:i + 3] for i in range(0, len(dna), 3)]
+    codons = [dna[i : i + 3] for i in range(0, len(dna), 3)]
 
     for i in range(len(codons) - window_size + 1):
-        codon_window = codons[i:i + window_size]        # List of the codons in the current window
+        codon_window = codons[
+            i : i + window_size
+        ]  # List of the codons in the current window
 
-        Actual = 0.0    # Average of the actual codon frequencies
-        Max = 0.0       # Average of the min codon frequencies
-        Min = 0.0       # Average of the max codon frequencies
-        Avg = 0.0       # Average of the averages of all the frequencies associated with each amino acid
+        Actual = 0.0  # Average of the actual codon frequencies
+        Max = 0.0  # Average of the min codon frequencies
+        Min = 0.0  # Average of the max codon frequencies
+        Avg = 0.0  # Average of the averages of all the frequencies associated with each amino acid
 
         # Sum the frequencies
         for codon in codon_window:
@@ -173,16 +189,20 @@ def get_sequence_complexity(dna: str) -> float:
     for i in range(1, len(dna) + 1):
         unique_subseq = set()
         for j in range(len(dna) - (i - 1)):
-            unique_subseq.add(dna[j:(j + i)])
+            unique_subseq.add(dna[j : (j + i)])
         unique_subseq_length.append(len(unique_subseq))
 
     # Calculate complexity score
-    complexity_score = (sum(unique_subseq_length) / (sum_up_to(len(dna) - 1) + f(len(dna)))) * 100
+    complexity_score = (
+        sum(unique_subseq_length) / (sum_up_to(len(dna) - 1) + f(len(dna)))
+    ) * 100
 
     return complexity_score
 
 
-def get_sequence_similarity(original: str, predicted: str, truncate: bool = True, window_length: int = 1) -> float:
+def get_sequence_similarity(
+    original: str, predicted: str, truncate: bool = True, window_length: int = 1
+) -> float:
     """
     Calculate the sequence similarity between two sequences.
 
@@ -194,19 +214,21 @@ def get_sequence_similarity(original: str, predicted: str, truncate: bool = True
 
     Returns:
         float: The sequence similarity as a percentage.
-    
+
     Preconditions:
         len(predicted) <= len(original).
     """
     if not truncate and len(original) != len(predicted):
-        raise ValueError('Set truncate to True if the length of sequences do not match.')
+        raise ValueError(
+            "Set truncate to True if the length of sequences do not match."
+        )
 
     identity = 0.0
     original = original.strip()
     predicted = predicted.strip()
 
     if truncate:
-        original = original[:len(predicted)]
+        original = original[: len(predicted)]
 
     if window_length == 1:
         # Simple comparison for single characters
@@ -216,7 +238,7 @@ def get_sequence_similarity(original: str, predicted: str, truncate: bool = True
     else:
         # Comparison for substrings based on window_length
         for i in range(0, len(original) - window_length + 1, window_length):
-            if original[i:i + window_length] == predicted[i:i + window_length]:
+            if original[i : i + window_length] == predicted[i : i + window_length]:
                 identity += 1
 
     return (identity / (len(predicted) / window_length)) * 100

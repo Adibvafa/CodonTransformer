@@ -14,17 +14,13 @@ import pytorch_lightning as pl
 
 from torch.utils.data import DataLoader
 
-from transformers import (
-    PreTrainedTokenizerFast,
-    BigBirdConfig,
-    BigBirdForMaskedLM
-)
+from transformers import PreTrainedTokenizerFast, BigBirdConfig, BigBirdForMaskedLM
 
 from CodonTransformer.CodonUtils import (
     TOKEN2MASK,
     NUM_ORGANISMS,
     MAX_LEN,
-    IterableJSONData
+    IterableJSONData,
 )
 
 DATASET_LEN = 62314
@@ -66,15 +62,21 @@ class MaskedTokenizerCollator:
         targets = tokenized["input_ids"].clone()
 
         prob_matrix = torch.full(inputs.shape, 0.15)
-        prob_matrix[torch.where(inputs < 5)] = 0.
+        prob_matrix[torch.where(inputs < 5)] = 0.0
         selected = torch.bernoulli(prob_matrix).bool()
 
         # 80% of the time, replace masked input tokens with respective mask tokens
         replaced = torch.bernoulli(torch.full(selected.shape, 0.8)).bool() & selected
-        inputs[replaced] = torch.tensor(list((map(TOKEN2MASK.__getitem__, inputs[replaced].numpy()))))
+        inputs[replaced] = torch.tensor(
+            list((map(TOKEN2MASK.__getitem__, inputs[replaced].numpy())))
+        )
 
         # 10% of the time, we replace masked input tokens with random vector.
-        randomized = torch.bernoulli(torch.full(selected.shape, 0.1)).bool() & selected & ~replaced
+        randomized = (
+            torch.bernoulli(torch.full(selected.shape, 0.1)).bool()
+            & selected
+            & ~replaced
+        )
         random_idx = torch.randint(26, 90, prob_matrix.shape, dtype=torch.long)
         inputs[randomized] = random_idx[randomized]
 
@@ -93,22 +95,19 @@ class plTrainHarness(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
-            self.trainer.model.parameters(), lr=5e-5,
+            self.trainer.model.parameters(),
+            lr=5e-5,
         )
         warmup = torch.optim.lr_scheduler.LinearLR(
-            optimizer,
-            start_factor=0.01,
-            end_factor=1.,
-            total_iters=self.warmup)
+            optimizer, start_factor=0.01, end_factor=1.0, total_iters=self.warmup
+        )
         linear_decay = torch.optim.lr_scheduler.LinearLR(
-            optimizer,
-            start_factor=1.,
-            end_factor=0.01,
-            total_iters=self.decay)
+            optimizer, start_factor=1.0, end_factor=0.01, total_iters=self.decay
+        )
         scheduler = torch.optim.lr_scheduler.SequentialLR(
             optimizer=optimizer,
             schedulers=[warmup, linear_decay],
-            milestones=[self.warmup]
+            milestones=[self.warmup],
         )
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
 
@@ -120,11 +119,11 @@ class plTrainHarness(pl.LightningModule):
         self.log_dict(
             dictionary={"loss": outputs.loss, "lr": current_lr},
             on_step=True,
-            prog_bar=True
+            prog_bar=True,
         )
 
         return outputs.loss
-    
+
 
 class DumpStateDict(pl.callbacks.ModelCheckpoint):
     def on_save_checkpoint(self, trainer, pl_module, checkpoint):
@@ -160,7 +159,7 @@ if __name__ == "__main__":
 
     # Load the pretrained model from a checkpoint
     checkpoint = torch.load(pretrained_model_checkpoint)
-    state_dict = checkpoint['state_dict']
+    state_dict = checkpoint["state_dict"]
 
     # Remove the "model." prefix from the keys
     state_dict = {key.replace("model.", ""): value for key, value in state_dict.items()}
@@ -168,9 +167,7 @@ if __name__ == "__main__":
     model = BigBirdForMaskedLM(config=config)
     model.load_state_dict(state_dict)
 
-    harnessed_model = plTrainHarness(
-        model, warmup=WARMUP, decay=DECAY
-    )
+    harnessed_model = plTrainHarness(model, warmup=WARMUP, decay=DECAY)
 
     train_data = IterableJSONData(train_data_path, dist_env="slurm")
 
@@ -197,7 +194,7 @@ if __name__ == "__main__":
         deterministic=False,
         enable_checkpointing=True,
         callbacks=[save_checkpoint],
-        accumulate_grad_batches=ACC
+        accumulate_grad_batches=ACC,
     )
 
     trainer.fit(harnessed_model, data_loader)
