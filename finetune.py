@@ -180,7 +180,7 @@ if __name__ == "__main__":
     )
 
     save_checkpoint = DumpStateDict(
-        dirpath=f"checkpoints/finetune",
+        dirpath="checkpoints/finetune",
         every_n_train_steps=512,
     )
 
