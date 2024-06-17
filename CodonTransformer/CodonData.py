@@ -12,7 +12,6 @@ from CodonTransformer.CodonUtils import (
     AMINO2CODON_TYPE,
     find_pattern_in_fasta,
     sort_amino2codon_skeleton,
-    load_python_object_from_disk,
     get_taxonomy_id
 )
 
@@ -27,7 +26,13 @@ from tqdm import tqdm
 
 def get_codon_table(organism: str) -> int:
     """
-    Return the appropriate NCBI codon table for given organism
+    Return the appropriate NCBI codon table for a given organism.
+
+    Args:
+        organism (str): Name of the organism.
+
+    Returns:
+        int: Codon table number.
     """
     if organism in ['Arabidopsis thaliana', 'Caenorhabditis elegans', 'Chlamydomonas reinhardtii',
                     'Saccharomyces cerevisiae' 'Danio rerio', 'Drosophila melanogaster', 'Homo sapiens',
@@ -44,13 +49,22 @@ def get_codon_table(organism: str) -> int:
     return codon_table
 
 
-def get_merged_seq(protein: str, dna: str = "", seperator: str = "_") -> str:
+def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
     """
-    Return the merged sequence of protein aminoacids and dna codons in the form of tokens
-    separated by space, where each token is composed of an aminoacid + seperator + codon
+    Return the merged sequence of protein amino acids and DNA codons in the form of tokens
+    separated by space, where each token is composed of an amino acid + separator + codon.
 
-    >>> get_merged_seq(protein="MAV", dna="ATGGCTGTG", seperator="_")
-    'M_ATG A_GCT V_GTG'
+    Args:
+        protein (str): Protein sequence.
+        dna (str): DNA sequence.
+        separator (str): Separator between amino acid and codon.
+
+    Returns:
+        str: Merged sequence.
+
+    Example:
+        >>> get_merged_seq(protein="MAV", dna="ATGGCTGTG", separator="_")
+        'M_ATG A_GCT V_GTG'
     """
     merged_seq = ''
 
@@ -63,20 +77,29 @@ def get_merged_seq(protein: str, dna: str = "", seperator: str = "_") -> str:
     protein = protein.upper().strip().replace('\n', '').replace(' ', '').replace('\t', '')
 
     for i, aminoacid in enumerate(protein):
-        merged_seq += f'{aminoacid}{seperator}{dna[i * 3:i * 3 + 3] if dna else "UNK"} '
+        merged_seq += f'{aminoacid}{separator}{dna[i * 3:i * 3 + 3] if dna else "UNK"} '
 
     return merged_seq.strip()
 
 
 def is_correct_seq(dna: str, protein: str, stop_symbol: str = STOP_SYMBOL) -> bool:
     """
-    Return if the given dna, protein pair is correct, that is:
-    1. The length of dna is divisible by 3
-    2. There is an initiator codon in the beginning of dna
-    3. There is only one stop codon in the sequence
-    4. The only stop codon is the last codon
+    Check if the given DNA and protein pair is correct, that is:
+        1. The length of dna is divisible by 3
+        2. There is an initiator codon in the beginning of dna
+        3. There is only one stop codon in the sequence
+        4. The only stop codon is the last codon
+
     Note since in Codon Table 3, 'TGA' is interpreted as Triptophan (W),
-    we have included a separate check to make sure those sequences are considered correct.
+    there is a separate check to make sure those sequences are considered correct.
+
+    Args:
+        dna (str): DNA sequence.
+        protein (str): Protein sequence.
+        stop_symbol (str): Stop symbol.
+
+    Returns:
+        bool: True if the sequence is correct, False otherwise.
     """
     return (len(dna) % 3 == 0 and
             dna[:3].upper() in ('ATG', 'TTG', 'CTG', 'GTG') and
@@ -91,7 +114,17 @@ def get_amino_acid_sequence(dna: str,
                             return_correct_seq: bool = True
                             ) -> Union[Tuple[str, bool], str]:
     """
-    Return the translated protein sequence given a dna sequence and codon table.
+    Return the translated protein sequence given a DNA sequence and codon table.
+
+    Args:
+        dna (str): DNA sequence.
+        stop_symbol (str): Stop symbol.
+        codon_table (int): Codon table number.
+        return_correct_seq (bool): Whether to return if the sequence is correct.
+
+    Returns:
+        Union[Tuple[str, bool], str]: Protein sequence and correctness flag if return_correct_seq is True,
+                                      otherwise just the protein sequence.
     """
     dna_seq = Seq(dna).strip()
     protein_seq = str(dna_seq.translate(stop_symbol=stop_symbol,
@@ -111,10 +144,17 @@ def read_fasta_file(input_file: str,
                     buffer_size: int = 50000) -> pd.DataFrame:
     """
     Read a FASTA file of DNA sequences and save it to a Pandas DataFrame.
-    Columns indicates the output columns in that DataFrame.
-    Return the created Pandas DataFrame if needed by function call.
-    """
 
+    Args:
+        input_file (str): Path to the input FASTA file.
+        output_path (str): Path to save the output DataFrame.
+        organism (str): Name of the organism.
+        return_dataframe (bool): Whether to return the DataFrame.
+        buffer_size (int): Buffer size for reading the file.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the DNA sequences.
+    """
     buffer = []
     columns = ['dna', 'protein', 'correct_seq', 'organism', 'GeneID', 'description', 'tokenized']
 
@@ -159,11 +199,18 @@ def read_fasta_file(input_file: str,
 def download_codon_frequencies_from_kazusa(taxonomy_id: Optional[int] = None,
                                            organism: Optional[str] = None,
                                            taxonomy_reference: Optional[str] = None,
-                                           return_original_format=False) -> AMINO2CODON_TYPE:
+                                           return_original_format: bool = False) -> AMINO2CODON_TYPE:
     """
-    Return the codon table of given taxonomy id from Kazsua Database.
-    If organism and taxonomy_reference are provided, it will find the taxonomy_id
-    using the given references.
+    Return the codon table of the given taxonomy ID from the Kazusa Database.
+
+    Args:
+        taxonomy_id (Optional[int]): Taxonomy ID.
+        organism (Optional[str]): Name of the organism.
+        taxonomy_reference (Optional[str]): Taxonomy reference.
+        return_original_format (bool): Whether to return in the original format.
+
+    Returns:
+        AMINO2CODON_TYPE: Codon table.
     """
     if taxonomy_reference:
         taxonomy_id = get_taxonomy_id(taxonomy_reference, organism=organism)
@@ -183,7 +230,13 @@ def download_codon_frequencies_from_kazusa(taxonomy_id: Optional[int] = None,
 
 def build_amino2codon_skeleton(organism: str) -> AMINO2CODON_TYPE:
     """
-    Return the empty skeleton of amino2codon dictionary, which is needed for get_codon_frequencies
+    Return the empty skeleton of the amino2codon dictionary, needed for get_codon_frequencies.
+
+    Args:
+        organism (str): Name of the organism.
+
+    Returns:
+        AMINO2CODON_TYPE: Empty amino2codon dictionary.
     """
     amino2codon = {}
     possible_codons = [f'{i}{j}{k}' for i in 'ACGT' for j in 'ACGT' for k in 'ACGT']
@@ -210,10 +263,15 @@ def get_codon_frequencies(dna_sequences: List[str],
                           organism: Optional[str] = None) -> AMINO2CODON_TYPE:
     """
     Return a dictionary mapping each codon to its respective frequency based on
-    the collection of dna sequences and protein sequences entered.
-    If the protein sequences are not provided, the organism input will be used to generate them.
-    The returned dictionary maps each amino acid to a tuple of two lists, the first list represents all
-    possible codons of that amino acid and the second list represents their frequencies which sums to one.
+    the collection of DNA sequences and protein sequences.
+
+    Args:
+        dna_sequences (List[str]): List of DNA sequences.
+        protein_sequences (Optional[List[str]]): List of protein sequences.
+        organism (Optional[str]): Name of the organism.
+
+    Returns:
+        AMINO2CODON_TYPE: Dictionary mapping each amino acid to a tuple of codons and frequencies.
     """
     if organism:
         codon_table = get_codon_table(organism)
@@ -242,7 +300,13 @@ def get_organism_to_codon_frequencies(dataset: pd.DataFrame,
                                       organisms: List[str]) -> Dict[str, AMINO2CODON_TYPE]:
     """
     Return a dictionary mapping each organism to their codon frequency distribution.
-    Expects dataset dataframe to have columns named "organism" and "dna".
+
+    Args:
+        dataset (pd.DataFrame): DataFrame containing DNA sequences.
+        organisms (List[str]): List of organisms.
+
+    Returns:
+        Dict[str, AMINO2CODON_TYPE]: Dictionary mapping each organism to its codon frequency distribution.
     """
     organism2frequencies = {}
 
@@ -258,7 +322,18 @@ def get_organism_to_codon_frequencies(dataset: pd.DataFrame,
     return organism2frequencies
 
 
-def get_cousin(dna, organism, ref_freq):
+def get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float:
+    """
+    Calculate the cousin score between a DNA sequence and reference frequencies.
+
+    Args:
+        dna (str): DNA sequence.
+        organism (str): Name of the organism.
+        ref_freq (AMINO2CODON_TYPE): Reference frequencies.
+
+    Returns:
+        float: Cousin score.
+    """
     que_freq = get_codon_frequencies([dna], organism=organism)
 
     weight_ref = build_amino2codon_skeleton(organism)
