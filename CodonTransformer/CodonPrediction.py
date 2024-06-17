@@ -5,7 +5,7 @@ Includes functions to tokenize input, load models, infer predicted dna sequences
 helper functions related to processing data for passing to the model.
 """
 
-from typing import Any, List, Dict, Tuple
+from typing import Any, List, Dict, Tuple, Optional
 import onnxruntime as rt
 
 import torch
@@ -13,7 +13,7 @@ import transformers
 from transformers import BatchEncoding, PreTrainedTokenizerFast, BigBirdConfig
 import numpy as np
 
-from CodonTransformer.CodonData import get_codon_table, get_amino_acid_sequence, get_merged_seq
+from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import TOKEN2INDEX, INDEX2TOKEN, NUM_ORGANISMS
 
 
@@ -74,6 +74,12 @@ def load_model(
 def load_bigbird_config(num_organisms: int) -> BigBirdConfig:
     """
     Load the config object used to train the BigBird transformer.
+
+    Args:
+        num_organisms (int): The number of organisms.
+
+    Returns:
+        BigBirdConfig: The configuration object for BigBird.
     """
     config = transformers.BigBirdConfig(
         vocab_size=len(TOKEN2INDEX),  # Equal to len(tokenizer)
@@ -86,6 +92,11 @@ def load_bigbird_config(num_organisms: int) -> BigBirdConfig:
 def create_model_from_checkpoint(checkpoint_dir: str, output_model_dir: str, num_organisms: int) -> None:
     """
     Save a model to disk using a previous checkpoint.
+
+    Args:
+        checkpoint_dir (str): Directory where the checkpoint is stored.
+        output_model_dir (str): Directory where the model will be saved.
+        num_organisms (int): Number of organisms.
     """
     checkpoint = load_model(checkpoint_dir, num_organisms=num_organisms)
     state_dict = checkpoint.state_dict()
@@ -95,7 +106,13 @@ def create_model_from_checkpoint(checkpoint_dir: str, output_model_dir: str, num
 
 def load_tokenizer(tokenizer_path: str) -> PreTrainedTokenizerFast:
     """
-    Create and return a tokenizer object from given tokenizer_path.
+    Create and return a tokenizer object from the given tokenizer path.
+
+    Args:
+        tokenizer_path (str): Path to the tokenizer file.
+
+    Returns:
+        PreTrainedTokenizerFast: The tokenizer object.
     """
     tokenizer = transformers.PreTrainedTokenizerFast(
         tokenizer_file=tokenizer_path,
@@ -112,14 +129,23 @@ def load_tokenizer(tokenizer_path: str) -> PreTrainedTokenizerFast:
 
 
 def tokenize(
-        batch: List[Dict],
+        batch: List[Dict[str, Any]],
         tokenizer_path: str = '',
-        tokenizer_object: PreTrainedTokenizerFast = None,
+        tokenizer_object: Optional[PreTrainedTokenizerFast] = None,
         max_len: int = 2048
 ) -> BatchEncoding:
     """
-    Returned the tokenized sequences given batch of input data.
-    Each data in batch is expected to be a dictionary with "codons" and "organism" keys.
+    Return the tokenized sequences given a batch of input data.
+    Each data in the batch is expected to be a dictionary with "codons" and "organism" keys.
+
+    Args:
+        batch (List[Dict[str, Any]]): A list of dictionaries with "codons" and "organism" keys.
+        tokenizer_path (str, optional): Path to the tokenizer file.
+        tokenizer_object (PreTrainedTokenizerFast, optional): The tokenizer object.
+        max_len (int, optional): Maximum length of the tokenized sequence.
+
+    Returns:
+        BatchEncoding: The tokenized batch.
     """
     if not tokenizer_object:
         tokenizer_object = load_tokenizer(tokenizer_path)
@@ -146,18 +172,18 @@ def predict_dna_sequence(
         organism_id: int,
         device: torch.device,
         tokenizer_path: str = '',
-        tokenizer_object: PreTrainedTokenizerFast = None,
+        tokenizer_object: Optional[PreTrainedTokenizerFast] = None,
         model_path: str = '',
-        model_object: torch.nn.Module = None,
+        model_object: Optional[torch.nn.Module] = None,
         attention_type: str = 'original_full'
 ) -> str:
     """
-    Return the predicted dna sequence for a given protein based on a Transformer model.
-    Uses INDEX2TOKEN dictionary which maps each index to respective token of tokenizer.
+    Return the predicted DNA sequence for a given protein based on a Transformer model.
+    Uses INDEX2TOKEN dictionary which maps each index to the respective token of the tokenizer.
 
     Args:
-        protein (str): The protein sequence to predict the dna sequence for.
-        organism_id (int): The organism id to predict the dna sequence for.
+        protein (str): The protein sequence to predict the DNA sequence for.
+        organism_id (int): The organism id to predict the DNA sequence for.
         device (torch.device): The device to run the model on.
         tokenizer_path (str, optional): The path to the tokenizer file.
         tokenizer_object (PreTrainedTokenizerFast, optional): The tokenizer object.
@@ -166,7 +192,7 @@ def predict_dna_sequence(
         attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
     
     Returns:
-        str: The predicted dna sequence.
+        str: The predicted DNA sequence.
     """
     if not tokenizer_object:
         tokenizer_object = load_tokenizer(tokenizer_path)
@@ -174,7 +200,7 @@ def predict_dna_sequence(
     if not model_object:
         model_object = load_model(model_path, device)
 
-    if protein == '' or protein is None:
+    if not protein:
         raise ValueError("Protein sequence cannot be empty.")
     
     if not isinstance(organism_id, int) or organism_id < 0 or organism_id >= NUM_ORGANISMS:
@@ -207,8 +233,15 @@ def get_high_frequency_choice_sequence(
         codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
 ) -> str:
     """
-    Return the dna sequence optimized using High Frequency Choice (HFC) approach in which
+    Return the DNA sequence optimized using High Frequency Choice (HFC) approach in which
     the most frequent codon for a given amino acid is always chosen.
+
+    Args:
+        protein (str): The protein sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        str: The optimized DNA sequence.
     """
     dna_codons = [codon_frequencies[aminoacid][0][np.argmax(codon_frequencies[aminoacid][1])]
                   for aminoacid in protein]
@@ -220,6 +253,12 @@ def precompute_most_frequent_codons(
 ) -> Dict[str, str]:
     """
     Precompute the most frequent codon for each amino acid.
+
+    Args:
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        Dict[str, str]: The most frequent codon for each amino acid.
     """
     return {aminoacid: codons[np.argmax(frequencies)]
             for aminoacid, (codons, frequencies) in codon_frequencies.items()}
@@ -232,6 +271,13 @@ def get_high_frequency_choice_sequence_optimized(
     """
     Efficient implementation of get_high_frequency_choice_sequence that uses
     vectorized operations and helper functions, achieving up to x10 faster speed.
+
+    Args:
+        protein (str): The protein sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        str: The optimized DNA sequence.
     """
     most_frequent_codons = precompute_most_frequent_codons(codon_frequencies)
     return ''.join(most_frequent_codons[aminoacid] for aminoacid in protein)
@@ -242,8 +288,15 @@ def get_background_frequency_choice_sequence(
         codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
 ) -> str:
     """
-    Return the dna sequence optimized using Background Frequency Choice (BFC) approach in which
+    Return the DNA sequence optimized using Background Frequency Choice (BFC) approach in which
     a random codon for a given amino acid is chosen using the codon frequencies probability distribution.
+
+    Args:
+        protein (str): The protein sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        str: The optimized DNA sequence.
     """
     dna_codons = [np.random.choice(codon_frequencies[aminoacid][0], p=codon_frequencies[aminoacid][1])
                   for aminoacid in protein]
@@ -255,6 +308,12 @@ def precompute_cdf(
 ) -> Dict[str, Tuple[List[str], Any]]:
     """
     Precompute the cumulative distribution function (CDF) for each amino acid.
+
+    Args:
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        Dict[str, Tuple[List[str], Any]]: CDFs for each amino acid.
     """
     cdf = {}
     for aminoacid, (codons, frequencies) in codon_frequencies.items():
@@ -269,6 +328,13 @@ def get_background_frequency_choice_sequence_optimized(
     """
     Efficient implementation of get_background_frequency_choice_sequence that uses
     vectorized operations and helper functions, achieving up to x8 faster speed.
+
+    Args:
+        protein (str): The protein sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        str: The optimized DNA sequence.
     """
     dna_codons = []
     cdf = precompute_cdf(codon_frequencies)
@@ -281,12 +347,40 @@ def get_background_frequency_choice_sequence_optimized(
     return ''.join(dna_codons)
 
 
+def get_uniform_random_choice_sequence(
+        protein: str,
+        codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
+) -> str:
+    """
+    Return the DNA sequence optimized using Uniform Random Choice (URC) approach in which
+    a random codon for a given amino acid is chosen using a uniform prior.
+
+    Args:
+        protein (str): The protein sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+
+    Returns:
+        str: The optimized DNA sequence.
+    """
+    dna_codons = [np.random.choice(codon_frequencies[aminoacid][0])
+                  for aminoacid in protein]
+    return ''.join(dna_codons)
+
+
 def get_icor_prediction(input_seq: str, model_path: str, stop_symbol: str) -> str:
     """
-    Return the optimized codon sequence for the given protein sequence.
+    Return the optimized codon sequence for the given protein sequence using ICOR.
 
     Credit: ICOR: improving codon optimization with recurrent neural networks
             Rishab Jain, Aditya Jain, Elizabeth Mauro, Kevin LeShane, Douglas Densmore
+
+    Args:
+        input_seq (str): The input protein sequence.
+        model_path (str): The path to the ICOR model.
+        stop_symbol (str): The symbol representing stop codons in the sequence.
+
+    Returns:
+        str: The optimized DNA sequence.
     """
     input_seq = input_seq.strip().upper()
     input_seq = input_seq.replace(stop_symbol, '*')
