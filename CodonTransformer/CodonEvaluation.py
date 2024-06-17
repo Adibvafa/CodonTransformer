@@ -12,11 +12,16 @@ from typing import List, Dict, Tuple
 from tqdm import tqdm
 
 
-def get_organism_to_CAI_weights(dataset: pd.DataFrame,
-                                organisms: List[str]) -> Dict[str, dict]:
+def get_organism_to_CAI_weights(dataset: pd.DataFrame, organisms: List[str]) -> Dict[str, dict]:
     """
-    Return the appropriate weights dictionary for calculating Codon Adaptation Index (CAI)
-    for a given list of organisms. Expects dataset dataframe to have columns named "organism" and "dna".
+    Calculate the Codon Adaptation Index (CAI) weights for a list of organisms.
+
+    Args:
+        dataset (pd.DataFrame): The dataset containing organism and DNA sequence information.
+        organisms (List[str]): List of organism names.
+
+    Returns:
+        Dict[str, dict]: A dictionary mapping each organism to its CAI weights.
     """
     organism2weights = {}
 
@@ -31,21 +36,31 @@ def get_organism_to_CAI_weights(dataset: pd.DataFrame,
 
 def get_GC_content(dna: str, lower: bool = False) -> float:
     """
-    Return the GC content of given dna sequence, calculated as number of Gs and Cs over length.
+    Calculate the GC content of a DNA sequence.
+
+    Args:
+        dna (str): The DNA sequence.
+        lower (bool): If True, converts DNA sequence to lowercase before calculation.
+
+    Returns:
+        float: The GC content as a percentage.
     """
     if lower:
         dna = dna.lower()
     return (dna.count("G") + dna.count("C")) / len(dna) * 100
 
 
-def get_cfd(dna: str,
-            codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
-            threshold: float = 0.3) -> float:
+def get_cfd(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], threshold: float = 0.3) -> float:
     """
-    Return the codon frequency distribution metric of given input sequence.
-    codon_frequencies represent the codon frequency distribution per amino acid of
-    the organism to which dna, protein pair belong. You can call the helper function
-    named get_codon_frequency_distribution in CodonPrediction.py to create it.
+    Calculate the codon frequency distribution (CFD) metric for a DNA sequence.
+
+    Args:
+        dna (str): The DNA sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequency distribution per amino acid.
+        threshold (float): Frequency threshold for counting rare codons.
+
+    Returns:
+        float: The CFD metric as a percentage.
     """
     # Get a dictionary mapping each codon to its normalized frequency
     codon2frequency = {codon: freq / max(frequencies)
@@ -64,11 +79,18 @@ def get_cfd(dna: str,
     return cfd / (len(dna) / 3) * 100
 
 
-def get_min_max_percentage(dna: str,
-                           codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
-                           window_size: int = 18) -> List[float]:
+def get_min_max_percentage(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], window_size: int = 18) -> List[float]:
     """
-    Get the %MinMax metric for given DNA sequence, using codon_frequencies of the organism.
+    Calculate the %MinMax metric for a DNA sequence.
+
+    Args:
+        dna (str): The DNA sequence.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequency distribution per amino acid.
+        window_size (int): Size of the window to calculate %MinMax.
+
+    Returns:
+        List[float]: List of %MinMax values for the sequence.
+
     Credit: https://github.com/chowington/minmax
     """
     # Get a dictionary mapping each codon to its respective amino acid
@@ -122,7 +144,13 @@ def get_min_max_percentage(dna: str,
 
 def get_sequence_complexity(dna: str) -> float:
     """
-    Calculates the sequence complexity score based on the provided input dna.
+    Calculate the sequence complexity score of a DNA sequence.
+
+    Args:
+        dna (str): The DNA sequence.
+
+    Returns:
+        float: The sequence complexity score.
     """
 
     def sum_up_to(x):
@@ -154,17 +182,21 @@ def get_sequence_complexity(dna: str) -> float:
     return complexity_score
 
 
-def get_sequence_similarity(original: str,
-                            predicted: str,
-                            truncate: bool = True,
-                            window_length: int = 1) -> float:
+def get_sequence_similarity(original: str, predicted: str, truncate: bool = True, window_length: int = 1) -> float:
     """
-    Return the percentage of amino acids in common between two protein sequences or
-    the percentage of nucleotides in common between two DNA sequences.
+    Calculate the sequence similarity between two sequences.
 
-    If window_length is set to 3, it will compare triplets (e.g. codons in DNA) to calculate identity.
+    Args:
+        original (str): The original sequence.
+        predicted (str): The predicted sequence.
+        truncate (bool): If True, truncate the original sequence to match the length of the predicted sequence.
+        window_length (int): Length of the window for comparison (1 for amino acids, 3 for codons).
 
-    We expect len(predicted) <= len(original).
+    Returns:
+        float: The sequence similarity as a percentage.
+    
+    Preconditions:
+        len(predicted) <= len(original).
     """
     if not truncate and len(original) != len(predicted):
         raise ValueError('Set truncate to True if the length of sequences do not match.')
@@ -188,5 +220,3 @@ def get_sequence_similarity(original: str,
                 identity += 1
 
     return (identity / (len(predicted) / window_length)) * 100
-
-
