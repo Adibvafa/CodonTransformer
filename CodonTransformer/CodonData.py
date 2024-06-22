@@ -8,8 +8,12 @@ import os
 import pandas as pd
 
 from CodonTransformer.CodonUtils import (
+    AMINO_ACIDS,
+    START_CODONS,
+    STOP_CODONS,
     STOP_SYMBOL,
     AMINO2CODON_TYPE,
+    AMBIGUOUS_AMINOACID_MAP,
     find_pattern_in_fasta,
     sort_amino2codon_skeleton,
     get_taxonomy_id,
@@ -66,6 +70,94 @@ def get_codon_table(organism: str) -> int:
     return codon_table
 
 
+def preprocess_protein_sequence(protein: str) -> str:
+    """
+    Preprocess a protein sequence by cleaning, standardizing, and handling ambiguous amino acids.
+    
+    Args:
+        protein (str): The input protein sequence.
+    
+    Returns:
+        str: The preprocessed protein sequence.
+    
+    Raises:
+        ValueError: If the protein sequence is invalid.
+    """
+    # Check for sequence validity
+    if not protein:
+        raise ValueError("Protein sequence is empty.")
+
+    # Clean and standardize the protein sequence
+    protein = protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
+
+    # Replace ambiguous amino acids with standard 20 amino acids
+    protein = ''.join(AMBIGUOUS_AMINOACID_MAP.get(aminoacid, aminoacid) for aminoacid in protein)
+
+    # Check for sequence validity
+    if protein[-1] not in AMINO_ACIDS + ["*", STOP_SYMBOL]:
+        raise ValueError("Protein sequence must end with *, or _, or an amino acid.")
+    
+    # Replace '*' at the end of protein with STOP_SYMBOL if present
+    if protein[-1] == "*":
+        protein[-1] = STOP_SYMBOL
+    
+    # Add stop symbol to end of protein
+    if protein[-1] != STOP_SYMBOL:
+        protein += STOP_SYMBOL
+
+    return protein
+
+
+def replace_ambiguous_codons(dna: str) -> str:
+    """
+    Replaces ambiguous codons in a DNA sequence with "UNK".
+
+    Args:
+        dna (str): The DNA sequence to process.
+
+    Returns:
+        str: The processed DNA sequence with ambiguous codons replaced by "UNK".
+    """
+    result = []
+
+    # Check codons in DNA sequence
+    for i in range(0, len(dna), 3):
+        codon = dna[i:i+3]
+
+        if len(codon) == 3 and all(nucleotide in "ATCG" for nucleotide in codon):
+            result.append(codon)
+        else:
+            result.append("UNK")
+
+    return "".join(result)
+
+
+def preprocess_dna_sequence(dna: str) -> str:
+    """
+    Cleans and preprocesses a DNA sequence by standardizing it and replacing ambiguous codons.
+
+    Args:
+        dna (str): The DNA sequence to preprocess.
+
+    Returns:
+        str: The cleaned and preprocessed DNA sequence.
+    """
+    if not dna:
+        return ""
+    
+    # Clean and standardize the DNA sequence
+    dna = dna.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
+    
+    # Replace codons with ambigous nucleotides with "UNK"
+    dna = replace_ambiguous_codons(dna)
+
+    # Add unkown stop codon to end of DNA sequence if not present
+    if dna[-3:] not in STOP_CODONS + ["UNK"]:
+        dna += "UNK"
+    
+    return dna
+
+
 def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
     """
     Return the merged sequence of protein amino acids and DNA codons in the form of tokens
@@ -80,23 +172,22 @@ def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
         str: Merged sequence.
 
     Example:
-        >>> get_merged_seq(protein="MAV", dna="ATGGCTGTG", separator="_")
-        'M_ATG A_GCT V_GTG'
+        >>> get_merged_seq(protein="MAV_", dna="ATGGCTGTGTAA", separator="_")
+        'M_ATG A_GCT V_GTG __TAA'
+
+        >>> get_merged_seq(protein="QHH_", dna="", separator="_")
+        'Q_UNK H_UNK H_UNK __UNK'
     """
     merged_seq = ""
 
-    # Replace '*' at the end of protein with STOP_SYMBOL if present
-    if protein[-1] == "*":
-        protein[-1] = STOP_SYMBOL
+    # Prepare protein and dna sequences
+    dna = preprocess_dna_sequence(dna)
+    protein = preprocess_protein_sequence(protein)
 
-    # Append STOP_SYMBOL if it's not already present
-    if protein[-1] != STOP_SYMBOL:
-        protein += STOP_SYMBOL
-
-    # Clean and standardize the protein sequence
-    protein = (
-        protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
-    )
+    # Check if the length of protein and dna sequences are equal
+    if len(dna) > 0 and len(protein) != len(dna) / 3:
+        raise ValueError("Length of protein (including stop symbol such as \"_\") and \
+                         the number of codons in DNA sequence (including stop codon) must be equal.")
 
     # Merge protein and DNA sequences into tokens
     for i, aminoacid in enumerate(protein):
@@ -126,7 +217,7 @@ def is_correct_seq(dna: str, protein: str, stop_symbol: str = STOP_SYMBOL) -> bo
     """
     return (
         len(dna) % 3 == 0  # Check if DNA length is divisible by 3
-        and dna[:3].upper() in ("ATG", "TTG", "CTG", "GTG")  # Check for initiator codon
+        and dna[:3].upper() in START_CODONS  # Check for initiator codon
         and protein[-1]
         == stop_symbol  # Check if the last protein symbol is the stop symbol
         and protein.count(stop_symbol) == 1  # Check if there is only one stop symbol
