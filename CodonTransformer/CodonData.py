@@ -83,7 +83,6 @@ def preprocess_protein_sequence(protein: str) -> str:
     Raises:
         ValueError: If the protein sequence is invalid.
     """
-    # Check for sequence validity
     if not protein:
         raise ValueError("Protein sequence is empty.")
 
@@ -94,12 +93,15 @@ def preprocess_protein_sequence(protein: str) -> str:
     protein = ''.join(AMBIGUOUS_AMINOACID_MAP.get(aminoacid, aminoacid) for aminoacid in protein)
 
     # Check for sequence validity
+    if any(aminoacid not in AMINO_ACIDS + ["*", STOP_SYMBOL] for aminoacid in protein[:-1]):
+        raise ValueError("Invalid characters in protein sequence.")
+    
     if protein[-1] not in AMINO_ACIDS + ["*", STOP_SYMBOL]:
         raise ValueError("Protein sequence must end with *, or _, or an amino acid.")
     
     # Replace '*' at the end of protein with STOP_SYMBOL if present
     if protein[-1] == "*":
-        protein[-1] = STOP_SYMBOL
+        protein = protein[:-1] + STOP_SYMBOL
     
     # Add stop symbol to end of protein
     if protein[-1] != STOP_SYMBOL:
@@ -119,6 +121,7 @@ def replace_ambiguous_codons(dna: str) -> str:
         str: The processed DNA sequence with ambiguous codons replaced by "UNK".
     """
     result = []
+    dna = dna.upper()
 
     # Check codons in DNA sequence
     for i in range(0, len(dna), 3):
