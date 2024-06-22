@@ -16,6 +16,44 @@ import pandas as pd
 from typing import Any, List, Dict, Tuple, Optional, Iterator
 
 
+# List of all amino acids
+AMINO_ACIDS: List[str] = [
+    "A",  # Alanine
+    "C",  # Cysteine
+    "D",  # Aspartic acid
+    "E",  # Glutamic acid
+    "F",  # Phenylalanine
+    "G",  # Glycine
+    "H",  # Histidine
+    "I",  # Isoleucine
+    "K",  # Lysine
+    "L",  # Leucine
+    "M",  # Methionine
+    "N",  # Asparagine
+    "P",  # Proline
+    "Q",  # Glutamine
+    "R",  # Arginine
+    "S",  # Serine
+    "T",  # Threonine
+    "V",  # Valine
+    "W",  # Tryptophan
+    "Y",  # Tyrosine
+]
+
+# Dictionary ambiguous amino acids to standard amino acids
+AMBIGUOUS_AMINOACID_MAP: Dict[str, str] = {
+    'B': 'N',  # Aspartic acid (D) or Asparagine (N)
+    'Z': 'Q',  # Glutamic acid (E) or Glutamine (Q)
+    'X': 'A',  # Any amino acid (typically replaced with Alanine)
+    'J': 'L',  # Leucine (L) or Isoleucine (I)
+    'U': 'C',  # Selenocysteine (typically replaced with Cysteine)
+    'O': 'K',  # Pyrrolysine (typically replaced with Lysine)
+}
+
+# List of all possible start and stop codons
+START_CODONS: List[str] = ["ATG", "TTG", "CTG", "GTG"]
+STOP_CODONS: List[str] = ["TAA", "TAG", "TGA"]
+
 # Token-to-index mapping for amino acids and special tokens
 TOKEN2INDEX: Dict[str, int] = {
     "[UNK]": 0,
