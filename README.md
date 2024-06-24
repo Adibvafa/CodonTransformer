@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/codontransformer.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
+  <img src="src/codontransformer2.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
 </p>
 
 <p align="center">
@@ -9,18 +9,7 @@
     <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer?color=E8C800"></a>
     <a href="https://zenodo.org/badge/latestdoi/155220641"><img src="https://zenodo.org/badge/155220641.svg?color=E8C800" alt="DOI"></a>
 </p>
-
-<span align="center" style="font-weight: bold; font-size: large;">
-    The Ultimate Tool for Codon Optimization.
-</span>
-
-
-<html>
-<body>
-<span style="font-size123:112em;">Text goes here</span>
-</body>
-</html>
-
+<br>
 
 ## Table of Contents
 TODO
