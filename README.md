@@ -1,7 +1,24 @@
-# CodonTransformer
-![PyPI Version](https://img.shields.io/pypi/v/CodonTransformer)
-![License](https://img.shields.io/github/license/adibvafa/CodonTransformer)
-https://adibvafa.github.io/CodonTransformer/
+<p align="center">
+  <img src="src/codontransformer.png" alt="CodonTransformer Logo" width="100px" height="100px" style="vertical-align: middle;"/>
+  <span style="font-size: 32px; font-weight: bold; vertical-align: middle;">CodonTransformer</span>
+</p>
+
+
+
+
+<h3 align="center">
+    <p>The Ultimate Tool or Codon Optimization.</p>
+</h3>
+
+<p align="center">
+    <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=magenta"></a>
+    <a href="https://adibvafa.github.io/CodonTransformer/"><img alt="Documentation" src="https://img.shields.io/badge/documentation-available-brightgreen"></a>
+    <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer"></a>
+</p>
+
+
+## Table of Contents
+TODO
 
 ## Overview
 CodonTransformer is the ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms. Whether you are a researcher or a practitioner in genetic engineering, CodonTransformer provides a comprehensive suite of features to facilitate your work. CodonTransformer is built to make codon optimization accessible and efficient. By leveraging the Transformer architecture and a user-friendly Jupyter notebook, it reduces the complexity of genetic sequence optimization, saving you time and effort.
