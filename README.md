@@ -11,7 +11,17 @@
 </p>
 
 ## Table of Contents
-TODO
+- [Overview](#overview)
+- [Use Case](#use-case)
+- [Installation](#installation)
+- [Key Features](#key-features)
+  - [CodonData](#codondata)
+  - [CodonPrediction](#codonprediction)
+  - [CodonEvaluation](#codonevaluation)
+  - [CodonUtils](#codonutils)
+  - [CodonJupyter](#codonjupyter)
+- [Contribution](#contribution)
+- [Citation](#citation)
 <br></br>
 
 ## Overview
@@ -98,11 +108,20 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 
 
 ## Key Features
-- **CodonData**: Simplifies the process of gathering, preprocessing, and representing data, ensuring you have the clean and well-structured data needed for your research.
-- **CodonEvaluation**: Offers robust scripts to evaluate various metrics for codon optimized sequences, helping you assess the quality and effectiveness of your optimizations.
-- **CodonPrediction**: Enables easy tokenization, loading, and utilization of CodonTransformer for making predictions. It includes various approaches such as High Frequency Choice (HFC), Background Frequency Choice (BFC), random selection, and ICOR.
-- **CodonUtils**: Provides essential utility functions and constants that streamline your workflow and improve efficiency.
-- **CodonJupyter**: Comes with tools for creating demo notebooks, allowing you to quickly set up and demonstrate the capabilities of CodonTransformer in an interactive environment.
+- **CodonData** <br>
+Provides essential tools for preprocessing NCBI or Kazusa databases and managing codon-related data operations. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
+
+- **CodonEvaluation** <br>
+Offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
+
+- **CodonPrediction** <br>
+Responsible for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
+
+- **CodonUtils** <br>
+Contains constants and helper functions essential for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
+
+- **CodonJupyter** <br>
+Offers Jupyter-specific functions for displaying interactive widgets, enhancing user interaction with the CodonTransformer package in a Jupyter notebook environment. Provides interactive and visually appealing interfaces for input and output.
 <br></br>
 
 
