@@ -211,7 +211,7 @@ def format_model_output(output: DNASequencePrediction) -> str:
         """Helper function to format individual sections."""
         separator = "-" * 29
         title_line = f"| {title.center(25)} |"
-        return f"{separator}\n{title_line}\n{separator}\n{content}\n\n\n"
+        return f"{separator}\n{title_line}\n{separator}\n{content}\n\n"
 
     sections: List[Tuple[str, str]] = [
         ("Organism", output.organism),
