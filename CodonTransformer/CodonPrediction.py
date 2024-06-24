@@ -6,7 +6,6 @@ helper functions related to processing data for passing to the model.
 """
 
 from typing import Any, List, Dict, Tuple, Optional, Union
-from dataclasses import dataclass
 import onnxruntime as rt
 
 import torch
@@ -15,7 +14,13 @@ from transformers import BatchEncoding, PreTrainedTokenizerFast, BigBirdConfig
 import numpy as np
 
 from CodonTransformer.CodonData import get_merged_seq
-from CodonTransformer.CodonUtils import ORGANISM2ID, TOKEN2INDEX, INDEX2TOKEN, NUM_ORGANISMS, DNASequencePrediction
+from CodonTransformer.CodonUtils import (
+    ORGANISM2ID,
+    TOKEN2INDEX,
+    INDEX2TOKEN,
+    NUM_ORGANISMS,
+    DNASequencePrediction,
+)
 
 
 def load_model(
@@ -258,23 +263,29 @@ def predict_dna_sequence(
             "codons": merged_seq,
             "organism": organism_id,
         }
-        tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(device)
+        tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(
+            device
+        )
 
         # Get the model predictions
         output_dict = model_object(**tokenized_input, return_dict=True)
         output = output_dict.logits.detach().cpu().numpy()
 
         # Decode the predicted DNA sequence from the model output
-        predicted_dna = list(map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist()))
+        predicted_dna = list(
+            map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist())
+        )
 
         # Skip special tokens [CLS] and [SEP] to create the predicted_dna
-        predicted_dna = "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
+        predicted_dna = (
+            "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
+        )
 
     return DNASequencePrediction(
         organism=organism_name,
         protein=protein,
         processed_input=merged_seq,
-        predicted_dna=predicted_dna
+        predicted_dna=predicted_dna,
     )
 
 
@@ -302,16 +313,22 @@ def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
     """
     if isinstance(organism, str):
         if organism not in ORGANISM2ID:
-            raise ValueError(f"Invalid organism name: {organism}. Please use a valid organism name or ID.")
+            raise ValueError(
+                f"Invalid organism name: {organism}. Please use a valid organism name or ID."
+            )
         organism_id = ORGANISM2ID[organism]
         organism_name = organism
 
     elif isinstance(organism, int):
         if organism not in ORGANISM2ID.values():
-            raise ValueError(f"Invalid organism ID: {organism}. Please use a valid organism name or ID.")
+            raise ValueError(
+                f"Invalid organism ID: {organism}. Please use a valid organism name or ID."
+            )
 
         organism_id = organism
-        organism_name = next((name for name, id in ORGANISM2ID.items() if id == organism), None)
+        organism_name = next(
+            (name for name, id in ORGANISM2ID.items() if id == organism), None
+        )
         if organism_name is None:
             raise ValueError(f"No organism name found for ID: {organism}")
 

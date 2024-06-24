@@ -4,7 +4,7 @@ File: CodonJupyter.py
 Includes Jupyter-specific functions for displaying interactive widgets.
 """
 
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, List, Tuple
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
@@ -206,9 +206,10 @@ def format_model_output(output: DNASequencePrediction) -> str:
     Returns:
         str: A formatted string containing the organized output.
     """
+
     def format_section(title: str, content: str) -> str:
         """Helper function to format individual sections."""
-        separator = '-' * 29
+        separator = "-" * 29
         title_line = f"| {title.center(25)} |"
         return f"{separator}\n{title_line}\n{separator}\n{content}\n\n"
 
@@ -216,7 +217,7 @@ def format_model_output(output: DNASequencePrediction) -> str:
         ("Organism", output.organism),
         ("Input Protein", output.protein),
         ("Processed Input", output.processed_input),
-        ("Predicted DNA", output.predicted_dna)
+        ("Predicted DNA", output.predicted_dna),
     ]
 
     formatted_output = ""

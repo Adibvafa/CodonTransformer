@@ -73,13 +73,13 @@ def get_codon_table(organism: str) -> int:
 def preprocess_protein_sequence(protein: str) -> str:
     """
     Preprocess a protein sequence by cleaning, standardizing, and handling ambiguous amino acids.
-    
+
     Args:
         protein (str): The input protein sequence.
-    
+
     Returns:
         str: The preprocessed protein sequence.
-    
+
     Raises:
         ValueError: If the protein sequence is invalid.
     """
@@ -87,22 +87,28 @@ def preprocess_protein_sequence(protein: str) -> str:
         raise ValueError("Protein sequence is empty.")
 
     # Clean and standardize the protein sequence
-    protein = protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
+    protein = (
+        protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
+    )
 
     # Replace ambiguous amino acids with standard 20 amino acids
-    protein = ''.join(AMBIGUOUS_AMINOACID_MAP.get(aminoacid, aminoacid) for aminoacid in protein)
+    protein = "".join(
+        AMBIGUOUS_AMINOACID_MAP.get(aminoacid, aminoacid) for aminoacid in protein
+    )
 
     # Check for sequence validity
-    if any(aminoacid not in AMINO_ACIDS + ["*", STOP_SYMBOL] for aminoacid in protein[:-1]):
+    if any(
+        aminoacid not in AMINO_ACIDS + ["*", STOP_SYMBOL] for aminoacid in protein[:-1]
+    ):
         raise ValueError("Invalid characters in protein sequence.")
-    
+
     if protein[-1] not in AMINO_ACIDS + ["*", STOP_SYMBOL]:
         raise ValueError("Protein sequence must end with *, or _, or an amino acid.")
-    
+
     # Replace '*' at the end of protein with STOP_SYMBOL if present
     if protein[-1] == "*":
         protein = protein[:-1] + STOP_SYMBOL
-    
+
     # Add stop symbol to end of protein
     if protein[-1] != STOP_SYMBOL:
         protein += STOP_SYMBOL
@@ -125,7 +131,7 @@ def replace_ambiguous_codons(dna: str) -> str:
 
     # Check codons in DNA sequence
     for i in range(0, len(dna), 3):
-        codon = dna[i:i+3]
+        codon = dna[i : i + 3]
 
         if len(codon) == 3 and all(nucleotide in "ATCG" for nucleotide in codon):
             result.append(codon)
@@ -147,17 +153,17 @@ def preprocess_dna_sequence(dna: str) -> str:
     """
     if not dna:
         return ""
-    
+
     # Clean and standardize the DNA sequence
     dna = dna.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
-    
+
     # Replace codons with ambigous nucleotides with "UNK"
     dna = replace_ambiguous_codons(dna)
 
     # Add unkown stop codon to end of DNA sequence if not present
     if dna[-3:] not in STOP_CODONS + ["UNK"]:
         dna += "UNK"
-    
+
     return dna
 
 
@@ -189,8 +195,10 @@ def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
 
     # Check if the length of protein and dna sequences are equal
     if len(dna) > 0 and len(protein) != len(dna) / 3:
-        raise ValueError("Length of protein (including stop symbol such as \"_\") and \
-                         the number of codons in DNA sequence (including stop codon) must be equal.")
+        raise ValueError(
+            'Length of protein (including stop symbol such as "_") and \
+                         the number of codons in DNA sequence (including stop codon) must be equal.'
+        )
 
     # Merge protein and DNA sequences into tokens
     for i, aminoacid in enumerate(protein):
