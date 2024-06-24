@@ -10,9 +10,16 @@
     <a href="https://zenodo.org/badge/latestdoi/155220641"><img src="https://zenodo.org/badge/155220641.svg?color=E8C800" alt="DOI"></a>
 </p>
 
-<h3 align="center">
-    <p>The Ultimate Tool or Codon Optimization.</p>
-</h3>
+<span align="center" style="font-weight: bold; font-size: large;">
+    The Ultimate Tool for Codon Optimization.
+</span>
+
+
+<html>
+<body>
+<span style="font-size123:112em;">Text goes here</span>
+</body>
+</html>
 
 
 ## Table of Contents
