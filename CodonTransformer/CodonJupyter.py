@@ -4,28 +4,24 @@ File: CodonJupyter.py
 Includes Jupyter-specific functions for displaying interactive widgets.
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Tuple
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-from CodonTransformer.CodonUtils import FINE_TUNE_ORGANISMS
+from CodonTransformer.CodonUtils import DNASequencePrediction, FINE_TUNE_ORGANISMS
 
 
 class UserContainer:
     """
     A container class to store user inputs for organism and protein sequence.
     Attributes:
-        organism (Optional[str]): The selected organism name.
-        organism_id (Optional[int]): The ID corresponding to the selected organism.
-        protein_sequence (str): The input protein sequence.
-        predicted_dna (str): The predicted DNA sequence.
+        organism (int): The selected organism id.
+        protein (str): The input protein sequence.
     """
 
     def __init__(self) -> None:
-        self.organism: Optional[str] = None
-        self.organism_id: Optional[int] = None
-        self.protein_sequence: str = ""
-        self.predicted_dna: str = ""
+        self.organism: int = -1
+        self.protein: str = ""
 
 
 def display_organism_dropdown(
@@ -84,7 +80,7 @@ def display_organism_dropdown(
     output = widgets.Output()
 
     # Function to display the corresponding ID and update the container
-    def show_organism_id(change: Dict[str, str]) -> None:
+    def show_organism(change: Dict[str, str]) -> None:
         """
         Display the corresponding ID and update the container with the selected organism.
 
@@ -94,19 +90,19 @@ def display_organism_dropdown(
         organism = change["new"]
         if organism != "":
             organism = organism.strip()
-            organism_id = organism2id.get(organism, None)
+            organism = organism2id.get(organism, None)
             with output:
                 clear_output()
-            if organism_id is not None:
+            if organism is not None:
                 container.organism = organism
-                container.organism_id = organism_id
+                container.organism = organism
         else:
             with output:
                 clear_output()
-            container.organism_id = None
+            container.organism = None
 
     # Attach the function to the dropdown
-    organism_dropdown.observe(show_organism_id, names="value")
+    organism_dropdown.observe(show_organism, names="value")
 
     # Display the dropdown widget and the output
     header = widgets.HTML(
@@ -122,7 +118,7 @@ def display_organism_dropdown(
     display(widgets.HTML(dropdown_style))
 
 
-def display_protein_sequence_input(container: UserContainer) -> None:
+def display_protein_input(container: UserContainer) -> None:
     """
     Display a widget for entering a protein sequence and save it to the container.
 
@@ -161,14 +157,14 @@ def display_protein_sequence_input(container: UserContainer) -> None:
     """
 
     # Function to save the input protein sequence to the container
-    def save_protein_sequence(change: Dict[str, str]) -> None:
+    def save_protein(change: Dict[str, str]) -> None:
         """
         Save the input protein sequence to the container.
 
         Args:
             change (Dict[str, str]): A dictionary containing information about the change in textarea value.
         """
-        container.protein_sequence = (
+        container.protein = (
             change["new"]
             .upper()
             .strip()
@@ -178,7 +174,7 @@ def display_protein_sequence_input(container: UserContainer) -> None:
         )
 
     # Attach the function to the input widget
-    protein_input.observe(save_protein_sequence, names="value")
+    protein_input.observe(save_protein, names="value")
 
     # Display the input widget
     header = widgets.HTML(
@@ -190,3 +186,42 @@ def display_protein_sequence_input(container: UserContainer) -> None:
 
     display(container_widget)
     display(widgets.HTML(input_style))
+
+
+def format_model_output(output: DNASequencePrediction) -> str:
+    """
+    Format the DNA sequence prediction output in a visually appealing and easy-to-read manner.
+
+    This function takes the prediction output and formats it into
+    a structured string with clear section headers and separators.
+
+    Args:
+        output (DNASequencePrediction): An object containing the prediction output.
+            Expected attributes:
+            - organism (str): The organism name.
+            - protein (str): The input protein sequence.
+            - processed_input (str): The processed input sequence.
+            - predicted_dna (str): The predicted DNA sequence.
+
+    Returns:
+        str: A formatted string containing the organized output.
+    """
+    def format_section(title: str, content: str) -> str:
+        """Helper function to format individual sections."""
+        separator = '-' * 29
+        title_line = f"| {title.center(25)} |"
+        return f"{separator}\n{title_line}\n{separator}\n{content}\n\n"
+
+    sections: List[Tuple[str, str]] = [
+        ("Organism", output.organism),
+        ("Input Protein", output.protein),
+        ("Processed Input", output.processed_input),
+        ("Predicted DNA", output.predicted_dna)
+    ]
+
+    formatted_output = ""
+    for title, content in sections:
+        formatted_output += format_section(title, content)
+
+    # Remove the last newline to avoid extra space at the end
+    return formatted_output.rstrip()

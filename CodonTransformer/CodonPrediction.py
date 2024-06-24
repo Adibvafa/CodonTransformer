@@ -5,7 +5,8 @@ Includes functions to tokenize input, load models, infer predicted dna sequences
 helper functions related to processing data for passing to the model.
 """
 
-from typing import Any, List, Dict, Tuple, Optional
+from typing import Any, List, Dict, Tuple, Optional, Union
+from dataclasses import dataclass
 import onnxruntime as rt
 
 import torch
@@ -14,7 +15,7 @@ from transformers import BatchEncoding, PreTrainedTokenizerFast, BigBirdConfig
 import numpy as np
 
 from CodonTransformer.CodonData import get_merged_seq
-from CodonTransformer.CodonUtils import TOKEN2INDEX, INDEX2TOKEN, NUM_ORGANISMS
+from CodonTransformer.CodonUtils import ORGANISM2ID, TOKEN2INDEX, INDEX2TOKEN, NUM_ORGANISMS, DNASequencePrediction
 
 
 def load_model(
@@ -178,30 +179,57 @@ def tokenize(
 
 def predict_dna_sequence(
     protein: str,
-    organism_id: int,
+    organism: Union[int, str],
     device: torch.device,
     tokenizer_path: str = "",
     tokenizer_object: Optional[PreTrainedTokenizerFast] = None,
     model_path: str = "",
     model_object: Optional[torch.nn.Module] = None,
     attention_type: str = "original_full",
-) -> str:
+) -> DNASequencePrediction:
     """
-    Return the predicted DNA sequence for a given protein based on a Transformer model.
-    Uses INDEX2TOKEN dictionary which maps each index to the respective token of the tokenizer.
+    Predict the DNA sequence for a given protein using CodonTransformer model.
+
+    This function takes a protein sequence and an organism (as ID or name) as input
+    and returns the predicted DNA sequence by CodonTransformer. It can use either
+    provided tokenizer and model objects or load them from specified paths.
 
     Args:
-        protein (str): The protein sequence to predict the DNA sequence for.
-        organism_id (int): The organism id to predict the DNA sequence for.
-        device (torch.device): The device to run the model on.
-        tokenizer_path (str, optional): The path to the tokenizer file.
-        tokenizer_object (PreTrainedTokenizerFast, optional): The tokenizer object.
-        model_path (str, optional): The path to the model file.
-        model_object (torch.nn.Module, optional): The model object.
-        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
+        protein (str): The input protein sequence to predict the DNA sequence for.
+        organism (Union[int, str]): Either the ID of the organism or its name (e.g., "Escherichia coli general").
+            If a string is provided, it will be converted to the corresponding ID using ORGANISM2ID.
+        device (torch.device): The device (CPU or GPU) to run the model on.
+        tokenizer_path (str, optional): The file path to load the tokenizer from.
+            Used if tokenizer_object is not provided. Defaults to "".
+        tokenizer_object (Optional[PreTrainedTokenizerFast], optional): A pre-loaded tokenizer object.
+            If not provided, the tokenizer will be loaded from tokenizer_path. Defaults to None.
+        model_path (str, optional): The file path to load the model from.
+            Used if model_object is not provided. Defaults to "".
+        model_object (Optional[torch.nn.Module], optional): A pre-loaded model object.
+            If not provided, the model will be loaded from model_path. Defaults to None.
+        attention_type (str, optional): The type of attention mechanism to use in the model.
+            Can be either 'block_sparse' or 'original_full'. Defaults to "original_full".
 
     Returns:
-        str: The predicted DNA sequence.
+        DNASequencePrediction: An object containing the prediction results:
+            - organism (str): The name of the organism used for prediction.
+            - protein (str): The input protein sequence for which DNA sequence is predicted.
+            - processed_input (str): The processed input sequence (merged protein and DNA).
+            - predicted_dna (str): The predicted DNA sequence.
+
+    Raises:
+        ValueError: If the protein sequence is empty or if the organism is invalid.
+
+    Note:
+        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from CodonTransformer.CodonUtils.
+        ORGANISM2ID maps organism names to their corresponding IDs.
+        INDEX2TOKEN maps model output indices (token ids) to respective codons.
+
+    Example:
+        >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        >>> output = predict_dna_sequence("MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG",
+        ...                               organism="Escherichia coli general", device=device, model_path="path/to/model")
+        >>> print(output.predicted_dna)
     """
     if not tokenizer_object:
         tokenizer_object = load_tokenizer(tokenizer_path)
@@ -212,12 +240,8 @@ def predict_dna_sequence(
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
 
-    if (
-        not isinstance(organism_id, int)
-        or organism_id < 0
-        or organism_id >= NUM_ORGANISMS
-    ):
-        raise ValueError("Invalid organism ID. Please select a valid organism id.")
+    # Validate organism and convert to organism_id and organism_name
+    organism_id, organism_name = validate_and_convert_organism(organism)
 
     # Prepare model for evaluation
     model_object.bert.set_attention_type(attention_type)
@@ -234,23 +258,67 @@ def predict_dna_sequence(
             "codons": merged_seq,
             "organism": organism_id,
         }
-        tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(
-            device
-        )
+        tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(device)
 
         # Get the model predictions
         output_dict = model_object(**tokenized_input, return_dict=True)
         output = output_dict.logits.detach().cpu().numpy()
 
         # Decode the predicted DNA sequence from the model output
-        predicted_dna = list(
-            (map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist()))
-        )
-        predicted_dna = (
-            "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
-        )
+        predicted_dna = list(map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist()))
 
-        return predicted_dna
+        # Skip special tokens [CLS] and [SEP] to create the predicted_dna
+        predicted_dna = "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
+
+    return DNASequencePrediction(
+        organism=organism_name,
+        protein=protein,
+        processed_input=merged_seq,
+        predicted_dna=predicted_dna
+    )
+
+
+def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
+    """
+    Validate and convert the organism input to both ID and name.
+
+    This function takes either an organism ID or name as input and returns both the ID and name.
+    It performs validation to ensure the input corresponds to a valid organism in the ORGANISM2ID dictionary.
+
+    Args:
+        organism (Union[int, str]): Either the ID of the organism (int) or its name (str).
+
+    Returns:
+        Tuple[int, str]: A tuple containing the organism ID (int) and name (str).
+
+    Raises:
+        ValueError: If the input is neither a string nor an integer, if the organism name is not found
+                    in ORGANISM2ID, if the organism ID is not a value in ORGANISM2ID, or if no name
+                    is found for a given ID.
+
+    Note:
+        This function relies on the ORGANISM2ID dictionary imported from CodonTransformer.CodonUtils,
+        which maps organism names to their corresponding IDs.
+    """
+    if isinstance(organism, str):
+        if organism not in ORGANISM2ID:
+            raise ValueError(f"Invalid organism name: {organism}. Please use a valid organism name or ID.")
+        organism_id = ORGANISM2ID[organism]
+        organism_name = organism
+
+    elif isinstance(organism, int):
+        if organism not in ORGANISM2ID.values():
+            raise ValueError(f"Invalid organism ID: {organism}. Please use a valid organism name or ID.")
+
+        organism_id = organism
+        organism_name = next((name for name, id in ORGANISM2ID.items() if id == organism), None)
+        if organism_name is None:
+            raise ValueError(f"No organism name found for ID: {organism}")
+
+    else:
+        raise ValueError("Organism must be either a string (name) or an integer (ID).")
+
+    return organism_id, organism_name
 
 
 def get_high_frequency_choice_sequence(
