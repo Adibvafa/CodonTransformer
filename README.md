@@ -21,7 +21,7 @@ CodonTransformer is the ultimate tool for codon optimization, transforming prote
 
 ## Use Case
 **For an interactive demo, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
-
+<br></br>
 After installing CodonTransformer, you can use:
 ```python
 import torch
@@ -75,8 +75,7 @@ M_UNK A_UNK L_UNK W_UNK M_UNK R_UNK L_UNK L_UNK P_UNK L_UNK L_UNK A_UNK L_UNK L_
 -----------------------------
 ATGGCTTTATGGATGCGTCTGCTGCCGCTGCTGGCGCTGCTGGCGCTGTGGGGCCCGGACCCGGCGGCGGCGTTTGTGAATCAGCACCTGTGCGGCAGCCACCTGGTGGAAGCGCTGTATCTGGTGTGCGGTGAGCGCGGCTTCTTCTACACGCCCAAAACCCGCCGCGAAGCGGAAGATCTGCAGGTGGGCCAGGTGGAGCTGGGCGGCTAA
 ```
-
-<br></br>
+<br>
 
 
 ## Installation
