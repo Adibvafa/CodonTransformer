@@ -1,20 +1,18 @@
 <p align="center">
-  <img src="src/codontransformer.png" alt="CodonTransformer Logo" width="100px" height="100px" style="vertical-align: middle;"/>
-  <span style="font-size: 32px; font-weight: bold; vertical-align: middle;">CodonTransformer</span>
+  <img src="src/codontransformer.png" alt="CodonTransformer Logo" width="300px" height="300px" style="vertical-align: middle;"/>
 </p>
 
-
-
+<p align="center">
+    <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=E80070"></a>
+    <a href="https://adibvafa.github.io/CodonTransformer/"><img alt="Documentation" src="https://img.shields.io/website/http/adibvafa.github.io/CodonTransformer/index.svg?color=00B89E&down_color=red&down_message=offline&up_message=online"></a>
+    <a href="https://github.com/adibvafa/CodonTransformer/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/adibvafa/CodonTransformer.svg?color=00BEE8"></a>
+    <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer?color=E8C800"></a>
+    <a href="https://zenodo.org/badge/latestdoi/155220641"><img src="https://zenodo.org/badge/155220641.svg?color=E8C800" alt="DOI"></a>
+</p>
 
 <h3 align="center">
     <p>The Ultimate Tool or Codon Optimization.</p>
 </h3>
-
-<p align="center">
-    <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=magenta"></a>
-    <a href="https://adibvafa.github.io/CodonTransformer/"><img alt="Documentation" src="https://img.shields.io/badge/documentation-available-brightgreen"></a>
-    <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer"></a>
-</p>
 
 
 ## Table of Contents
