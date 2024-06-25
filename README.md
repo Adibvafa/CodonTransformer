@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/codontransformer2.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
+  <img src="src/codontransformer3.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
 </p>
 
 <p align="center">
@@ -111,11 +111,11 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 - **CodonData** <br>
 Provides essential tools for preprocessing NCBI or Kazusa databases and managing codon-related data operations. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
 
-- **CodonEvaluation** <br>
-Offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
-
 - **CodonPrediction** <br>
 Responsible for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
+
+- **CodonEvaluation** <br>
+Offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
 
 - **CodonUtils** <br>
 Contains constants and helper functions essential for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
