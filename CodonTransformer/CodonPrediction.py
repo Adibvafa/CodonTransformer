@@ -255,7 +255,6 @@ def predict_dna_sequence(
 
     # Inference loop
     with torch.no_grad():
-
         # Tokenize the input sequence
         merged_seq = get_merged_seq(protein=protein, dna="")
         input_dict = {
