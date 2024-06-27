@@ -37,7 +37,6 @@ After installing CodonTransformer, you can use:
 import torch
 from transformers import AutoTokenizer, BigBirdForMaskedLM
 from CodonTransformer.CodonPrediction import predict_dna_sequence
-from CodonTransformer.CodonUtils import ORGANISM2ID
 from CodonTransformer.CodonJupyter import format_model_output
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
