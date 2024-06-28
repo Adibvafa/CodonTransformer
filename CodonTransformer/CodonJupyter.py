@@ -4,12 +4,18 @@ File: CodonJupyter.py
 Includes Jupyter-specific functions for displaying interactive widgets.
 """
 
+import sys
 from typing import Dict, List, Tuple
+
 import ipywidgets as widgets
-from IPython.display import display, clear_output
+from IPython.display import display, HTML, clear_output
 
-from CodonTransformer.CodonUtils import DNASequencePrediction, FINE_TUNE_ORGANISMS
-
+from CodonTransformer.CodonUtils import (
+    DNASequencePrediction,
+    COMMON_ORGANISMS,
+    ORGANISM2ID,
+    ID2ORGANISM,
+)
 
 class UserContainer:
     """
@@ -24,98 +30,154 @@ class UserContainer:
         self.protein: str = ""
 
 
-def display_organism_dropdown(
-    organism2id: Dict[str, int], container: UserContainer
-) -> None:
+def create_styled_options(organisms: list, organism2id: Dict[str, int], is_fine_tuned: bool = False) -> list:
     """
-    Display a dropdown widget for selecting an organism from a list and
-    update the organism ID in the provided container.
+    Create styled options for the dropdown widget.
 
     Args:
-        organism2id (Dict[str, int]): A dictionary mapping organism names to their IDs.
-        container (UserContainer): A container to store the selected organism and its ID.
+        organisms (list): List of organism names.
+        organism2id (Dict[str, int]): Dictionary mapping organism names to their IDs.
+        is_fine_tuned (bool): Whether these are fine-tuned organisms.
+
+    Returns:
+        list: Styled options for the dropdown widget.
     """
-    organism_names = sorted(organism2id.keys())
+    styled_options = []
+    for organism in organisms:
+        organism_id = organism2id[organism]
+        if is_fine_tuned:
+            if organism_id < 10:
+                styled_options.append(f"\u200B{organism_id:>6}.  {organism}")
+            elif organism_id < 100:
+                styled_options.append(f"\u200B{organism_id:>5}.  {organism}")
+            else:
+                styled_options.append(f"\u200B{organism_id:>4}.  {organism}")
+        else:
+            if organism_id < 10:
+                styled_options.append(f"{organism_id:>6}.  {organism}")
+            elif organism_id < 100:
+                styled_options.append(f"{organism_id:>5}.  {organism}")
+            else:
+                styled_options.append(f"{organism_id:>4}.  {organism}")
+    return styled_options
 
-    # Modify the names of commonly used organisms for better display
-    organism_names_styled = [
-        ("          " + organism) if organism in FINE_TUNE_ORGANISMS else organism
-        for organism in organism_names
-    ]
 
-    # Create a dropdown widget with organism names
-    organism_dropdown = widgets.Dropdown(
-        options=[""] + organism_names_styled,
+def create_dropdown_options(organism2id: Dict[str, int]) -> list:
+    """
+    Create the full list of dropdown options, including section headers.
+
+    Args:
+        organism2id (Dict[str, int]): Dictionary mapping organism names to their IDs.
+
+    Returns:
+        list: Full list of dropdown options.
+    """
+    fine_tuned_organisms = sorted([org for org in organism2id.keys() if org in COMMON_ORGANISMS])
+    all_organisms = sorted(organism2id.keys())
+
+    fine_tuned_options = create_styled_options(fine_tuned_organisms, organism2id, is_fine_tuned=True)
+    all_organisms_options = create_styled_options(all_organisms, organism2id, is_fine_tuned=False)
+
+    return [''] + ['Selected Organisms'] + fine_tuned_options + [''] + ['All Organisms'] + all_organisms_options
+
+
+def create_organism_dropdown(container: UserContainer) -> widgets.Dropdown:
+    """
+    Create and configure the organism dropdown widget.
+
+    Args:
+        container (UserContainer): Container to store the selected organism.
+
+    Returns:
+        widgets.Dropdown: Configured dropdown widget.
+    """
+    dropdown = widgets.Dropdown(
+        options=create_dropdown_options(ORGANISM2ID),
         description="",
         layout=widgets.Layout(width="40%", margin="0 0 10px 0"),
         style={"description_width": "initial"},
     )
 
-    # Custom CSS for the dropdown widget
-    dropdown_style = """
-        <style>
-            .widget-dropdown > select {
-                font-size: 16px;
-                font-weight: normal;
-                background-color: #f0f0f0;
-                border-radius: 5px;
-                padding: 5px;
-            }
-            .widget-label {
-                font-size: 18px;
-                font-weight: bold;
-            }
-            .custom-container {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .bold-option {
-                font-weight: normal;
-            }
-        </style>
-    """
-
-    # Output widget to display the result
-    output = widgets.Output()
-
-    # Function to display the corresponding ID and update the container
     def show_organism(change: Dict[str, str]) -> None:
         """
-        Display the corresponding ID and update the container with the selected organism.
+        Update the container with the selected organism and print to terminal.
 
         Args:
-            change (Dict[str, str]): A dictionary containing information about the change in dropdown value.
+            change (Dict[str, str]): Information about the change in dropdown value.
         """
-        organism = change["new"]
-        if organism != "":
-            organism = organism.strip()
-            organism = organism2id.get(organism, None)
-            with output:
-                clear_output()
-            if organism is not None:
-                container.organism = organism
-                container.organism = organism
+        dropdown_choice = change["new"]
+        if dropdown_choice and dropdown_choice not in ['Selected Organisms', 'All Organisms']:
+            organism = ''.join(filter(str.isdigit, dropdown_choice))
+            organism_id = ID2ORGANISM[int(organism)]
+            container.organism = organism_id
         else:
-            with output:
-                clear_output()
             container.organism = None
 
-    # Attach the function to the dropdown
-    organism_dropdown.observe(show_organism, names="value")
+    dropdown.observe(show_organism, names="value")
+    return dropdown
 
-    # Display the dropdown widget and the output
+
+def get_dropdown_style() -> str:
+    """
+    Return the custom CSS style for the dropdown widget.
+
+    Returns:
+        str: CSS style string.
+    """
+    return """
+    <style>
+        .widget-dropdown > select {
+            font-size: 16px;
+            font-weight: normal;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .widget-label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .custom-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .widget-dropdown option[value^="\u200B"] {
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 510px;
+        }
+        .widget-dropdown option[value*="Selected Organisms"],
+        .widget-dropdown option[value*="All Organisms"] {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 20px;
+            color: #6900A1;
+            background-color: #00D8A1;
+        }
+    </style>
+    """
+
+
+def display_organism_dropdown(container: UserContainer) -> None:
+    """
+    Display the organism dropdown widget and apply custom styles.
+
+    Args:
+        container (UserContainer): Container to store the selected organism.
+    """
+    dropdown = create_organism_dropdown(container)
     header = widgets.HTML(
         '<b style="font-size:20px;">Select Organism:</b><div style="height:10px;"></div>'
     )
     container_widget = widgets.VBox(
-        [header, organism_dropdown, output],
-        layout=widgets.Layout(padding="12px 0 0 25px"),
+        [header, dropdown],
+        layout=widgets.Layout(padding="12px 0 12px 25px"),
     )
-
-    # Apply custom styles
     display(container_widget)
-    display(widgets.HTML(dropdown_style))
+    display(HTML(get_dropdown_style()))
 
 
 def display_protein_input(container: UserContainer) -> None:

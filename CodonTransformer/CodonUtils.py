@@ -267,7 +267,22 @@ FINE_TUNE_ORGANISMS: List[str] = [
     "Thermococcus barophilus MPT",
 ]
 
-# Dictionary mapping each organism to respective organism id
+# List of organisms most commonly used for coodn optimization
+COMMON_ORGANISMS: List[str] = [
+    "Arabidopsis thaliana",
+    "Bacillus subtilis",
+    "Caenorhabditis elegans",
+    "Chlamydomonas reinhardtii",
+    "Danio rerio",
+    "Drosophila melanogaster",
+    "Homo sapiens",
+    "Mus musculus",
+    "Nicotiana tabacum",
+    "Pseudomonas putida",
+    "Saccharomyces cerevisiae",
+    "Escherichia coli general",]
+
+# Dictionary mapping each organism name to respective organism id
 ORGANISM2ID: Dict[str, int] = {
     "Arabidopsis thaliana": 0,
     "Atlantibacter hermannii": 1,
@@ -434,6 +449,9 @@ ORGANISM2ID: Dict[str, int] = {
     "Yersinia ruckeri": 162,
     "Yokenella regensburgei": 163,
 }
+
+# Dictionary mapping each organism id to respective organism name
+ID2ORGANISM = {v: k for k, v in ORGANISM2ID.items()}
 
 # Type alias for amino acid to codon mapping
 AMINO2CODON_TYPE = Dict[str, Tuple[List[str], List[float]]]
