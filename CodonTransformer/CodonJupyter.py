@@ -4,11 +4,10 @@ File: CodonJupyter.py
 Includes Jupyter-specific functions for displaying interactive widgets.
 """
 
-import sys
 from typing import Dict, List, Tuple
 
 import ipywidgets as widgets
-from IPython.display import display, HTML, clear_output
+from IPython.display import display, HTML
 
 from CodonTransformer.CodonUtils import (
     DNASequencePrediction,
@@ -16,6 +15,7 @@ from CodonTransformer.CodonUtils import (
     ORGANISM2ID,
     ID2ORGANISM,
 )
+
 
 class UserContainer:
     """
@@ -30,7 +30,9 @@ class UserContainer:
         self.protein: str = ""
 
 
-def create_styled_options(organisms: list, organism2id: Dict[str, int], is_fine_tuned: bool = False) -> list:
+def create_styled_options(
+    organisms: list, organism2id: Dict[str, int], is_fine_tuned: bool = False
+) -> list:
     """
     Create styled options for the dropdown widget.
 
@@ -72,13 +74,26 @@ def create_dropdown_options(organism2id: Dict[str, int]) -> list:
     Returns:
         list: Full list of dropdown options.
     """
-    fine_tuned_organisms = sorted([org for org in organism2id.keys() if org in COMMON_ORGANISMS])
+    fine_tuned_organisms = sorted(
+        [org for org in organism2id.keys() if org in COMMON_ORGANISMS]
+    )
     all_organisms = sorted(organism2id.keys())
 
-    fine_tuned_options = create_styled_options(fine_tuned_organisms, organism2id, is_fine_tuned=True)
-    all_organisms_options = create_styled_options(all_organisms, organism2id, is_fine_tuned=False)
+    fine_tuned_options = create_styled_options(
+        fine_tuned_organisms, organism2id, is_fine_tuned=True
+    )
+    all_organisms_options = create_styled_options(
+        all_organisms, organism2id, is_fine_tuned=False
+    )
 
-    return [''] + ['Selected Organisms'] + fine_tuned_options + [''] + ['All Organisms'] + all_organisms_options
+    return (
+        [""]
+        + ["Selected Organisms"]
+        + fine_tuned_options
+        + [""]
+        + ["All Organisms"]
+        + all_organisms_options
+    )
 
 
 def create_organism_dropdown(container: UserContainer) -> widgets.Dropdown:
@@ -106,8 +121,11 @@ def create_organism_dropdown(container: UserContainer) -> widgets.Dropdown:
             change (Dict[str, str]): Information about the change in dropdown value.
         """
         dropdown_choice = change["new"]
-        if dropdown_choice and dropdown_choice not in ['Selected Organisms', 'All Organisms']:
-            organism = ''.join(filter(str.isdigit, dropdown_choice))
+        if dropdown_choice and dropdown_choice not in [
+            "Selected Organisms",
+            "All Organisms",
+        ]:
+            organism = "".join(filter(str.isdigit, dropdown_choice))
             organism_id = ID2ORGANISM[int(organism)]
             container.organism = organism_id
         else:

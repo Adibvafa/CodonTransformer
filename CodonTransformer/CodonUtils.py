@@ -280,7 +280,8 @@ COMMON_ORGANISMS: List[str] = [
     "Nicotiana tabacum",
     "Pseudomonas putida",
     "Saccharomyces cerevisiae",
-    "Escherichia coli general",]
+    "Escherichia coli general",
+]
 
 # Dictionary mapping each organism name to respective organism id
 ORGANISM2ID: Dict[str, int] = {
