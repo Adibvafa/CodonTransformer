@@ -10,9 +10,12 @@ def read_requirements():
 
 setup(
     name="CodonTransformer",
-    version="1.2.3",
+    version="1.2.2",
     packages=find_packages(),
     install_requires=read_requirements(),
+    dependency_links=[
+        "git+https://github.com/Benjamin-Lee/CodonAdaptationIndex.git#egg=CodonAdaptationIndex"
+    ],
     author="Adibvafa Fallahpour",
     author_email="Adibvafa.fallahpour@mail.utoronto.ca",
     description="The ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms.",
