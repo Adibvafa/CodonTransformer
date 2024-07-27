@@ -4,18 +4,14 @@ from setuptools import setup, find_packages
 
 
 def read_requirements():
-    with open("requirements.txt") as req:
-        return req.read().splitlines()
-
+    with open('requirements.txt') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
     name="CodonTransformer",
-    version="1.2.2",
+    version="1.2.3",
     packages=find_packages(),
     install_requires=read_requirements(),
-    dependency_links=[
-        "git+https://github.com/Benjamin-Lee/CodonAdaptationIndex.git#egg=CodonAdaptationIndex"
-    ],
     author="Adibvafa Fallahpour",
     author_email="Adibvafa.fallahpour@mail.utoronto.ca",
     description="The ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms.",
