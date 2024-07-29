@@ -32,11 +32,11 @@ from typing import List, Dict, Tuple, Union, Optional
 from tqdm import tqdm
 
 
-def prepare_finetune_data(
+def prepare_training_data(
     dataset: Union[str, pd.DataFrame], output_file: str, shuffle: bool = True
 ) -> None:
     """
-    Prepare a JSON dataset for finetuning the CodonTransformer model.
+    Prepare a JSON dataset for training the CodonTransformer model.
 
     Input dataset should have columns below:
         - dna: str (DNA sequence)

@@ -142,17 +142,17 @@ This subpackage is responsible for:
 
 ### Available Functions
 
-- `prepare_finetune_data(dataset: Union[str, pd.DataFrame], output_file: str, shuffle: bool = True) -> None`
+- `prepare_training_data(dataset: Union[str, pd.DataFrame], output_file: str, shuffle: bool = True) -> None`
 
-  Prepare a JSON dataset for finetuning the CodonTransformer model. It processes the input dataset, creates the 'codons' column, handles organism IDs, and saves the result to a JSON file.
+  Prepare a JSON dataset for training the CodonTransformer model. Process the input dataset, create the 'codons' column, handle organism IDs, and save the result to a JSON file.
 
 - `dataframe_to_json(df: pd.DataFrame, output_file: str, shuffle: bool = True) -> None`
 
-  Convert a pandas DataFrame to a JSON file format suitable for training CodonTransformer. It writes each row of the DataFrame as a JSON object to the output file, with an option to shuffle the data.
+  Convert a pandas DataFrame to a JSON file format suitable for training CodonTransformer. Write each row of the DataFrame as a JSON object to the output file, with an option to shuffle the data.
 
 - `process_organism(organism: Union[str, int], organism_to_id: Dict[str, int]) -> int`
 
-  Process and validate the organism input, converting it to a valid organism ID. It handles both string (organism name) and integer (organism ID) inputs.
+  Process and validate the organism input, converting it to a valid organism ID. Handle both string (organism name) and integer (organism ID) inputs.
 
 - `get_codon_table(organism: str) -> int`
 
