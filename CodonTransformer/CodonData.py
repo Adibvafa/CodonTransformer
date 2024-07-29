@@ -1,11 +1,14 @@
 """
 File: CodonData.py
 ---------------------
-Includes helper functions for preprocessing NCBI or Kazusa databases.
+Includes helper functions for preprocessing NCBI or Kazusa databases and
+preparing the data for training and inference of the CodonTransformer model.
 """
 
 import os
+import json
 import pandas as pd
+from sklearn.utils import shuffle as sk_shuffle
 
 from CodonTransformer.CodonUtils import (
     AMINO_ACIDS,
@@ -14,6 +17,7 @@ from CodonTransformer.CodonUtils import (
     STOP_SYMBOL,
     AMINO2CODON_TYPE,
     AMBIGUOUS_AMINOACID_MAP,
+    ORGANISM2ID,
     find_pattern_in_fasta,
     sort_amino2codon_skeleton,
     get_taxonomy_id,
@@ -28,46 +32,120 @@ from typing import List, Dict, Tuple, Union, Optional
 from tqdm import tqdm
 
 
-def get_codon_table(organism: str) -> int:
+def prepare_finetune_data(
+    dataset: Union[str, pd.DataFrame], output_file: str, shuffle: bool = True
+) -> None:
     """
-    Return the appropriate NCBI codon table for a given organism.
+    Prepare a JSON dataset for finetuning the CodonTransformer model.
+
+    Input dataset should have columns below:
+        - dna: str (DNA sequence)
+        - protein: str (Protein sequence)
+        - organism: Union[int, str] (ID or Name of the organism)
+
+    The output JSON dataset will have the following format:
+        {"idx": 0, "codons": "M_ATG R_AGG L_TTG L_CTA R_CGA __TAG", "organism": 51}
+        {"idx": 1, "codons": "M_ATG K_AAG C_TGC F_TTT F_TTC __TAA", "organism": 59}
 
     Args:
-        organism (str): Name of the organism.
+        dataset (Union[str, pd.DataFrame]): Input dataset in CSV or DataFrame format.
+        output_file (str): Path to save the output JSON dataset.
+        shuffle (bool, optional): Whether to shuffle the dataset before saving. Defaults to True.
 
     Returns:
-        int: Codon table number.
+        None
     """
-    # Common codon table (Table 1) for many model organisms
-    if organism in [
-        "Arabidopsis thaliana",
-        "Caenorhabditis elegans",
-        "Chlamydomonas reinhardtii",
-        "Saccharomyces cerevisiae" "Danio rerio",
-        "Drosophila melanogaster",
-        "Homo sapiens",
-        "Mus musculus",
-        "Nicotiana tabacum",
-        "Solanum tuberosum",
-        "Solanum lycopersicum",
-        "Oryza sativa",
-        "Glycine max",
-        "Zea mays",
-    ]:
-        codon_table = 1
+    if isinstance(dataset, str):
+        dataset = pd.read_csv(dataset)
 
-    # Chloroplast codon table (Table 11)
-    elif organism in [
-        "Chlamydomonas reinhardtii chloroplast",
-        "Nicotiana tabacum chloroplast",
-    ]:
-        codon_table = 11
+    required_columns = {"dna", "protein", "organism"}
+    if not required_columns.issubset(dataset.columns):
+        raise ValueError(f"Input dataset must have columns: {required_columns}")
 
-    # Default to Table 11 for other bacteria and archaea
-    else:
-        codon_table = 11
+    # Prepare the dataset for finetuning
+    dataset["codons"] = dataset.apply(
+        lambda row: get_merged_seq(row["protein"], row["dna"], separator="_"), axis=1
+    )
 
-    return codon_table
+    # Replace organism str with organism id using ORGANISM2ID
+    dataset["organism"] = dataset["organism"].apply(
+        lambda org: process_organism(org, ORGANISM2ID)
+    )
+
+    # Save the dataset to a JSON file
+    dataframe_to_json(dataset[["codons", "organism"]], output_file, shuffle=shuffle)
+
+
+def dataframe_to_json(df: pd.DataFrame, output_file: str, shuffle: bool = True) -> None:
+    """
+    Convert a pandas DataFrame to a JSON file format suitable for training CodonTransformer.
+
+    This function takes a preprocessed DataFrame and writes it to a JSON file
+    where each line is a JSON object representing a single record.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame with 'codons' and 'organism' columns.
+        output_file (str): Path to the output JSON file.
+        shuffle (bool, optional): Whether to shuffle the dataset before saving. Defaults to True.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the required columns are not present in the DataFrame.
+    """
+    required_columns = {"codons", "organism"}
+    if not required_columns.issubset(df.columns):
+        raise ValueError(f"DataFrame must contain columns: {required_columns}")
+
+    print(f"\nStarted writing to {output_file}...")
+
+    # Shuffle the DataFrame if requested
+    if shuffle:
+        df = sk_shuffle(df)
+
+    # Write the DataFrame to a JSON file
+    with open(output_file, "w") as f:
+        for idx, row in tqdm(
+            df.iterrows(), total=len(df), desc="Writing JSON...", unit=" records"
+        ):
+            doc = {"idx": idx, "codons": row["codons"], "organism": row["organism"]}
+            f.write(json.dumps(doc) + "\n")
+
+    print(f"\nTotal Entries Saved: {len(df)}, JSON data saved to {output_file}")
+
+
+def process_organism(organism: Union[str, int], organism_to_id: Dict[str, int]) -> int:
+    """
+    Process and validate the organism input, converting it to a valid organism ID.
+
+    This function handles both string (organism name) and integer (organism ID) inputs.
+    It validates the input against a provided mapping of organism names to IDs.
+
+    Args:
+        organism (Union[str, int]): The input organism, either as a name (str) or ID (int).
+        organism_to_id (Dict[str, int]): A dictionary mapping organism names to their corresponding IDs.
+
+    Returns:
+        int: The validated organism ID.
+
+    Raises:
+        ValueError: If the input is an invalid organism name or ID.
+        TypeError: If the input is neither a string nor an integer.
+    """
+    if isinstance(organism, str):
+        if organism not in organism_to_id:
+            raise ValueError(f"Invalid organism name: {organism}")
+        return organism_to_id[organism]
+
+    elif isinstance(organism, int):
+        if organism not in organism_to_id.values():
+            raise ValueError(f"Invalid organism ID: {organism}")
+        return organism
+
+    raise TypeError(
+        f"Organism must be a string or integer, not {type(organism).__name__}"
+    )
 
 
 def preprocess_protein_sequence(protein: str) -> str:
@@ -505,3 +583,45 @@ def get_organism_to_codon_frequencies(
         organism2frequencies[organism] = codon_frequencies
 
     return organism2frequencies
+
+
+def get_codon_table(organism: str) -> int:
+    """
+    Return the appropriate NCBI codon table for a given organism.
+
+    Args:
+        organism (str): Name of the organism.
+
+    Returns:
+        int: Codon table number.
+    """
+    # Common codon table (Table 1) for many model organisms
+    if organism in [
+        "Arabidopsis thaliana",
+        "Caenorhabditis elegans",
+        "Chlamydomonas reinhardtii",
+        "Saccharomyces cerevisiae" "Danio rerio",
+        "Drosophila melanogaster",
+        "Homo sapiens",
+        "Mus musculus",
+        "Nicotiana tabacum",
+        "Solanum tuberosum",
+        "Solanum lycopersicum",
+        "Oryza sativa",
+        "Glycine max",
+        "Zea mays",
+    ]:
+        codon_table = 1
+
+    # Chloroplast codon table (Table 11)
+    elif organism in [
+        "Chlamydomonas reinhardtii chloroplast",
+        "Nicotiana tabacum chloroplast",
+    ]:
+        codon_table = 11
+
+    # Default to Table 11 for other bacteria and archaea
+    else:
+        codon_table = 11
+
+    return codon_table
