@@ -3,40 +3,26 @@ File: finetune.py
 -------------------
 Finetune the CodonTransformer model.
 
-Data should be a json file with each line containing a dictionary with the following keys:
-    - idx: an integer representing the index of the sequence
-    - codons: a string representing the tokenized sequence
-    - organism: an integer representing the organism index for that sequence  
+The pretrained model is loaded directly from Hugging Face.
+The dataset is a JSON file. You can use prepare_finetune_data from CodonData to prepare the dataset.
+The repository Readme has a guide on how to prepare the dataset and use this script.
 """
 
+import os
 import torch
+import argparse
+
 import pytorch_lightning as pl
-
 from torch.utils.data import DataLoader
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 
-from transformers import PreTrainedTokenizerFast, BigBirdConfig, BigBirdForMaskedLM
+from transformers import AutoTokenizer, BigBirdForMaskedLM
 
 from CodonTransformer.CodonUtils import (
     TOKEN2MASK,
-    NUM_ORGANISMS,
     MAX_LEN,
     IterableJSONData,
 )
-
-DATASET_LEN = 62314
-NGPUS = 4
-BATCH_SIZE = 6
-MAX_EPOCHS = 15
-NUM_WORKERS = 5
-ACC = 1
-
-TRAIN_BATCHES = DATASET_LEN / BATCH_SIZE / NGPUS * MAX_EPOCHS
-GRAD_STEPS = TRAIN_BATCHES * ACC
-
-WARMUP = int(0.1 * GRAD_STEPS)
-DECAY = int(0.9 * GRAD_STEPS)
-
-DEBUG = False
 
 
 class MaskedTokenizerCollator:
@@ -87,114 +73,175 @@ class MaskedTokenizerCollator:
 
 
 class plTrainHarness(pl.LightningModule):
-    def __init__(self, model, warmup, decay):
+    def __init__(self, model, learning_rate, warmup_fraction):
         super().__init__()
         self.model = model
-        self.warmup = warmup
-        self.decay = decay
+        self.learning_rate = learning_rate
+        self.warmup_fraction = warmup_fraction
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
-            self.trainer.model.parameters(),
-            lr=5e-5,
+            self.model.parameters(),
+            lr=self.learning_rate,
         )
-        warmup = torch.optim.lr_scheduler.LinearLR(
-            optimizer, start_factor=0.01, end_factor=1.0, total_iters=self.warmup
-        )
-        linear_decay = torch.optim.lr_scheduler.LinearLR(
-            optimizer, start_factor=1.0, end_factor=0.01, total_iters=self.decay
-        )
-        scheduler = torch.optim.lr_scheduler.SequentialLR(
-            optimizer=optimizer,
-            schedulers=[warmup, linear_decay],
-            milestones=[self.warmup],
-        )
-        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
+        lr_scheduler = {
+            "scheduler": torch.optim.lr_scheduler.OneCycleLR(
+                optimizer,
+                max_lr=self.learning_rate,
+                total_steps=self.trainer.estimated_stepping_batches,
+                pct_start=self.warmup_fraction,
+            ),
+            "interval": "step",
+            "frequency": 1,
+        }
+        return [optimizer], [lr_scheduler]
 
-    def training_step(self, batch, batch_idx):
-        # May be set to "full" automatically. Try "block_sparse" to prevent memory errors.
-        model.bert.set_attention_type("block_sparse")
+    def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
+        self.model.bert.set_attention_type("block_sparse")
         outputs = self.model(**batch)
-        (current_lr,) = self.lr_schedulers().get_last_lr()
         self.log_dict(
-            dictionary={"loss": outputs.loss, "lr": current_lr},
+            dictionary={
+                "loss": outputs.loss,
+                "lr": self.trainer.optimizers[0].param_groups[0]["lr"],
+            },
             on_step=True,
             prog_bar=True,
         )
-
         return outputs.loss
 
 
 class DumpStateDict(pl.callbacks.ModelCheckpoint):
+    def __init__(self, checkpoint_dir, checkpoint_filename, every_n_train_steps):
+        super().__init__(
+            dirpath=checkpoint_dir, every_n_train_steps=every_n_train_steps
+        )
+        self.checkpoint_filename = checkpoint_filename
+
     def on_save_checkpoint(self, trainer, pl_module, checkpoint):
-        model = trainer.model.module._forward_module.model
-        torch.save(model.state_dict(), "checkpoints/finetune/finetune.ckpt")
+        model = trainer.model.model
+        torch.save(
+            model.state_dict(), os.path.join(self.dirpath, self.checkpoint_filename)
+        )
 
 
-if __name__ == "__main__":
-    pl.seed_everything(123)
+def main(args):
+    """Finetune the CodonTransformer model."""
+    pl.seed_everything(args.seed)
     torch.set_float32_matmul_precision("medium")
 
-    tokenizer_model_path = "CodonTransformerTokenizer.json"
-    train_data_path = "finetune_dataset.json"
-    pretrained_model_checkpoint = "checkpoints/CodonTransformerPretrained.ckpt"
+    # Load model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
+    model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer-pretrain")
 
-    tokenizer = PreTrainedTokenizerFast(
-        tokenizer_file=tokenizer_model_path,
-        bos_token="[CLS]",
-        eos_token="[SEP]",
-        unk_token="[UNK]",
-        sep_token="[SEP]",
-        pad_token="[PAD]",
-        cls_token="[CLS]",
-        mask_token="[MASK]",
-    )
-
-    # BigBird model.
-    config = BigBirdConfig(
-        vocab_size=len(tokenizer),
-        type_vocab_size=NUM_ORGANISMS,
-        sep_token_id=2,
-    )
-
-    # Load the pretrained model from a checkpoint
-    checkpoint = torch.load(pretrained_model_checkpoint)
-    state_dict = checkpoint["state_dict"]
-
-    # Remove the "model." prefix from the keys
-    state_dict = {key.replace("model.", ""): value for key, value in state_dict.items()}
-
-    model = BigBirdForMaskedLM(config=config)
-    model.load_state_dict(state_dict)
-
-    harnessed_model = plTrainHarness(model, warmup=WARMUP, decay=DECAY)
-
-    train_data = IterableJSONData(train_data_path, dist_env="slurm")
-
+    # Load dataset
+    train_data = IterableJSONData(args.dataset_dir, dist_env="slurm")
     data_loader = DataLoader(
         dataset=train_data,
         collate_fn=MaskedTokenizerCollator(tokenizer),
-        batch_size=BATCH_SIZE,
-        num_workers=0 if DEBUG else NUM_WORKERS,
-        persistent_workers=False if DEBUG else True,
+        batch_size=args.batch_size,
+        num_workers=0 if args.debug else args.num_workers,
+        persistent_workers=False if args.debug else True,
     )
 
+    harnessed_model = plTrainHarness(model, args.learning_rate, args.warmup_fraction)
+
+    # Setup trainer and callbacks
     save_checkpoint = DumpStateDict(
-        dirpath="checkpoints/finetune",
-        every_n_train_steps=512,
+        checkpoint_dir=args.checkpoint_dir,
+        checkpoint_filename=args.checkpoint_filename,
+        every_n_train_steps=args.save_every_n_steps,
     )
-
     trainer = pl.Trainer(
-        default_root_dir="checkpoints/finetune",
+        default_root_dir=args.checkpoint_dir,
         strategy="ddp_find_unused_parameters_true",
         accelerator="gpu",
-        devices=1 if DEBUG else NGPUS,
+        devices=1 if args.debug else args.num_gpus,
         precision="16-mixed",
-        max_epochs=MAX_EPOCHS,
+        max_epochs=args.max_epochs,
         deterministic=False,
         enable_checkpointing=True,
         callbacks=[save_checkpoint],
-        accumulate_grad_batches=ACC,
+        accumulate_grad_batches=args.accumulate_grad_batches,
     )
 
+    # Finetune the model
     trainer.fit(harnessed_model, data_loader)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Finetune the CodonTransformer model.")
+    parser.add_argument(
+        "--dataset_dir",
+        type=str,
+        required=True,
+        help="Directory containing the dataset",
+    )
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        required=True,
+        help="Directory where checkpoints will be saved",
+    )
+    parser.add_argument(
+        "--checkpoint_filename",
+        type=str,
+        default="finetune.ckpt",
+        help="Filename for the saved checkpoint",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=6,
+        help="Batch size for training"
+    )
+    parser.add_argument(
+        "--max_epochs",
+        type=int,
+        default=15,
+        help="Maximum number of epochs to train"
+    )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=5,
+        help="Number of workers for data loading"
+    )
+    parser.add_argument(
+        "--accumulate_grad_batches",
+        type=int,
+        default=1,
+        help="Number of batches to accumulate gradients",
+    )
+    parser.add_argument(
+        "--num_gpus",
+        type=int,
+        default=4,
+        help="Number of GPUs to use for training"
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        default=5e-5,
+        help="Learning rate for the optimizer",
+    )
+    parser.add_argument(
+        "--warmup_fraction",
+        type=float,
+        default=0.1,
+        help="Fraction of total steps to use for warmup",
+    )
+    parser.add_argument(
+        "--save_every_n_steps",
+        type=int,
+        default=512,
+        help="Save checkpoint every N steps",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=123,
+        help="Random seed for reproducibility"
+    )
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    args = parser.parse_args()
+    main(args)
