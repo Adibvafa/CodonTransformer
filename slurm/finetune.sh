@@ -12,7 +12,7 @@
 # Load required modules
 module --ignore_cache load cuda/11.4.4
 module --ignore_cache load anaconda3
-source activate light
+source activate your_environment
 
 # Change to the working directory
 cd your_working_directory

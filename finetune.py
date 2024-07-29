@@ -4,7 +4,7 @@ File: finetune.py
 Finetune the CodonTransformer model.
 
 The pretrained model is loaded directly from Hugging Face.
-The dataset is a JSON file. You can use prepare_finetune_data from CodonData to prepare the dataset.
+The dataset is a JSON file. You can use prepare_training_data from CodonData to prepare the dataset.
 The repository Readme has a guide on how to prepare the dataset and use this script.
 """
 
@@ -14,7 +14,6 @@ import argparse
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from pytorch_lightning.utilities.types import STEP_OUTPUT
 
 from transformers import AutoTokenizer, BigBirdForMaskedLM
 
@@ -96,7 +95,7 @@ class plTrainHarness(pl.LightningModule):
         }
         return [optimizer], [lr_scheduler]
 
-    def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
+    def training_step(self, batch, batch_idx):
         self.model.bert.set_attention_type("block_sparse")
         outputs = self.model(**batch)
         self.log_dict(
@@ -129,11 +128,12 @@ def main(args):
     pl.seed_everything(args.seed)
     torch.set_float32_matmul_precision("medium")
 
-    # Load model and tokenizer
+    # Load the tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
     model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer-pretrain")
+    harnessed_model = plTrainHarness(model, args.learning_rate, args.warmup_fraction)
 
-    # Load dataset
+    # Load the training data
     train_data = IterableJSONData(args.dataset_dir, dist_env="slurm")
     data_loader = DataLoader(
         dataset=train_data,
@@ -142,8 +142,6 @@ def main(args):
         num_workers=0 if args.debug else args.num_workers,
         persistent_workers=False if args.debug else True,
     )
-
-    harnessed_model = plTrainHarness(model, args.learning_rate, args.warmup_fraction)
 
     # Setup trainer and callbacks
     save_checkpoint = DumpStateDict(
