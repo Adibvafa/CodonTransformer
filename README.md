@@ -108,7 +108,7 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 
 ## Key Features
 - **CodonData** <br>
-Provides essential tools for preprocessing NCBI or Kazusa databases and managing codon-related data operations. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
+Provides essential tools for preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
 
 - **CodonPrediction** <br>
 Responsible for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
@@ -132,6 +132,7 @@ The CodonData subpackage offers essential tools for preprocessing NCBI or Kazusa
 
 This subpackage is responsible for:
 
+- Preparing data for model training and inference
 - Preprocessing and cleaning DNA and protein sequences
 - Translating DNA sequences to protein sequences
 - Reading and processing FASTA files
@@ -141,53 +142,65 @@ This subpackage is responsible for:
 
 ### Available Functions
 
+- `prepare_finetune_data(dataset: Union[str, pd.DataFrame], output_file: str, shuffle: bool = True) -> None`
+
+  Prepare a JSON dataset for finetuning the CodonTransformer model. It processes the input dataset, creates the 'codons' column, handles organism IDs, and saves the result to a JSON file.
+
+- `dataframe_to_json(df: pd.DataFrame, output_file: str, shuffle: bool = True) -> None`
+
+  Convert a pandas DataFrame to a JSON file format suitable for training CodonTransformer. It writes each row of the DataFrame as a JSON object to the output file, with an option to shuffle the data.
+
+- `process_organism(organism: Union[str, int], organism_to_id: Dict[str, int]) -> int`
+
+  Process and validate the organism input, converting it to a valid organism ID. It handles both string (organism name) and integer (organism ID) inputs.
+
 - `get_codon_table(organism: str) -> int`
 
-  Returns the appropriate NCBI codon table number for a given organism.
+  Return the appropriate NCBI codon table number for a given organism.
 
 - `preprocess_protein_sequence(protein: str) -> str`
 
-  Cleans, standardizes, and handles ambiguous amino acids in a protein sequence.
+  Clean, standardize, and handle ambiguous amino acids in a protein sequence.
 
 - `replace_ambiguous_codons(dna: str) -> str`
 
-  Replaces ambiguous codons in a DNA sequence with "UNK".
+  Replace ambiguous codons in a DNA sequence with "UNK".
 
 - `preprocess_dna_sequence(dna: str) -> str`
 
-  Cleans and preprocesses a DNA sequence by standardizing it and replacing ambiguous codons.
+  Clean and preprocess a DNA sequence by standardizing it and replacing ambiguous codons.
 
 - `get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str`
 
-  Merges protein and DNA sequences into a single string of tokens.
+  Merge protein and DNA sequences into a single string of tokens.
 
 - `is_correct_seq(dna: str, protein: str, stop_symbol: str = STOP_SYMBOL) -> bool`
 
-  Checks if the given DNA and protein pair is correct based on specific criteria.
+  Check if the given DNA and protein pair is correct based on specific criteria.
 
 - `get_amino_acid_sequence(dna: str, stop_symbol: str = "_", codon_table: int = 1, return_correct_seq: bool = True) -> Union[Tuple[str, bool], str]`
 
-  Translates a DNA sequence to a protein sequence using a specified codon table.
+  Translate a DNA sequence to a protein sequence using a specified codon table.
 
 - `read_fasta_file(input_file: str, output_path: str, organism: str = "", return_dataframe: bool = True, buffer_size: int = 50000) -> pd.DataFrame`
 
-  Reads a FASTA file of DNA sequences and saves it to a Pandas DataFrame.
+  Read a FASTA file of DNA sequences and saves it to a Pandas DataFrame.
 
 - `download_codon_frequencies_from_kazusa(taxonomy_id: Optional[int] = None, organism: Optional[str] = None, taxonomy_reference: Optional[str] = None, return_original_format: bool = False) -> AMINO2CODON_TYPE`
 
-  Downloads and processes codon frequency data from the Kazusa database for a given taxonomy ID or organism.
+  Download and process codon frequency data from the Kazusa database for a given taxonomy ID or organism.
 
 - `build_amino2codon_skeleton(organism: str) -> AMINO2CODON_TYPE`
 
-  Creates an empty skeleton of the amino2codon dictionary for a given organism.
+  Create an empty skeleton of the amino2codon dictionary for a given organism.
 
 - `get_codon_frequencies(dna_sequences: List[str], protein_sequences: Optional[List[str]] = None, organism: Optional[str] = None) -> AMINO2CODON_TYPE`
 
-  Calculates codon frequencies based on a collection of DNA and protein sequences.
+  Calculate codon frequencies based on a collection of DNA and protein sequences.
 
 - `get_organism_to_codon_frequencies(dataset: pd.DataFrame, organisms: List[str]) -> Dict[str, AMINO2CODON_TYPE]`
 
-  Generates a dictionary mapping each organism to its codon frequency distribution.
+  Generate a dictionary mapping each organism to its codon frequency distribution.
 <br></br>
 
 
@@ -203,39 +216,39 @@ This subpackage contains functions and classes that handle the core prediction f
 
 - `load_model(path: str, device: torch.device = None, num_organisms: int = None, remove_prefix: bool = True, attention_type: str = "original_full") -> torch.nn.Module`
 
-  Loads a BigBirdForMaskedLM model from a file or checkpoint.
+  Load a BigBirdForMaskedLM model from a file or checkpoint.
 
 - `load_bigbird_config(num_organisms: int) -> BigBirdConfig`
 
-  Loads the configuration object used to train the BigBird transformer.
+  Load the configuration object used to train the BigBird transformer.
 
 - `create_model_from_checkpoint(checkpoint_dir: str, output_model_dir: str, num_organisms: int) -> None`
 
-  Saves a model to disk using a previous checkpoint.
+  Save a model to disk using a previous checkpoint.
 
 - `load_tokenizer(tokenizer_path: str) -> PreTrainedTokenizerFast`
 
-  Creates and returns a tokenizer object from the given tokenizer path.
+  Create and return a tokenizer object from the given tokenizer path.
 
 - `tokenize(batch: List[Dict[str, Any]], tokenizer_path: str = "", tokenizer_object: Optional[PreTrainedTokenizerFast] = None, max_len: int = 2048) -> BatchEncoding`
 
-  Tokenizes sequences given a batch of input data.
+  Tokenize sequences given a batch of input data.
 
 - `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer_path: str = "", tokenizer_object: Optional[PreTrainedTokenizerFast] = None, model_path: str = "", model_object: Optional[torch.nn.Module] = None, attention_type: str = "original_full") -> DNASequencePrediction`
 
-  Predicts the DNA sequence for a given protein using the CodonTransformer model.
+  Predict the DNA sequence for a given protein using the CodonTransformer model.
 
 - `validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]`
 
-  Validates and converts the organism input to both ID and name.
+  Validate and convert the organism input to both ID and name.
 
 - `get_high_frequency_choice_sequence(protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> str`
 
-  Returns a DNA sequence optimized using the High Frequency Choice (HFC) approach.
+  Return a DNA sequence optimized using the High Frequency Choice (HFC) approach.
 
 - `precompute_most_frequent_codons(codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> Dict[str, str]`
 
-  Precomputes the most frequent codon for each amino acid.
+  Precompute the most frequent codon for each amino acid.
 
 - `get_high_frequency_choice_sequence_optimized(protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> str`
 
@@ -243,11 +256,11 @@ This subpackage contains functions and classes that handle the core prediction f
 
 - `get_background_frequency_choice_sequence(protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> str`
 
-  Returns a DNA sequence optimized using the Background Frequency Choice (BFC) approach.
+  Return a DNA sequence optimized using the Background Frequency Choice (BFC) approach.
 
 - `precompute_cdf(codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> Dict[str, Tuple[List[str], Any]]`
 
-  Precomputes the cumulative distribution function (CDF) for each amino acid.
+  Precompute the cumulative distribution function (CDF) for each amino acid.
 
 - `get_background_frequency_choice_sequence_optimized(protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> str`
 
@@ -255,11 +268,11 @@ This subpackage contains functions and classes that handle the core prediction f
 
 - `get_uniform_random_choice_sequence(protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]) -> str`
 
-  Returns a DNA sequence optimized using the Uniform Random Choice (URC) approach.
+  Return a DNA sequence optimized using the Uniform Random Choice (URC) approach.
 
 - `get_icor_prediction(input_seq: str, model_path: str, stop_symbol: str) -> str`
 
-  Returns an optimized codon sequence for the given protein sequence using ICOR (Improving Codon Optimization with Recurrent Neural Networks).
+  Return an optimized codon sequence for the given protein sequence using ICOR (Improving Codon Optimization with Recurrent Neural Networks).
 <br></br>
 
 
@@ -276,31 +289,31 @@ The CodonEvaluation module includes functions to compute metrics such as Codon A
 
 - `get_organism_to_CAI_weights(dataset: pd.DataFrame, organisms: List[str]) -> Dict[str, dict]`
 
-  Calculates the Codon Adaptation Index (CAI) weights for a list of organisms.
+  Calculate the Codon Adaptation Index (CAI) weights for a list of organisms.
 
 - `get_GC_content(dna: str, lower: bool = False) -> float`
 
-  Computes the GC content of a DNA sequence.
+  Compute the GC content of a DNA sequence.
 
 - `get_cfd(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], threshold: float = 0.3) -> float`
 
-  Calculates the codon frequency distribution (CFD) metric for a DNA sequence.
+  Calculate the codon frequency distribution (CFD) metric for a DNA sequence.
 
 - `get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float`
 
-  Computes the cousin score between a DNA sequence and reference frequencies.
+  Compute the cousin score between a DNA sequence and reference frequencies.
 
 - `get_min_max_percentage(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], window_size: int = 18) -> List[float]`
 
-  Calculates the %MinMax metric for a DNA sequence.
+  Calculate the %MinMax metric for a DNA sequence.
 
 - `get_sequence_complexity(dna: str) -> float`
 
-  Computes the sequence complexity score of a DNA sequence.
+  Compute the sequence complexity score of a DNA sequence.
 
 - `get_sequence_similarity(original: str, predicted: str, truncate: bool = True, window_length: int = 1) -> float`
 
-  Calculates the sequence similarity between two sequences.
+  Calculate the sequence similarity between two sequences.
 <br></br>
 
 
@@ -391,15 +404,15 @@ This subpackage is responsible for:
 
 - `display_organism_dropdown(organism2id: Dict[str, int], container: UserContainer) -> None`
 
-  Displays a dropdown widget for selecting an organism from a list and updates the organism ID in the provided container.
+  Display a dropdown widget for selecting an organism from a list and updates the organism ID in the provided container.
 
 - `display_protein_input(container: UserContainer) -> None`
 
-  Displays a widget for entering a protein sequence and saves the entered sequence to the container.
+  Display a widget for entering a protein sequence and saves the entered sequence to the container.
 
 - `format_model_output(output: DNASequencePrediction) -> str`
 
-  Formats the DNA sequence prediction output in a visually appealing and easy-to-read manner. Takes a `DNASequencePrediction` object and returns a formatted string.
+  Format the DNA sequence prediction output in a visually appealing and easy-to-read manner. Take a `DNASequencePrediction` object and return a formatted string.
 
 ### Usage
 Checkout our [Google Colab Notebook](https://adibvafa.github.io/CodonTransformer/GoogleColab) for an example use case!
