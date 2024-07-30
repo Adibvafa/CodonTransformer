@@ -106,6 +106,59 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 <br></br>
 
 
+## Finetuning CodonTransformer
+To finetune CodonTransformer on your own data, follow these steps:
+
+1. **Prepare your dataset**
+   
+   Create a CSV file with the following columns:
+   - `dna`: DNA sequences (string, preferably uppercase ATCG)
+   - `protein`: Protein sequences (string, preferably uppercase amino acid letters)
+   - `organism`: Target organism (string or int, must be from `ORGANISM2ID` in `CodonUtils`)
+
+
+   Note: 
+   - Use organisms from the `FINE_TUNE_ORGANISMS` list for best results.
+   - For E. coli, use `Escherichia coli general`.
+   - DNA sequences should ideally contain only A, T, C, and G. Ambiguous codons are replaced with 'UNK' for tokenization.
+   - Protein sequences should contain standard amino acid letters from `AMINO_ACIDS` in `CodonUtils`. Ambiguous amino acids are replaced according to the `AMBIGUOUS_AMINOACID_MAP` in `CodonUtils`.
+   - End your DNA sequences with a stop codon from `STOP_CODONS` in `CodonUtils`. If not present, a 'UNK' stop codon will be addded in preprocessing.
+   - End your protein sequence with `_` or `*`. If either is not present, a `_` will be added in preprocessing.
+<br>
+
+2. **Prepare training data**
+   
+   Use the `prepare_training_data` function from `CodonData` to prepare training data from your dataset.
+
+   ```python
+   from CodonTransformer.CodonData import prepare_training_data
+   prepare_training_data('your_data.csv', 'your_dataset_directory/training_data.json')
+   ```
+<br>
+
+3. **Run the finetuning script**
+   
+   Execute finetune.py with appropriate arguments:
+    ```bash
+     python finetune.py \
+        --dataset_dir 'your_dataset_directory/training_data.json' \
+        --checkpoint_dir 'your_checkpoint_directory' \
+        --checkpoint_filename 'finetune.ckpt' \
+        --batch_size 6 \
+        --max_epochs 15 \
+        --num_workers 5 \
+        --accumulate_grad_batches 1 \
+        --num_gpus 4 \
+        --learning_rate 0.00005 \
+        --warmup_fraction 0.1 \
+        --save_every_n_steps 512 \
+        --seed 123
+    ```
+   This script automatically loads the pretrained model from Hugging Face and finetunes it on your dataset.
+   For an example of a SLURM job request, see the `slurm` directory in the repository.
+<br></br>
+
+
 ## Key Features
 - **CodonData** <br>
 Provides essential tools for preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
