@@ -239,7 +239,7 @@ def preprocess_dna_sequence(dna: str) -> str:
     dna = replace_ambiguous_codons(dna)
 
     # Add unkown stop codon to end of DNA sequence if not present
-    if dna[-3:] not in STOP_CODONS + ["UNK"]:
+    if dna[-3:] not in STOP_CODONS:
         dna += "UNK"
 
     return dna
