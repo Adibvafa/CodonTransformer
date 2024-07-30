@@ -14,6 +14,7 @@
 - [Overview](#overview)
 - [Use Case](#use-case)
 - [Installation](#installation)
+- [Finetuning](#finetuning-codontransformer)
 - [Key Features](#key-features)
   - [CodonData](#codondata)
   - [CodonPrediction](#codonprediction)
