@@ -319,8 +319,8 @@ def get_amino_acid_sequence(
     dna: str,
     stop_symbol: str = "_",
     codon_table: int = 1,
-    return_correct_seq: bool = True,
-) -> Union[Tuple[str, bool], str]:
+    return_correct_seq: bool = False,
+) -> Union[str, Tuple[str, bool]]:
     """
     Return the translated protein sequence given a DNA sequence and codon table.
 
@@ -331,7 +331,7 @@ def get_amino_acid_sequence(
         return_correct_seq (bool): Whether to return if the sequence is correct.
 
     Returns:
-        Union[Tuple[str, bool], str]: Protein sequence and correctness flag if return_correct_seq is True,
+        Union[str, Tuple[str, bool]]: Protein sequence and correctness flag if return_correct_seq is True,
                                       otherwise just the protein sequence.
     """
     dna_seq = Seq(dna).strip()
@@ -345,10 +345,10 @@ def get_amino_acid_sequence(
             table=codon_table,  # Codon table to use for translation
         )
     ).strip()
-
-    correct_seq = is_correct_seq(dna_seq, protein_seq, stop_symbol)
-
-    return (protein_seq, correct_seq) if return_correct_seq else protein_seq
+    
+    return protein_seq \
+            if not return_correct_seq \
+            else (protein_seq, is_correct_seq(dna_seq, protein_seq, stop_symbol))
 
 
 def read_fasta_file(
@@ -399,7 +399,7 @@ def read_fasta_file(
 
             # Translate DNA to protein sequence
             protein, correct_seq = get_amino_acid_sequence(
-                dna, stop_symbol=STOP_SYMBOL, codon_table=codon_table
+                dna, stop_symbol=STOP_SYMBOL, codon_table=codon_table, return_correct_seq=True
             )
             description = str(record.description[: record.description.find("[")])
             tokenized = get_merged_seq(protein, dna, seperator=STOP_SYMBOL)
