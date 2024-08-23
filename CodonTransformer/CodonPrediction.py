@@ -10,7 +10,13 @@ import onnxruntime as rt
 
 import torch
 import transformers
-from transformers import BatchEncoding, PreTrainedTokenizerFast, BigBirdConfig
+from transformers import (
+    BatchEncoding,
+    PreTrainedTokenizerFast,
+    BigBirdConfig,
+    AutoTokenizer,
+    BigBirdForMaskedLM
+)
 import numpy as np
 
 from CodonTransformer.CodonData import get_merged_seq
@@ -23,29 +29,156 @@ from CodonTransformer.CodonUtils import (
 )
 
 
-def load_model(
-    path: str,
-    device: torch.device = None,
-    num_organisms: int = None,
-    remove_prefix: bool = True,
+def predict_dna_sequence(
+    protein: str,
+    organism: Union[int, str],
+    device: torch.device,
+    tokenizer: Union[str, PreTrainedTokenizerFast, None] = None,
+    model: Union[str, torch.nn.Module, None] = None,
     attention_type: str = "original_full",
-) -> torch.nn.Module:
+) -> DNASequencePrediction:
     """
-    Load a BigBirdForMaskedLM model from a model file or checkpoint based on the file extension.
+    Predict the DNA sequence for a given protein using CodonTransformer model.
+
+    This function takes a protein sequence and an organism (as ID or name) as input
+    and returns the predicted DNA sequence by CodonTransformer. It can use either
+    provided tokenizer and model objects or load them from specified paths.
 
     Args:
-        path (str): Path to the model file or checkpoint.
+        protein (str): The input protein sequence to predict the DNA sequence for.
+        organism (Union[int, str]): Either the ID of the organism or its name (e.g., "Escherichia coli general").
+            If a string is provided, it will be converted to the corresponding ID using ORGANISM2ID.
+        device (torch.device): The device (CPU or GPU) to run the model on.
+        tokenizer (Union[str, PreTrainedTokenizerFast, None], optional): Either a file path to load the tokenizer from,
+            a pre-loaded tokenizer object, or None. If None, it will be loaded from HuggingFace. Defaults to None.
+        model (Union[str, torch.nn.Module, None], optional): Either a file path to load the model from,
+            a pre-loaded model object, or None. If None, it will be loaded from HuggingFace. Defaults to None.
+        attention_type (str, optional): The type of attention mechanism to use in the model.
+            Can be either 'block_sparse' or 'original_full'. Defaults to "original_full".
+
+    Returns:
+        DNASequencePrediction: An object containing the prediction results:
+            - organism (str): The name of the organism used for prediction.
+            - protein (str): The input protein sequence for which DNA sequence is predicted.
+            - processed_input (str): The processed input sequence (merged protein and DNA).
+            - predicted_dna (str): The predicted DNA sequence.
+
+    Raises:
+        ValueError: If the protein sequence is empty or if the organism is invalid.
+
+    Note:
+        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from CodonTransformer.CodonUtils.
+        ORGANISM2ID maps organism names to their corresponding IDs.
+        INDEX2TOKEN maps model output indices (token ids) to respective codons.
+
+    Example:
+        >>> import torch
+        >>> from transformers import AutoTokenizer, BigBirdForMaskedLM
+        >>> from CodonTransformer.CodonPrediction import predict_dna_sequence
+        >>> from CodonTransformer.CodonJupyter import format_model_output
+        >>> 
+        >>> # Set up device
+        >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        >>> 
+        >>> # Load tokenizer and model (you can use paths or pre-loaded objects)
+        >>> tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
+        >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(device)
+        >>> 
+        >>> # Define protein sequence and organism
+        >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG"
+        >>> organism = "Escherichia coli general"
+        >>> 
+        >>> # Predict DNA sequence
+        >>> output = predict_dna_sequence(
+        ...     protein=protein,
+        ...     organism=organism,
+        ...     device=device,
+        ...     tokenizer=tokenizer,
+        ...     model=model,
+        ...     attention_type="original_full"
+        ... )
+        >>> 
+        >>> print(format_model_output(output))
+    """
+    if not protein:
+        raise ValueError("Protein sequence cannot be empty.")
+
+    # Load tokenizer
+    if not isinstance(tokenizer, PreTrainedTokenizerFast):
+        tokenizer = load_tokenizer(tokenizer)
+
+    # Load model
+    if not isinstance(model, torch.nn.Module):
+        model = load_model(model, device=device, attention_type=attention_type)
+    else:
+        model.eval()
+        model.bert.set_attention_type(attention_type)
+        model.to(device)
+
+    # Validate organism and convert to organism_id and organism_name
+    organism_id, organism_name = validate_and_convert_organism(organism)
+
+    # Inference loop
+    with torch.no_grad():
+        # Tokenize the input sequence
+        merged_seq = get_merged_seq(protein=protein, dna="")
+        input_dict = {
+            "idx": 0,  # sample index
+            "codons": merged_seq,
+            "organism": organism_id,
+        }
+        tokenized_input = tokenize([input_dict], tokenizer=tokenizer).to(
+            device
+        )
+
+        # Get the model predictions
+        output_dict = model(**tokenized_input, return_dict=True)
+        output = output_dict.logits.detach().cpu().numpy()
+
+        # Decode the predicted DNA sequence from the model output
+        predicted_dna = list(
+            map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist())
+        )
+
+        # Skip special tokens [CLS] and [SEP] to create the predicted_dna
+        predicted_dna = (
+            "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
+        )
+
+    return DNASequencePrediction(
+        organism=organism_name,
+        protein=protein,
+        processed_input=merged_seq,
+        predicted_dna=predicted_dna,
+    )
+
+
+def load_model(
+    model_path: Optional[str] = None,
+    device: torch.device = None,
+    attention_type: str = "original_full",
+    num_organisms: int = None,
+    remove_prefix: bool = True,
+) -> torch.nn.Module:
+    """
+    Load a BigBirdForMaskedLM model from a model file, checkpoint, or HuggingFace.
+
+    Args:
+        model_path (Optional[str]): Path to the model file or checkpoint. If None, load from HuggingFace.
         device (torch.device, optional): The device to load the model onto.
+        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
         num_organisms (int, optional): Number of organisms, needed if loading from a checkpoint that requires this.
         remove_prefix (bool, optional): Whether to remove the "model." prefix from the keys in the state dict.
-        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
 
     Returns:
         torch.nn.Module: The loaded model.
     """
-    # Load from checkpoint
-    if path.endswith(".ckpt"):
-        checkpoint = torch.load(path)
+    if not model_path:
+        print("Warning: Model path not provided. Loading from HuggingFace.")
+        model = transformers.BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
+
+    elif model_path.endswith(".ckpt"):
+        checkpoint = torch.load(model_path)
         state_dict = checkpoint["state_dict"]
 
         # Remove the "model." prefix from the keys
@@ -62,15 +195,14 @@ def load_model(
         model = transformers.BigBirdForMaskedLM(config=config)
         model.load_state_dict(state_dict)
 
-    # Load model directly
-    elif path.endswith(".pt"):
-        state_dict = torch.load(path)
+    elif model_path.endswith(".pt"):
+        state_dict = torch.load(model_path)
         config = state_dict.pop("self.config")
         model = transformers.BigBirdForMaskedLM(config=config)
         model.load_state_dict(state_dict)
 
     else:
-        raise ValueError("Unsupported file type. Please provide a .ckpt or .pt file.")
+        raise ValueError("Unsupported file type. Please provide a .ckpt or .pt file, or None to load from HuggingFace.")
 
     # Prepare model for evaluation
     model.bert.set_attention_type(attention_type)
@@ -110,7 +242,7 @@ def create_model_from_checkpoint(
         output_model_dir (str): Directory where the model will be saved.
         num_organisms (int): Number of organisms.
     """
-    checkpoint = load_model(checkpoint_dir, num_organisms=num_organisms)
+    checkpoint = load_model(model_path=checkpoint_dir, num_organisms=num_organisms)
     state_dict = checkpoint.state_dict()
     state_dict["self.config"] = load_bigbird_config(num_organisms=num_organisms)
 
@@ -118,17 +250,21 @@ def create_model_from_checkpoint(
     torch.save(state_dict, output_model_dir)
 
 
-def load_tokenizer(tokenizer_path: str) -> PreTrainedTokenizerFast:
+def load_tokenizer(tokenizer_path: Optional[str] = None) -> PreTrainedTokenizerFast:
     """
-    Create and return a tokenizer object from the given tokenizer path.
+    Create and return a tokenizer object from the given tokenizer path or HuggingFace.
 
     Args:
-        tokenizer_path (str): Path to the tokenizer file.
+        tokenizer_path (Optional[str]): Path to the tokenizer file. If None, load from HuggingFace.
 
     Returns:
         PreTrainedTokenizerFast: The tokenizer object.
     """
-    tokenizer = transformers.PreTrainedTokenizerFast(
+    if not tokenizer_path:
+        print("Warning: Tokenizer path not provided. Loading from HuggingFace.")
+        return AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
+
+    return transformers.PreTrainedTokenizerFast(
         tokenizer_file=tokenizer_path,
         bos_token="[CLS]",
         eos_token="[SEP]",
@@ -139,13 +275,10 @@ def load_tokenizer(tokenizer_path: str) -> PreTrainedTokenizerFast:
         mask_token="[MASK]",
     )
 
-    return tokenizer
-
 
 def tokenize(
     batch: List[Dict[str, Any]],
-    tokenizer_path: str = "",
-    tokenizer_object: Optional[PreTrainedTokenizerFast] = None,
+    tokenizer: Optional[PreTrainedTokenizerFast, str] = None,
     max_len: int = 2048,
 ) -> BatchEncoding:
     """
@@ -154,17 +287,16 @@ def tokenize(
 
     Args:
         batch (List[Dict[str, Any]]): A list of dictionaries with "codons" and "organism" keys.
-        tokenizer_path (str, optional): Path to the tokenizer file.
-        tokenizer_object (PreTrainedTokenizerFast, optional): The tokenizer object.
+        tokenizer (PreTrainedTokenizerFast, str, optional): The tokenizer object or path to the tokenizer file.
         max_len (int, optional): Maximum length of the tokenized sequence.
 
     Returns:
         BatchEncoding: The tokenized batch.
     """
-    if not tokenizer_object:
-        tokenizer_object = load_tokenizer(tokenizer_path)
+    if not isinstance(tokenizer, PreTrainedTokenizerFast):
+        tokenizer = load_tokenizer(tokenizer)
 
-    tokenized = tokenizer_object(
+    tokenized = tokenizer(
         [data["codons"] for data in batch],
         return_attention_mask=True,
         return_token_type_ids=True,
@@ -180,112 +312,6 @@ def tokenize(
     tokenized["token_type_ids"] = species_index.repeat(1, seq_len)
 
     return tokenized
-
-
-def predict_dna_sequence(
-    protein: str,
-    organism: Union[int, str],
-    device: torch.device,
-    tokenizer_path: str = "",
-    tokenizer_object: Optional[PreTrainedTokenizerFast] = None,
-    model_path: str = "",
-    model_object: Optional[torch.nn.Module] = None,
-    attention_type: str = "original_full",
-) -> DNASequencePrediction:
-    """
-    Predict the DNA sequence for a given protein using CodonTransformer model.
-
-    This function takes a protein sequence and an organism (as ID or name) as input
-    and returns the predicted DNA sequence by CodonTransformer. It can use either
-    provided tokenizer and model objects or load them from specified paths.
-
-    Args:
-        protein (str): The input protein sequence to predict the DNA sequence for.
-        organism (Union[int, str]): Either the ID of the organism or its name (e.g., "Escherichia coli general").
-            If a string is provided, it will be converted to the corresponding ID using ORGANISM2ID.
-        device (torch.device): The device (CPU or GPU) to run the model on.
-        tokenizer_path (str, optional): The file path to load the tokenizer from.
-            Used if tokenizer_object is not provided. Defaults to "".
-        tokenizer_object (Optional[PreTrainedTokenizerFast], optional): A pre-loaded tokenizer object.
-            If not provided, the tokenizer will be loaded from tokenizer_path. Defaults to None.
-        model_path (str, optional): The file path to load the model from.
-            Used if model_object is not provided. Defaults to "".
-        model_object (Optional[torch.nn.Module], optional): A pre-loaded model object.
-            If not provided, the model will be loaded from model_path. Defaults to None.
-        attention_type (str, optional): The type of attention mechanism to use in the model.
-            Can be either 'block_sparse' or 'original_full'. Defaults to "original_full".
-
-    Returns:
-        DNASequencePrediction: An object containing the prediction results:
-            - organism (str): The name of the organism used for prediction.
-            - protein (str): The input protein sequence for which DNA sequence is predicted.
-            - processed_input (str): The processed input sequence (merged protein and DNA).
-            - predicted_dna (str): The predicted DNA sequence.
-
-    Raises:
-        ValueError: If the protein sequence is empty or if the organism is invalid.
-
-    Note:
-        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from CodonTransformer.CodonUtils.
-        ORGANISM2ID maps organism names to their corresponding IDs.
-        INDEX2TOKEN maps model output indices (token ids) to respective codons.
-
-    Example:
-        >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        >>> output = predict_dna_sequence("MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG",
-        ...                               organism="Escherichia coli general", device=device, model_path="path/to/model")
-        >>> print(output.predicted_dna)
-    """
-    if not tokenizer_object:
-        tokenizer_object = load_tokenizer(tokenizer_path)
-
-    if not model_object:
-        model_object = load_model(model_path, device)
-
-    if not protein:
-        raise ValueError("Protein sequence cannot be empty.")
-
-    # Validate organism and convert to organism_id and organism_name
-    organism_id, organism_name = validate_and_convert_organism(organism)
-
-    # Prepare model for evaluation
-    model_object.bert.set_attention_type(attention_type)
-    model_object.eval()
-    model_object.to(device)
-
-    # Inference loop
-    with torch.no_grad():
-        # Tokenize the input sequence
-        merged_seq = get_merged_seq(protein=protein, dna="")
-        input_dict = {
-            "idx": 0,  # sample index
-            "codons": merged_seq,
-            "organism": organism_id,
-        }
-        tokenized_input = tokenize([input_dict], tokenizer_object=tokenizer_object).to(
-            device
-        )
-
-        # Get the model predictions
-        output_dict = model_object(**tokenized_input, return_dict=True)
-        output = output_dict.logits.detach().cpu().numpy()
-
-        # Decode the predicted DNA sequence from the model output
-        predicted_dna = list(
-            map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist())
-        )
-
-        # Skip special tokens [CLS] and [SEP] to create the predicted_dna
-        predicted_dna = (
-            "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
-        )
-
-    return DNASequencePrediction(
-        organism=organism_name,
-        protein=protein,
-        processed_input=merged_seq,
-        predicted_dna=predicted_dna,
-    )
 
 
 def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
