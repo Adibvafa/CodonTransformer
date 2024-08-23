@@ -130,7 +130,7 @@ def main(args):
 
     # Load the tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
-    model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer-pretrain")
+    model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer-base")
     harnessed_model = plTrainHarness(model, args.learning_rate, args.warmup_fraction)
 
     # Load the training data
