@@ -10,7 +10,7 @@ def read_requirements():
 
 setup(
     name="CodonTransformer",
-    version="1.2.5",
+    version="1.2.6",
     packages=find_packages(),
     install_requires=read_requirements(),
     author="Adibvafa Fallahpour",
