@@ -199,22 +199,13 @@ if __name__ == "__main__":
         help="Directory where checkpoints will be saved",
     )
     parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=6,
-        help="Batch size for training"
+        "--batch_size", type=int, default=6, help="Batch size for training"
     )
     parser.add_argument(
-        "--max_epochs",
-        type=int,
-        default=5,
-        help="Maximum number of epochs to train"
+        "--max_epochs", type=int, default=5, help="Maximum number of epochs to train"
     )
     parser.add_argument(
-        "--num_workers",
-        type=int,
-        default=5,
-        help="Number of workers for data loading"
+        "--num_workers", type=int, default=5, help="Number of workers for data loading"
     )
     parser.add_argument(
         "--accumulate_grad_batches",
@@ -223,10 +214,7 @@ if __name__ == "__main__":
         help="Number of batches to accumulate gradients",
     )
     parser.add_argument(
-        "--num_gpus",
-        type=int,
-        default=16,
-        help="Number of GPUs to use for training"
+        "--num_gpus", type=int, default=16, help="Number of GPUs to use for training"
     )
     parser.add_argument(
         "--learning_rate",
@@ -241,21 +229,11 @@ if __name__ == "__main__":
         help="Fraction of total steps to use for warmup",
     )
     parser.add_argument(
-        "--save_interval",
-        type=int,
-        default=5,
-        help="Save checkpoint every N epochs"
+        "--save_interval", type=int, default=5, help="Save checkpoint every N epochs"
     )
     parser.add_argument(
-        "--seed",
-        type=int,
-        default=123,
-        help="Random seed for reproducibility"
+        "--seed", type=int, default=123, help="Random seed for reproducibility"
     )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode"
-    )
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     args = parser.parse_args()
     main(args)

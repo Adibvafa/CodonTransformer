@@ -345,10 +345,12 @@ def get_amino_acid_sequence(
             table=codon_table,  # Codon table to use for translation
         )
     ).strip()
-    
-    return protein_seq \
-            if not return_correct_seq \
-            else (protein_seq, is_correct_seq(dna_seq, protein_seq, stop_symbol))
+
+    return (
+        protein_seq
+        if not return_correct_seq
+        else (protein_seq, is_correct_seq(dna_seq, protein_seq, stop_symbol))
+    )
 
 
 def read_fasta_file(
@@ -399,7 +401,10 @@ def read_fasta_file(
 
             # Translate DNA to protein sequence
             protein, correct_seq = get_amino_acid_sequence(
-                dna, stop_symbol=STOP_SYMBOL, codon_table=codon_table, return_correct_seq=True
+                dna,
+                stop_symbol=STOP_SYMBOL,
+                codon_table=codon_table,
+                return_correct_seq=True,
             )
             description = str(record.description[: record.description.find("[")])
             tokenized = get_merged_seq(protein, dna, seperator=STOP_SYMBOL)

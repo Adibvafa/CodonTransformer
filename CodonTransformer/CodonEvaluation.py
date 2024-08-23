@@ -11,8 +11,6 @@ from CAI import CAI, relative_adaptiveness
 from typing import List, Dict, Tuple
 from tqdm import tqdm
 
-from CodonTransformer.CodonUtils import AMINO2CODON_TYPE
-from CodonTransformer.CodonData import build_amino2codon_skeleton, get_codon_frequencies
 
 
 def get_CSI_weights(sequences: List[str]) -> Dict[str, float]:
