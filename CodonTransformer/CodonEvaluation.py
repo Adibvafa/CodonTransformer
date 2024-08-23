@@ -6,7 +6,7 @@ Includes functions to calculate various evaluation metrics along with helper fun
 
 import pandas as pd
 
-from CAI import relative_adaptiveness
+from CAI import CAI, relative_adaptiveness
 
 from typing import List, Dict, Tuple
 from tqdm import tqdm
@@ -15,26 +15,53 @@ from CodonTransformer.CodonUtils import AMINO2CODON_TYPE
 from CodonTransformer.CodonData import build_amino2codon_skeleton, get_codon_frequencies
 
 
-def get_organism_to_CAI_weights(
+def get_CSI_weights(sequences: List[str]) -> Dict[str, float]:
+    """
+    Calculate the Codon Similarity Index (CSI) weights for a list of DNA sequences.
+
+    Args:
+        sequences (List[str]): List of DNA sequences.
+
+    Returns:
+        dict: The CSI weights.
+    """
+    return relative_adaptiveness(sequences=sequences)
+
+
+def get_CSI_value(dna: str, weights: Dict[str, float]) -> float:
+    """
+    Calculate the Codon Similarity Index (CSI) for a DNA sequence.
+
+    Args:
+        dna (str): The DNA sequence.
+        weights (dict): The CSI weights from get_CSI_weights.
+
+    Returns:
+        float: The CSI value.
+    """
+    return CAI(dna, weights)
+
+
+def get_organism_to_CSI_weights(
     dataset: pd.DataFrame, organisms: List[str]
 ) -> Dict[str, dict]:
     """
-    Calculate the Codon Adaptation Index (CAI) weights for a list of organisms.
+    Calculate the Codon Similarity Index (CSI) weights for a list of organisms.
 
     Args:
         dataset (pd.DataFrame): The dataset containing organism and DNA sequence information.
         organisms (List[str]): List of organism names.
 
     Returns:
-        Dict[str, dict]: A dictionary mapping each organism to its CAI weights.
+        Dict[str, dict]: A dictionary mapping each organism to its CSI weights.
     """
     organism2weights = {}
 
-    # Iterate through each organism to calculate its CAI weights
-    for organism in tqdm(organisms, desc="Calculating CAI Weights: ", unit="Organism"):
+    # Iterate through each organism to calculate its CSI weights
+    for organism in tqdm(organisms, desc="Calculating CSI Weights: ", unit="Organism"):
         organism_data = dataset.loc[dataset["organism"] == organism]
         sequences = organism_data["dna"].to_list()
-        weights = relative_adaptiveness(sequences=sequences)  # Calculate CAI weights
+        weights = get_CSI_weights(sequences)
         organism2weights[organism] = weights
 
     return organism2weights
@@ -90,68 +117,6 @@ def get_cfd(
             cfd += 1
 
     return cfd / (len(dna) / 3) * 100
-
-
-def get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float:
-    """
-    Calculate the cousin score between a DNA sequence and reference frequencies.
-
-    Args:
-        dna (str): DNA sequence.
-        organism (str): Name of the organism.
-        ref_freq (AMINO2CODON_TYPE): Reference frequencies.
-
-    Returns:
-        float: Cousin score.
-    """
-    que_freq = get_codon_frequencies([dna], organism=organism)
-
-    weight_ref = build_amino2codon_skeleton(organism)
-    weight_ref = {amino: [0] for amino in weight_ref}
-
-    weight_que = build_amino2codon_skeleton(organism)
-    weight_que = {amino: [0] for amino in weight_que}
-
-    aminos = []
-
-    # Calculate weighted frequencies for each amino acid
-    for (amino_ref, (codons_ref, frequencies_ref)), (
-        amino_que,
-        (codons_que, frequencies_que),
-    ) in zip(ref_freq.items(), que_freq.items()):
-        if (
-            amino_ref != "_"
-            and len(frequencies_ref) > 1
-            and sum(frequencies_ref) != 0.0
-            and sum(frequencies_que) != 0.0
-        ):
-            aminos.append(amino_ref)
-            weight_ref[amino_ref] = [
-                ref * round((ref - (1 / len(codons_ref))), 3)
-                for (ref, que) in zip(frequencies_ref, frequencies_que)
-            ]
-            weight_que[amino_que] = [
-                que * round((ref - (1 / len(codons_ref))), 3)
-                for (ref, que) in zip(frequencies_ref, frequencies_que)
-            ]
-
-    cousin = 0
-
-    # Calculate the cousin score for the DNA sequence
-    for (amino_ref, ref), (amino_que, que) in zip(
-        weight_ref.items(), weight_que.items()
-    ):
-        if sum(ref) == 0:
-            if amino_ref in aminos:
-                aminos.remove(amino_ref)
-            continue
-
-        cousin_aa = round((sum(que) / (sum(ref) + 1e-100)), 3)
-        # cousin_aa = np.clip(cousin_aa, a_min=-3, a_max=4)
-        cousin += cousin_aa  # round(cousin_aa, 3)
-
-    cousin = cousin / (len(aminos))
-    return cousin
 
 
 def get_min_max_percentage(
