@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/banner_fina.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
+  <img src="src/banner_final.png" alt="CodonTransformer Logo" width="100%" height="100%" style="vertical-align: middle;"/>
 </p>
 
 <p align="center">
