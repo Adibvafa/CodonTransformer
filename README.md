@@ -25,8 +25,8 @@
 - [Citation](#citation)
 <br></br>
 
-## Overview
-CodonTransformer is the ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms. Whether you are a researcher or a practitioner in genetic engineering, CodonTransformer provides a comprehensive suite of features to facilitate your work. By leveraging the Transformer architecture and a user-friendly Jupyter notebook, it reduces the complexity of codon optimization, saving you time and effort.
+## Abstract
+TBD
 <br></br>
 
 
@@ -162,16 +162,16 @@ To finetune CodonTransformer on your own data, follow these steps:
 
 ## Key Features
 - **CodonData** <br>
-Provides essential tools for preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
+For preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
 
 - **CodonPrediction** <br>
-Responsible for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
+For tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
 
 - **CodonEvaluation** <br>
-Offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
+For calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
 
 - **CodonUtils** <br>
-Contains constants and helper functions essential for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
+Contains constants and helper functions for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
 
 - **CodonJupyter** <br>
 Offers Jupyter-specific functions for displaying interactive widgets, enhancing user interaction with the CodonTransformer package in a Jupyter notebook environment. Provides interactive and visually appealing interfaces for input and output.
@@ -180,11 +180,11 @@ Offers Jupyter-specific functions for displaying interactive widgets, enhancing 
 
 ## CodonData
 
-The CodonData subpackage offers essential tools for preprocessing NCBI or Kazusa databases and managing codon-related data operations. It includes comprehensive functions for working with DNA sequences, protein sequences, and codon frequencies, providing a robust toolkit for sequence preprocessing and codon frequency analysis across different organisms.
+The CodonData subpackage offers tools for preprocessing NCBI or Kazusa databases and managing codon-related data operations. It includes comprehensive functions for working with DNA sequences, protein sequences, and codon frequencies, providing a robust toolkit for sequence preprocessing and codon frequency analysis across different organisms.
 
 ### Overview
 
-This subpackage is responsible for:
+This subpackage is suitable for:
 
 - Preparing data for model training and inference
 - Preprocessing and cleaning DNA and protein sequences
@@ -260,7 +260,7 @@ This subpackage is responsible for:
 
 ## CodonPrediction
 
-The CodonPrediction subpackage is a crucial component of CodonTransformer, responsible for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. It offers a comprehensive toolkit for working with the CodonTransformer model, covering tasks from model loading and configuration to various types of codon optimization and DNA sequence prediction.
+The CodonPrediction subpackage is an essential component of CodonTransformer, used for tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. It offers a comprehensive toolkit for working with the CodonTransformer model, covering tasks from model loading and configuration to various types of codon optimization and DNA sequence prediction.
 
 ### Overview
 
@@ -332,12 +332,12 @@ This subpackage contains functions and classes that handle the core prediction f
 
 ## CodonEvaluation
 
-The CodonEvaluation subpackage offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis, essential for assessing the quality and characteristics of DNA sequences, especially in codon optimization. It provides a comprehensive toolkit for evaluating DNA sequences and codon usage, enabling researchers and developers to perform in-depth genetic data analysis within the CodonTransformer package.
+The CodonEvaluation subpackage offers functions for calculating evaluation metrics related to codon usage and DNA sequence analysis, used for assessing the quality and characteristics of DNA sequences, especially in codon optimization. It provides a comprehensive toolkit for evaluating DNA sequences and codon usage, performingng genetic data analysis within the CodonTransformer package.
 
 
 ### Overview
 
-The CodonEvaluation module includes functions to compute metrics such as Codon Adaptation Index (CAI) weights, GC content, codon frequency distribution (CFD), cousin score, %MinMax, sequence complexity, and sequence similarity. These metrics are valuable for analyzing and comparing DNA sequences across different organisms.
+The CodonEvaluation module includes functions to compute metrics such as Codon Adaptation Index (CAI)/Codon Similarity Index (CSI) weights, GC content, codon frequency distribution (CFD), %MinMax, sequence complexity, and sequence similarity. These metrics are valuable for analyzing and comparing DNA sequences across different organisms.
 
 ### Available Functions
 
@@ -373,7 +373,7 @@ The CodonEvaluation module includes functions to compute metrics such as Codon A
 
 ## CodonUtils
 
-The CodonUtils subpackage contains constants and helper functions essential for working with genetic sequences, amino acids, and organism data in the CodonTransformer package. It provides robust tools for genetic sequence analysis, organism identification, and data processing, forming the foundation for many core functionalities within the CodonTransformer package.
+The CodonUtils subpackage contains constants and helper functions essential for working with genetic sequences, amino acids, and organism data in the CodonTransformer package. It provides tools for genetic sequence analysis, organism identification, and data processing, forming the foundation for many core functionalities within the CodonTransformer package.
 
 ### Contents
 
@@ -436,11 +436,11 @@ The CodonUtils subpackage contains constants and helper functions essential for 
 
 ## CodonJupyter
 
-The CodonJupyter subpackage offers Jupyter-specific functions for displaying interactive widgets, enhancing user interaction with the CodonTransformer package in a Jupyter notebook environment. It improves the user experience by providing interactive and visually appealing interfaces for input and output.
+The CodonJupyter subpackage offers Jupyter-specific functions for displaying interactive widgets, facilitating user interaction with the CodonTransformer package in a Jupyter notebook environment. It improves the user experience by providing interactive and visually appealing interfaces for input and output.
 
 ### Overview
 
-This subpackage is responsible for:
+This subpackage can be used for:
 
 - Creating and displaying interactive widgets for organism selection and protein sequence input
 - Handling user inputs and storing them in a container
