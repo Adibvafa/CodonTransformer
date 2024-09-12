@@ -17,7 +17,7 @@ def read_readme():
 
 setup(
     name="CodonTransformer",
-    version="1.2.9",
+    version="1.5.0",
     packages=find_packages(),
     install_requires=read_requirements(),
     author="Adibvafa Fallahpour",
