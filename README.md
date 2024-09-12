@@ -268,6 +268,10 @@ This subpackage contains functions and classes that handle the core prediction f
 
 ### Available Functions and Classes
 
+- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full") -> DNASequencePrediction`
+
+  Predict the DNA sequence for a given protein using the CodonTransformer model.
+
 - `load_model(path: str, device: torch.device = None, num_organisms: int = None, remove_prefix: bool = True, attention_type: str = "original_full") -> torch.nn.Module`
 
   Load a BigBirdForMaskedLM model from a file or checkpoint.
@@ -287,10 +291,6 @@ This subpackage contains functions and classes that handle the core prediction f
 - `tokenize(batch: List[Dict[str, Any]], tokenizer_path: str = "", tokenizer_object: Optional[PreTrainedTokenizerFast] = None, max_len: int = 2048) -> BatchEncoding`
 
   Tokenize sequences given a batch of input data.
-
-- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full") -> DNASequencePrediction`
-
-  Predict the DNA sequence for a given protein using the CodonTransformer model.
 
 - `validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]`
 
