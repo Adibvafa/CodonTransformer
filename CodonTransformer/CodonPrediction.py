@@ -278,7 +278,7 @@ def load_tokenizer(tokenizer_path: Optional[str] = None) -> PreTrainedTokenizerF
 
 def tokenize(
     batch: List[Dict[str, Any]],
-    tokenizer: Optional[PreTrainedTokenizerFast, str] = None,
+    tokenizer: Union[PreTrainedTokenizerFast, str] = None,
     max_len: int = 2048,
 ) -> BatchEncoding:
     """
