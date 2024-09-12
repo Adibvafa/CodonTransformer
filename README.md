@@ -88,6 +88,7 @@ ATGGCTTTATGGATGCGTCTGCTGCCGCTGCTGGCGCTGCTGGCGCTGTGGGGCCCGGACCCGGCGGCGGCGTTTGTGAA
 <br>
 
 **You can use the [inference template](https://github.com/Adibvafa/CodonTransformer/raw/main/src/CodonTransformer_inference_template.xlsx) for batch inference in [Google Colab](https://adibvafa.github.io/CodonTransformer/GoogleColab).**
+
 <br>
 
 
