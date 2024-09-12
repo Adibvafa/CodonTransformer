@@ -58,7 +58,7 @@ output = predict_dna_sequence(
     organism=organism,
     device=DEVICE,
     tokenizer_object=tokenizer,
-    model_object=model,
+    model=model,
     attention_type="original_full",
 )
 print(format_model_output(output))
@@ -288,7 +288,7 @@ This subpackage contains functions and classes that handle the core prediction f
 
   Tokenize sequences given a batch of input data.
 
-- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer_path: str = "", tokenizer_object: Optional[PreTrainedTokenizerFast] = None, model_path: str = "", model_object: Optional[torch.nn.Module] = None, attention_type: str = "original_full") -> DNASequencePrediction`
+- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full") -> DNASequencePrediction`
 
   Predict the DNA sequence for a given protein using the CodonTransformer model.
 
