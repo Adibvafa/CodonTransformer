@@ -175,7 +175,7 @@ def load_model(
     """
     if not model_path:
         print("Warning: Model path not provided. Loading from HuggingFace.")
-        model = transformers.BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
+        model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
 
     elif model_path.endswith(".ckpt"):
         checkpoint = torch.load(model_path)
@@ -192,13 +192,13 @@ def load_model(
 
         # Load model configuration and instantiate the model
         config = load_bigbird_config(num_organisms)
-        model = transformers.BigBirdForMaskedLM(config=config)
+        model = BigBirdForMaskedLM(config=config)
         model.load_state_dict(state_dict)
 
     elif model_path.endswith(".pt"):
         state_dict = torch.load(model_path)
         config = state_dict.pop("self.config")
-        model = transformers.BigBirdForMaskedLM(config=config)
+        model = BigBirdForMaskedLM(config=config)
         model.load_state_dict(state_dict)
 
     else:
