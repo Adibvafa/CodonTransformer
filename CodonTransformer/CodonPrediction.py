@@ -33,8 +33,8 @@ def predict_dna_sequence(
     protein: str,
     organism: Union[int, str],
     device: torch.device,
-    tokenizer: Union[str, PreTrainedTokenizerFast, None] = None,
-    model: Union[str, torch.nn.Module, None] = None,
+    tokenizer: Union[str, PreTrainedTokenizerFast] = None,
+    model: Union[str, torch.nn.Module] = None,
     attention_type: str = "original_full",
 ) -> DNASequencePrediction:
     """
