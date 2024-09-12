@@ -80,7 +80,7 @@ def predict_dna_sequence(
         >>> # Set up device
         >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         >>> 
-        >>> # Load tokenizer and model (you can use paths or pre-loaded objects)
+        >>> # Load tokenizer and model
         >>> tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
         >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(device)
         >>> 
