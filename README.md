@@ -57,7 +57,7 @@ output = predict_dna_sequence(
     protein=protein,
     organism=organism,
     device=DEVICE,
-    tokenizer_object=tokenizer,
+    tokenizer=tokenizer,
     model=model,
     attention_type="original_full",
 )
