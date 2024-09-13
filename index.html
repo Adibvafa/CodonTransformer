@@ -53,22 +53,30 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <div style="text-align:center; margin-bottom:20px;">
-              <img src="static/images/codontransformer.png" alt="CodonTransformer" style="vertical-align: middle; height: 80px; width: 80px; margin-right: 10px;">
+              <img src="static/images/logo.png" alt="CodonTransformer" style="vertical-align: middle; height: 100px; width: 100px; margin-right: 10px;">
               <h1 class="title is-1 publication-title" style="display: inline; vertical-align: middle;">CodonTransformer</h1>
             </div>          
               <h1 class="title is-2 publication-title">A Multispecies Codon Optimizer<br>Using Context-aware Neural Networks</h1>
-            <div class="is-size-5 publication-authors">
-              <!-- Paper authors -->
-              <span class="author-block">
-                <a href="https://adibvafa.github.io/Portfolio/" target="_blank">Adibvafa Fallahpour<sup>1, 2, 3</sup>,&nbsp;</a></span>
-                <span class="author-block">
-                  <a href="https://scholar.google.fr/citations?user=NDAIQkUAAAAJ&hl=en" target="_blank">Ariel B. Lindner<sup>2</sup>,&nbsp;</a></span>
-                  <span class="author-block">
-                    <a href="https://scholar.google.nl/citations?user=zaOLiJEAAAAJ&hl=en" target="_blank">Guillaume J. Filion<sup>1</sup>,&nbsp;</a></span>
+                  <div class="is-size-5 publication-authors">
+                    <!-- Paper authors -->
                     <span class="author-block">
-                      <a href="https://scholar.google.fr/citations?user=JUQqV08AAAAJ&hl=en" target="_blank">Amir Pandi<sup>2</sup></a></span>
+                      <a href="https://adibvafa.github.io/Portfolio/" target="_blank">Adibvafa Fallahpour<sup>1, 2, 3*</sup>,&nbsp;</a>
+                    </span>
+                    <span class="author-block">
+                      <a href="mailto:vincent.gureghian@free.fr" target="_blank">Vincent Gureghian<sup>1, 2*</sup>,&nbsp;</a>
+                    </span>
+                    <span class="author-block">
+                      <a href="mailto:guillaume.filion@utoronto.ca" target="_blank">Guillaume J. Filion<sup>1†</sup>,&nbsp;</a>
+                    </span>
+                    <span class="author-block">
+                      <a href="mailto:ariel.lindner@inserm.fr" target="_blank">Ariel B. Lindner<sup>2†</sup>,&nbsp;</a>
+                    </span>
+                    <span class="author-block">
+                      <a href="mailto:amir.pandi@cri-paris.org" target="_blank">Amir Pandi<sup>2†</sup></a>
+                    </span>
                   </div>
-
+                  
+                
                   <div class="is-size-5 publication-authors" style="margin-top:15px;">
                     <span class="author-block">
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>1</sup>
@@ -85,6 +93,10 @@
                       Vector Institute&nbsp;
                       <img src="static/images/vector.png" alt="Vector Institute" style="float:right;width:30px;height:30px;">
                     </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </div>
+
+                  <div class="author-notes", style="margin-top:15px;">
+                    <p><sup>*</sup> Equal Contribution.&nbsp;&nbsp;&nbsp;<sup>†</sup> Equal Advising.</p>
                   </div>
 
                   <div class="column has-text-centered" style="margin-top: 5px;">
@@ -135,7 +147,7 @@
 
               <!-- Data link -->
               <span class="link-block">
-                <a href="https://zenodo.org/records/12509224" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                <a href="https://huggingface.co/datasets/adibvafa/CodonTransformer" target="_blank" class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                     <i class="fas fa-database"></i>
                   </span>
@@ -171,10 +183,10 @@
   </div>
 </section>
 
-
+<!-- 
 <div style="text-align:center; margin-bottom:50px;">
   <img src="static/images/codontransformer.png" alt="CodonTransformer" style="vertical-align: middle; width:20%; margin-right: 10px;">
-</div>
+</div> -->
 
 <!-- Paper abstract -->
 <section class="section hero is-light">
@@ -184,7 +196,7 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper tellus sed ante aliquam tempus. Etiam porttitor urna feugiat nibh elementum, et tempor dolor mattis. Donec accumsan enim augue, a vulputate nisi sodales sit amet. Proin bibendum ex eget mauris cursus euismod nec et nibh. Maecenas ac gravida ante, nec cursus dui. Vivamus purus nibh, placerat ac purus eget, sagittis vestibulum metus. Sed vestibulum bibendum lectus gravida commodo. Pellentesque auctor leo vitae sagittis suscipit.
+            The genetic code is degenerate allowing a multitude of possible DNA sequences to encode the same protein. This degeneracy impacts the efficiency of heterologous protein production due to the codon usage preferences of each organism. The process of tailoring organism-specific synonymous codons, known as codon optimization, must respect local sequence patterns that go beyond global codon preferences. As a result, the search space faces a combinatorial explosion that makes exhaustive exploration impossible. Nevertheless, throughout the diverse life on Earth, natural selection has already optimized the sequences, thereby providing a rich source of data allowing machine learning algorithms to explore the underlying rules. Here, we introduce CodonTransformer, a multispecies deep learning model trained on over 1 million DNA-protein pairs from 164 organisms spanning all kingdoms of life. The model demonstrates context-awareness thanks to the attention mechanism and bidirectionality of the Transformers we used, and to a novel sequence representation that combines organism, amino acid, and codon encodings. CodonTransformer generates host-specific DNA sequences with natural-like codon distribution profiles and with negative cis-regulatory elements. This work introduces a novel strategy of Shared Token Representation and Encoding with Aligned Multi-masking (STREAM) and provides a state-of-the-art codon optimization framework with a customizable open-access model and a user-friendly interface.
           </p>
         </div>
       </div>
