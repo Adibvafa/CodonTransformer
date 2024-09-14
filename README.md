@@ -7,7 +7,7 @@
     <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=E80070"></a>
     <a href="https://github.com/adibvafa/CodonTransformer/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/adibvafa/CodonTransformer.svg?color=00BEE8"></a>
     <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer?color=E8C800"></a>
-    <a href="https://zenodo.org/badge/latestdoi/155220641"><img src="https://zenodo.org/badge/155220641.svg?color=E8C800" alt="DOI"></a>
+    <a href="https://doi.org/10.1101/2024.09.13.612903"><img src="http://img.shields.io/badge/DOI-10.1101/2024.09.13.612903-000080.svg" alt="DOI"></a>
 </p>
 
 ## Table of Contents
@@ -484,5 +484,15 @@ We welcome contributions to CodonTransformer! Please fork the repository and sub
 If you use CodonTransformer or our data in your research, please cite our work:
 
 ```sh
-TBD
+@article {Fallahpour2024.09.13.612903,
+	author = {Fallahpour, Adibvafa and Gureghian, Vincent and Filion, Guillaume J. and Lindner, Ariel B. and Pandi, Amir},
+	title = {CodonTransformer: a multispecies codon optimizer using context-aware neural networks},
+	elocation-id = {2024.09.13.612903},
+	year = {2024},
+	doi = {10.1101/2024.09.13.612903},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2024/09/13/2024.09.13.612903},
+	eprint = {https://www.biorxiv.org/content/early/2024/09/13/2024.09.13.612903.full.pdf},
+	journal = {bioRxiv}
+}
 ```
