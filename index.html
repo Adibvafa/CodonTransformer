@@ -189,12 +189,12 @@
 </div> -->
 
 <!-- Paper abstract -->
-<section class="section hero is-light">
-  <div class="container is-max-desktop">
+<!-- <section class="section hero light">
+  <div class="container is-max-widescreen">
     <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
+      <div class="column is-nine-tenth">
         <h2 class="title is-3">Abstract</h2>
-        <div class="content has-text-justified">
+        <div class="content has-text-justified is-size-abstract">
           <p>
             The genetic code is degenerate allowing a multitude of possible DNA sequences to encode the same protein. This degeneracy impacts the efficiency of heterologous protein production due to the codon usage preferences of each organism. The process of tailoring organism-specific synonymous codons, known as codon optimization, must respect local sequence patterns that go beyond global codon preferences. As a result, the search space faces a combinatorial explosion that makes exhaustive exploration impossible. Nevertheless, throughout the diverse life on Earth, natural selection has already optimized the sequences, thereby providing a rich source of data allowing machine learning algorithms to explore the underlying rules. Here, we introduce CodonTransformer, a multispecies deep learning model trained on over 1 million DNA-protein pairs from 164 organisms spanning all kingdoms of life. The model demonstrates context-awareness thanks to the attention mechanism and bidirectionality of the Transformers we used, and to a novel sequence representation that combines organism, amino acid, and codon encodings. CodonTransformer generates host-specific DNA sequences with natural-like codon distribution profiles and with negative cis-regulatory elements. This work introduces a novel strategy of Shared Token Representation and Encoding with Aligned Multi-masking (STREAM) and provides a state-of-the-art codon optimization framework with a customizable open-access model and a user-friendly interface.
           </p>
@@ -202,8 +202,141 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
 <!-- End paper abstract -->
+
+<section class="section" id="Home">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Home</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p> Welcome to the CodonTransformer project page!       </p>
+      <p>
+        <strong>CodonTransformer</strong> is a cutting-edge, multispecies deep learning model designed for state-of-the-art codon optimization. Trained on over 1 million gene-protein pairs from 164 organisms spanning all kingdoms of life, CodonTransformer leverages advanced neural network architectures to generate host-specific DNA sequences with natural-like codon usage patterns and minimized negative cis-regulatory elements for any protein sequence.      </p>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: center; align-items: center; margin-top: 50px;">
+    <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab" target="_blank" class="button is-rounded is-dark" style="display: flex; align-items: center; font-size: 1.25rem; padding: 1.6rem 2rem;">
+      <img src="static/images/colab.png" alt="Colab Logo" style="width: 40px; height: 40px; margin-right: 20px;">
+      <span>Try CodonTransformer Now!</span>
+    </a>
+  </div>
+
+</section>
+
+<section class="section" id="Overview">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Overview</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p> The genetic code's degeneracy allows for multiple DNA sequences to encode the same protein, but not all codons are equal in the eyes of the host organism. Codon usage bias can significantly impact the efficiency of heterologous protein production due to differences in tRNA abundance, protein folding regulations, and evolutionary constraints.</p>
+      <p> CodonTransformer addresses this challenge by using the Transformer architecture and a novel training strategy named STREAM to learn and replicate the intricate codon usage patterns across a diverse array of organisms. By doing so, it provides a powerful tool for tailoring DNA sequences to optimize protein expression in various host species. </p>  
+    </div>
+    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+      <div class="column is-nine-tenth">
+        <img src="static/images/model.png" alt="Data" style="width:65%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Methods">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Methods</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p>
+        CodonTransformer utilizes the BigBird Transformer architecture, an advanced neural network model capable of efficiently processing long sequences. A novel sequence representation strategy, Shared Token Representation and Encoding with Aligned Multi-masking (STREAM), combines organism encoding with tokenized amino acid-codon pairs to achieve context-awareness.
+
+        This innovative approach allows the model to capture both global and local codon usage patterns, enabling it to generate DNA sequences that are finely tuned to the host organism's preferences.
+      </p>
+      <p><strong>Key Features</strong></p>
+      <ul>
+        <li><strong>Encoder-Only:</strong> Bidirectional design allows uniform optimization across the entire sequence.</li>
+        <li><strong>STREAM Encoding:</strong> Integrates organism, amino acid, and codon information into shared tokens.</li>
+        <li><strong>Masked Language Modeling:</strong> Learning complex patterns by predicting masked codons.</li>
+      </ul>
+    </div>
+    <!-- <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+      <div class="column is-nine-tenth">
+        <img src="static/images/model.png" alt="Data" style="width:65%;">
+      </div>
+    </div>
+  </div> -->
+</section>
+
+<section class="section" id="Results">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">CodonTransformer Outperforms Existing Tools</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p>
+        Through extensive testing and benchmarking, CodonTransformer demonstrates superior performance in generating natural-like codon distributions and minimizing negative cis-regulatory elements compared to existing codon optimization tools.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Results2">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Learning Codon Patterns Across Organisms</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p>
+        CodonTransformer effectively learned codon usage patterns across multiple species, as shown by high codon similarity indices (CSI) when generating DNA sequences for various organisms. The model adapts to the specific codon preferences of each host, ensuring optimal expression.
+      </p>
+    </div>
+    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+      <div class="column is-nine-tenth">
+        <img src="static/images/Fig. 2.jpg" alt="Data" style="width:95%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Results3">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Generating Natural-Like Codon Distributions</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p>
+        The model produces DNA sequences with codon usage patterns closely resembling those found in nature, avoiding clusters of rare or highly frequent codons that can negatively affect protein folding and expression. This is visualized using %MinMax profiles and Dynamic Time Warping (DTW) distance metrics.
+        </p>
+    </div>
+    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+      <div class="column is-nine-tenth">
+        <img src="static/images/Fig. 3.jpg" alt="Data" style="width:95%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Results4">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Benchmarking with Real World Proteins</h2>
+    <div class="content is-size-5 has-text-justified">
+      <p>
+        When benchmarked against proteins of biotechnological interest, CodonTransformer consistently generates sequences with minimized negative cis-regulatory elements, outperforming other tools. This enhances the potential for successful heterologous expression.
+      </p>
+    </div>
+    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+      <div class="column is-nine-tenth">
+        <img src="static/images/Fig. 4.jpg" alt="Data" style="width:95%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Features">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Why Choose CodonTransformer?</h2>
+    <div class="content is-size-5 has-text-justified">
+      <ul>
+        <li><strong>Multispecies Support:</strong> Trained on 164 organisms, CodonTransformer can optimize codon usage for a wide range of host species, including prokaryotes and eukaryotes.</li>
+        <li><strong>Context-Aware Optimization:</strong> The model considers both global codon usage biases and local sequence patterns, ensuring optimal DNA sequence design.</li>
+        <li><strong>Natural-Like Codon Distribution:</strong> Generates sequences with codon distributions similar to natural genes, aiding in proper protein folding and function.</li>
+        <li><strong>Minimizing Negative Cis-Regulatory Elements:</strong> Avoids sequences that could interfere with gene expression, enhancing the success rate of protein production.</li>
+        <li><strong>Open-Access and Customizable:</strong> The base and fine-tuned models are openly available, along with a comprehensive Python package and a user-friendly Google Colab notebook.</li>
+        <li><strong>Custom Fine-Tuning:</strong> Users can fine-tune the model on custom datasets to meet specific requirements or optimize for unique organisms.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
 
 <!--BibTex citation -->
