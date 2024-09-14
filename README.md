@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-    <a href="https://adibvafa.github.io/CodonTransformer/"><img alt="Documentation" src="https://img.shields.io/website/http/adibvafa.github.io/CodonTransformer/index.svg?color=00B89E&down_color=red&down_message=offline&up_message=online"></a>
-    <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=E80070"></a>
-    <a href="https://github.com/adibvafa/CodonTransformer/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/adibvafa/CodonTransformer.svg?color=00BEE8"></a>
-    <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer?color=E8C800"></a>
-    <a href="https://doi.org/10.1101/2024.09.13.612903"><img src="http://img.shields.io/badge/DOI-10.1101/2024.09.13.612903-000080.svg" alt="DOI"></a>
+  <a href="https://www.biorxiv.org/content/10.1101/2024.09.13.612903" target="_blank"><img src="https://img.shields.io/badge/arXiv-Paper-FF6B6B?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv"></a>
+  <a href="https://github.com/Adibvafa/CodonTransformer"><img src="https://img.shields.io/badge/GitHub-Code-4A90E2?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://adibvafa.github.io/CodonTransformer/"><img src="https://img.shields.io/badge/Website-Online-00B89E?style=for-the-badge&logo=internet-explorer&logoColor=white" alt="Website"></a>
+  <a href="https://huggingface.co/adibvafa/CodonTransformer"><img src="https://img.shields.io/badge/HuggingFace-Model-FFBF00?style=for-the-badge&logo=huggingface&logoColor=white" alt="HuggingFace Model"></a>
+  <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab"><img src="https://img.shields.io/badge/Colab-Notebook-e2006a?style=for-the-badge&logo=googlecolab&logoColor=white" alt="Colab"></a>
 </p>
 
 ## Table of Contents
