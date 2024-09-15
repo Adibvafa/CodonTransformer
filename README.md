@@ -166,19 +166,19 @@ To finetune CodonTransformer on your own data, follow these steps:
 
 ## Key Features
 - **CodonData** <br>
-For preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
+CodonData facilitates preprocessing of genetic information by cleaning and translating DNA and protein sequences, handling FASTA files, and managing codon frequencies from databases like NCBI and Kazusa.
 
 - **CodonPrediction** <br>
-For tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
+CodonPrediction enables preprocessing of sequences, the prediction of optimized DNA sequences tailored to specific organisms using the CodonTransformer model, and supports various other optimization strategies.
 
 - **CodonEvaluation** <br>
-For calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
+CodonEvaluation provides tools to compute evaluation metrics such as Codon Similarity Index (CSI), GC content, and Codon Frequency Distribution, allowing for detailed assessment of optimized sequences.
 
 - **CodonUtils** <br>
-Contains constants and helper functions for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
+CodonUtils offers essential constants and helper functions for genetic sequence analysis, including amino acid mappings, codon tables, taxonomy ID management, and sequence validation.
 
 - **CodonJupyter** <br>
-Offers Jupyter-specific functions for displaying interactive widgets, enhancing user interaction with the CodonTransformer package in a Jupyter notebook environment. Provides interactive and visually appealing interfaces for input and output.
+CodonJupyter enhances Jupyter notebook workflows with interactive widgets for selecting organisms and inputting protein sequences, as well as formatting and displaying optimized DNA sequence outputs.
 <br></br>
 
 
