@@ -1,37 +1,38 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
   <!-- Replace the content tag with appropriate information -->
-  <meta name="description" content="CodonTransformer: A Multispecies Codon Optimizer Using Context-aware Neural Networks.">
-  <meta property="og:title" content="CodonTransformer"/>
-  <meta property="og:description" content="A Multispecies Codon Optimizer Using Context-aware Neural Networks."/>
-  <meta property="og:url" content="https://adibvafa.github.io/CodonTransformer"/>
+  <meta name="description"
+    content="CodonTransformer: A Multispecies Codon Optimizer Using Context-aware Neural Networks.">
+  <meta property="og:title" content="CodonTransformer" />
+  <meta property="og:description" content="A Multispecies Codon Optimizer Using Context-aware Neural Networks." />
+  <meta property="og:url" content="https://adibvafa.github.io/CodonTransformer" />
   <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
   <meta property="og:image" content="static/image/banner.png" />
-  <meta property="og:image:width" content="1200"/>
-  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:title" content="CodonTransformer">
   <meta name="twitter:description" content="A Multispecies Codon Optimizer Using Context-aware Neural Networks.">
   <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
   <meta name="twitter:image" content="static/images/banner.png">
   <meta name="twitter:card" content="summary_large_image">
   <!-- Keywords for your paper to be indexed by-->
-  <meta name="keywords" content="CodonTransformer, codon optimization, protein expression, machine learning, bioinformatics, synthetic biology, computational biology">
+  <meta name="keywords"
+    content="CodonTransformer, codon optimization, protein expression, machine learning, bioinformatics, synthetic biology, computational biology">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>CodonTransformer</title>
   <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-  rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
 
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
   <link rel="stylesheet" href="static/css/bulma-slider.min.css">
   <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="static/css/index.css">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -45,6 +46,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
 </head>
+
 <body>
 
 
@@ -54,68 +56,75 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <div style="text-align:center; margin-bottom:20px;">
-              <img src="static/images/logo.png" alt="CodonTransformer" style="vertical-align: middle; height: 100px; width: 100px; margin-right: 10px;">
-              <h1 class="title is-1 publication-title" style="display: inline; vertical-align: middle;">CodonTransformer</h1>
-            </div>          
-              <h1 class="title is-2 publication-title">A Multispecies Codon Optimizer<br>Using Context-aware Neural Networks</h1>
-                  <div class="is-size-5 publication-authors">
-                    <!-- Paper authors -->
-                    <span class="author-block">
-                      <a href="https://adibvafa.github.io/Portfolio/" target="_blank">Adibvafa Fallahpour<sup>1, 2, 3*</sup>,&nbsp;</a>
-                    </span>
-                    <span class="author-block">
-                      <a href="mailto:vincent.gureghian@free.fr" target="_blank">Vincent Gureghian<sup>1, 2*</sup>,&nbsp;</a>
-                    </span>
-                    <span class="author-block">
-                      <a href="mailto:guillaume.filion@utoronto.ca" target="_blank">Guillaume J. Filion<sup>1†</sup>,&nbsp;</a>
-                    </span>
-                    <span class="author-block">
-                      <a href="mailto:ariel.lindner@inserm.fr" target="_blank">Ariel B. Lindner<sup>2†</sup>,&nbsp;</a>
-                    </span>
-                    <span class="author-block">
-                      <a href="mailto:amir.pandi@cri-paris.org" target="_blank">Amir Pandi<sup>2†</sup></a>
-                    </span>
-                  </div>
-                  
-                
-                  <div class="is-size-5 publication-authors" style="margin-top:15px;">
-                    <span class="author-block">
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>1</sup>
-                      University of Toronto
-                      <img src="static/images/uoft2.png" alt="University of Toronto" style="float:right;width:40px;height:40px;margin-top:-5px;">
-                      </span>
-                    <span class="author-block">
-                      &nbsp;&nbsp;&nbsp;<sup>2</sup>
-                      INSERM&nbsp;&nbsp;
-                      <img src="static/images/inserm.png" alt="INSERM" style="float:right;width:35px;height:35px;margin-top:-1px;">
-                      </span>
-                    <span class="author-block">
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>3</sup>
-                      Vector Institute&nbsp;
-                      <img src="static/images/vector.png" alt="Vector Institute" style="float:right;width:30px;height:30px;">
-                    </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  </div>
+              <img src="static/images/logo.png" alt="CodonTransformer"
+                style="vertical-align: middle; height: 100px; width: 100px; margin-right: 10px;">
+              <h1 class="title is-1 publication-title" style="display: inline; vertical-align: middle;">CodonTransformer
+              </h1>
+            </div>
+            <h1 class="title is-2 publication-title">A Multispecies Codon Optimizer<br>Using Context-aware Neural
+              Networks</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://adibvafa.github.io/Portfolio/" target="_blank">Adibvafa Fallahpour<sup>1, 2,
+                    3*</sup>,&nbsp;</a>
+              </span>
+              <span class="author-block">
+                <a href="mailto:vincent.gureghian@free.fr" target="_blank">Vincent Gureghian<sup>1, 2*</sup>,&nbsp;</a>
+              </span>
+              <span class="author-block">
+                <a href="mailto:guillaume.filion@utoronto.ca" target="_blank">Guillaume J.
+                  Filion<sup>1†</sup>,&nbsp;</a>
+              </span>
+              <span class="author-block">
+                <a href="mailto:ariel.lindner@inserm.fr" target="_blank">Ariel B. Lindner<sup>2†</sup>,&nbsp;</a>
+              </span>
+              <span class="author-block">
+                <a href="mailto:amir.pandi@cri-paris.org" target="_blank">Amir Pandi<sup>2†</sup></a>
+              </span>
+            </div>
 
-                  <div class="author-notes", style="margin-top:15px;">
-                    <p><sup>*</sup> Equal Contribution.&nbsp;&nbsp;&nbsp;<sup>†</sup> Equal Advising.</p>
-                  </div>
 
-                  <div class="column has-text-centered" style="margin-top: 5px;">
-                    <div class="publication-links">
-                         <!-- Arxiv PDF link -->
-                      <span class="link-block">
-                        <a href="https://www.biorxiv.org/content/10.1101/2024.09.13.612903" target="_blank"
-                        class="external-link button is-normal is-rounded is-dark">
-                        <span class="icon">
-                          <i class="ai ai-arxiv"></i>
-                        </span>
-                        <span>Paper</span>
-                      </a>
+            <div class="is-size-5 publication-authors" style="margin-top:15px;">
+              <span class="author-block">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>1</sup>
+                University of Toronto
+                <img src="static/images/uoft2.png" alt="University of Toronto"
+                  style="float:right;width:40px;height:40px;margin-top:-5px;">
+              </span>
+              <span class="author-block">
+                &nbsp;&nbsp;&nbsp;<sup>2</sup>
+                INSERM&nbsp;&nbsp;
+                <img src="static/images/inserm.png" alt="INSERM"
+                  style="float:right;width:35px;height:35px;margin-top:-1px;">
+              </span>
+              <span class="author-block">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>3</sup>
+                Vector Institute&nbsp;
+                <img src="static/images/vector.png" alt="Vector Institute" style="float:right;width:30px;height:30px;">
+              </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
+            <div class="author-notes" , style="margin-top:15px;">
+              <p><sup>*</sup> Equal Contribution.&nbsp;&nbsp;&nbsp;<sup>†</sup> Equal Advising.</p>
+            </div>
+
+            <div class="column has-text-centered" style="margin-top: 5px;">
+              <div class="publication-links">
+                <!-- Arxiv PDF link -->
+                <span class="link-block">
+                  <a href="https://www.biorxiv.org/content/10.1101/2024.09.13.612903" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
                     </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
 
-                  <!-- Github link -->
-                  <span class="link-block">
-                    <a href="https://github.com/Adibvafa/CodonTransformer" target="_blank"
+                <!-- Github link -->
+                <span class="link-block">
+                  <a href="https://github.com/Adibvafa/CodonTransformer" target="_blank"
                     class="external-link button is-normal is-rounded is-dark">
                     <span class="icon">
                       <i class="fab fa-github"></i>
@@ -124,51 +133,55 @@
                   </a>
                 </span>
 
-              <!-- Data link -->
-              <span class="link-block">
-                <a href="https://huggingface.co/datasets/adibvafa/CodonTransformer" target="_blank" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                    <i class="fas fa-database"></i>
-                  </span>
-                  <span>Data</span>
-                </a>
-              </span>
+                <!-- HuggingFace link -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/adibvafa/CodonTransformer" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <p>&#129303;</p>
+                    </span>
+                    <span>Model</span>
+                  </a>
+                </span>
 
-              <!-- HuggingFace link -->
-              <span class="link-block">
-                <a href="https://huggingface.co/adibvafa/CodonTransformer" target="_blank" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                    <p>&#129303;</p>
-                  </span>
-                  <span>Model</span>
-                </a>
-              </span>
+                <!-- Data link -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/adibvafa/CodonTransformer" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Data</span>
+                  </a>
+                </span>
 
-              <!-- Demo link -->
-              <span class="link-block">
-                <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab" target="_blank" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                    <img src="static/images/colab.png" alt="Colab Logo" style="width: 20px; height: 20px;"> <!-- Adjust the path as needed -->
-                  </span>
-                  <span>Colab Notebook</span>
-                </a>
-              </span>
+                <!-- Demo link -->
+                <span class="link-block">
+                  <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <img src="static/images/colab.png" alt="Colab Logo" style="width: 20px; height: 20px;">
+                      <!-- Adjust the path as needed -->
+                    </span>
+                    <span>Colab Notebook</span>
+                  </a>
+                </span>
 
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- 
+  <!-- 
 <div style="text-align:center; margin-bottom:50px;">
   <img src="static/images/codontransformer.png" alt="CodonTransformer" style="vertical-align: middle; width:20%; margin-right: 10px;">
 </div> -->
 
-<!-- Paper abstract -->
-<!-- <section class="section hero light">
+  <!-- Paper abstract -->
+  <!-- <section class="section hero light">
   <div class="container is-max-widescreen">
     <div class="columns is-centered has-text-centered">
       <div class="column is-nine-tenth">
@@ -182,160 +195,240 @@
     </div>
   </div>
 </section> -->
-<!-- End paper abstract -->
+  <!-- End paper abstract -->
 
-<section class="section" id="Home">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Home</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p> Welcome to the CodonTransformer project page!</p>
-      <p>
-        <strong>CodonTransformer</strong> is a cutting-edge, multispecies deep learning model designed for state-of-the-art codon optimization. Trained on over 1 million gene-protein pairs from 164 organisms spanning all kingdoms of life, CodonTransformer leverages advanced neural network architectures to generate host-specific DNA sequences with natural-like codon usage patterns and minimized negative cis-regulatory elements for any protein sequence.      </p>
-    </div>
-  </div>
-
-  <div style="display: flex; justify-content: center; align-items: center; margin-top: 50px;">
-    <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab" target="_blank" class="button is-rounded is-dark" style="display: flex; align-items: center; font-size: 1.25rem; padding: 1.25rem 2rem;">
-      <img src="static/images/colab.png" alt="Colab Logo" style="width: 40px; height: 40px; margin-right: 20px;">
-      <span>Try CodonTransformer Now!</span>
-    </a>
-  </div>
-
-</section>
-
-<section class="section" id="Overview">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Overview</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p> The genetic code's degeneracy allows for multiple DNA sequences to encode the same protein, but not all codons are equal in the eyes of the host organism. Codon usage bias can significantly impact the efficiency of heterologous protein production due to differences in tRNA abundance, protein folding regulations, and evolutionary constraints.</p>
-      <p> CodonTransformer addresses this challenge by using the Transformer architecture and a novel training strategy named STREAM to learn and replicate the intricate codon usage patterns across a diverse array of organisms. By doing so, it provides a powerful tool for tailoring DNA sequences to optimize protein expression in various host species. </p>  
-    </div>
-    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
-      <div class="column is-nine-tenth">
-        <img src="static/images/codon.png" alt="Data" style="width:95%;">
-        <div class="image-caption" style="margin-top: 5pt; text-align: left;">
-          <p><strong>Fig. 1: CodonTransformer multispecies model with combined organism-amino acid-codon embedding.</strong></p>
-          <p> <strong>a.</strong> An encoder-only BigBird Transformer model trained by combined amino acid-codon tokens along with organism encoding for host-specific codon usage representation. <strong>b.</strong> CodonTransformer was trained with ~1 million genes from 164 organisms across all kingdoms of life and fine-tuned with highly expressed genes (top 10% codon usage index, CSI) of 13 organisms and two chloroplast genomes.</p>
-        </div>
+  <section class="section" id="Home">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Introducing CodonTransformer</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          <strong>CodonTransformer</strong> is a cutting-edge, multispecies deep learning model designed for
+          state-of-the-art codon optimization. Trained on over 1 million gene-protein pairs from 164 organisms spanning
+          all kingdoms of life, CodonTransformer leverages advanced neural network architectures to generate
+          host-specific DNA sequences with natural-like codon usage patterns and minimized negative cis-regulatory
+          elements for any protein sequence.
+        </p>
       </div>
     </div>
-  </div>
-</section>
 
-<section class="section" id="Methods">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Methods</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p>
-        CodonTransformer utilizes the BigBird Transformer architecture, an advanced neural network model capable of efficiently processing long sequences. A novel sequence representation strategy, Shared Token Representation and Encoding with Aligned Multi-masking (STREAM), combines organism encoding with tokenized amino acid-codon pairs to achieve context-awareness.
-
-        This innovative approach allows the model to capture both global and local codon usage patterns, enabling it to generate DNA sequences that are finely tuned to the host organism's preferences.
-      </p>
-      <p><strong>Key Features</strong></p>
-      <ul>
-        <li><strong>Encoder-Only:</strong> Bidirectional design allows uniform optimization across the entire sequence.</li>
-        <li><strong>STREAM Encoding:</strong> Integrates organism, amino acid, and codon information into shared tokens.</li>
-        <li><strong>Masked Language Modeling:</strong> Learning complex patterns by predicting masked codons.</li>
-      </ul>
+    <div style="display: flex; justify-content: center; align-items: center; margin-top: 40px;">
+      <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab" target="_blank"
+        class="button is-rounded is-dark"
+        style="display: flex; align-items: center; font-size: 1.2rem; padding: 1.25rem 2rem;">
+        <img src="static/images/colab.png" alt="Colab Logo" style="width: 30px; height: 30px; margin-right: 20px;">
+        <span>Try CodonTransformer Now!</span>
+      </a>
     </div>
-    <!-- <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+
+  </section>
+
+  <section class="section" id="Overview">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Overview</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p> The genetic code's degeneracy allows for multiple DNA sequences to encode the same protein, but not all
+          codons are equal in the eyes of the host organism. Codon usage bias can significantly impact the efficiency of
+          heterologous protein production due to differences in tRNA abundance, protein folding regulations, and
+          evolutionary constraints.</p>
+        <p> CodonTransformer uses the Transformer architecture and a novel training strategy named STREAM (Shared Token
+          Representation and Encoding with Aligned Multi-masking) to learn and replicate the intricate codon usage
+          patterns across a diverse array of organisms. By doing so, it provides a powerful tool for optimizing DNA
+          sequences for expression in various host species. </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="Methods">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Model</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          CodonTransformer addresses the challenge of codon optimization by translating protein sequences into optimized
+          codon sequences
+          using the encoder-only BigBird Transformer architecture. We frame this task as a Masked Language Modeling
+          (MLM) problem,
+          where the model predicts codons by unmasking tokens from [aminoacid_UNK] to [aminoacid_codon].
+          Our innovative STREAM training strategy allows the model to learn codon usage patterns by unmasking multiple
+          mask tokens
+          while organism specific embeddings are added to the sequence to contextualize predictions.
+        </p>
+        <p>
+          The training process involves two stages: pretraining on over one million DNA-protein pairs from 164 diverse
+          organisms
+          to capture universal codon usage patterns, followed by fine-tuning on a curated subset of highly optimized
+          genes
+          specific to target organisms. This dual training strategy enables CodonTransformer to generate DNA sequences
+          with
+          natural-like codon distributions tailored to each host, effectively optimizing gene expression across multiple
+          species.
+        </p>
+      </div>
+
+      <div class="columns is-centered" style="margin-top:20px;text-align:center;">
+        <div class="column is-nine-tenth">
+          <img src="static/images/codon.png" alt="Data" style="width:95%;">
+          <div class="image-caption" style="margin-top: 5pt; text-align: left;">
+            <p><strong>Fig. 1: CodonTransformer multispecies model with combined organism-amino acid-codon
+                embedding.</strong></p>
+            <p> <strong>a.</strong> An encoder-only BigBird Transformer model trained by combined amino acid-codon
+              tokens along with organism encoding for host-specific codon usage representation. <strong>b.</strong>
+              CodonTransformer was trained with ~1 million genes from 164 organisms across all kingdoms of life and
+              fine-tuned with highly expressed genes (top 10% codon usage index, CSI) of 13 organisms and two
+              chloroplast genomes.</p>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="columns is-centered" style="margin-top:15px;text-align:center;">
       <div class="column is-nine-tenth">
         <img src="static/images/model.png" alt="Data" style="width:65%;">
       </div>
     </div>
   </div> -->
-</section>
+  </section>
 
-<section class="section" id="Results">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">CodonTransformer Outperforms Existing Tools</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p>
-        Through extensive testing and benchmarking, CodonTransformer demonstrates superior performance in generating natural-like codon distributions and minimizing negative cis-regulatory elements compared to existing codon optimization tools.
-      </p>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="Results2">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Learning Codon Patterns Across Organisms</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p>
-        CodonTransformer effectively learned codon usage patterns across multiple species, as shown by high codon similarity indices (CSI) when generating DNA sequences for various organisms. The model adapts to the specific codon preferences of each host, ensuring optimal expression.
-      </p>
-    </div>
-    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
-      <div class="column is-nine-tenth">
-        <img src="static/images/Fig. 2.jpg" alt="Data" style="width:95%;">
-      </div>
-    </div>
-    <div class="image-caption" style="margin-top: -10pt; text-align: left;">
-      <p><strong>Fig. 2: CodonTransformer learned codon patterns across organisms.</strong></p>
-      <p>Codon usage index (CSI) for all and the top 10% CSI original genes and generated DNA sequences for all original proteins by CodonTransformer (base and fine-tuned models) for 9 out of 15 genomes used for fine-tuning in this study. See Supplementary Figs. 2-16 for all 15 genomes and additional metrics of GC content codon and distribution frequency (CDF). Source data for Fig. 2 and Supplementary Figs. 2-16 is available at <a href="https://zenodo.org/records/13262517" target="_blank">https://zenodo.org/records/13262517</a>.</p>
-
-    </div>
-  </div>
-</section>
-
-<section class="section" id="Results3">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Generating Natural-Like Codon Distributions</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p>
-        The model produces DNA sequences with codon usage patterns closely resembling those found in nature, avoiding clusters of rare or highly frequent codons that can negatively affect protein folding and expression. This is visualized using %MinMax profiles and Dynamic Time Warping (DTW) distance metrics.
+  <section class="section" id="Results">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">CodonTransformer Outperforms Existing Tools</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          CodonTransformer demonstrates superior performance in generating
+          natural-like codon distributions and minimizing negative cis-regulatory elements compared to existing codon
+          optimization tools. <br> Here are the benchmarking and evaluation results of CodonTransformer:
         </p>
-    </div>
-    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
-      <div class="column is-nine-tenth">
-        <img src="static/images/Fig. 3.jpg" alt="Data" style="width:95%;">
       </div>
     </div>
-    <div class="image-caption" style="margin-top: -10pt; text-align: left;">
-      <p><strong>Fig. 3: CodonTransformer generates natural-like codon distributions.</strong></p>
-      <p> <strong>a.</strong> Schematic representation of %MinMax and dynamic time warping (DTW). %Minmax represents the proportion of common and rare codons in a sliding window of 18 codons. DTW algorithm computes the minimal distance between two %MinMax profiles by finding the matching positions (Methods). <strong>b.</strong> %MinMax profiles for sequences generated by different models for genes yahG (E. coli),  SER33 (S. cerevisiae), AT4G12540 (A. ²thaliana), Csad (M. musculus), ZBTB7C (H. sapiens). <strong>c.</strong> DTW distances between %MinMax profiles of model-generated sequences and their genomic counterparts for 50 random genes selected among the top 10% codon similarity index (CSI). For each organism, the gene for which the %MinMax profiles are represented above (b) is highlighted in grey. <strong>d.</strong> Mean and standard deviation of normalized DTW distances by sequence length between sequences for the 5 organisms (for organism-specific DTW distances, see Supplementary Figs. 17). Data underlying this figure is provided in Supplementary Data 1.</p>
-    </div>
-</section>
+  </section>
 
-<section class="section" id="Results4">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Benchmarking with Real World Proteins</h2>
-    <div class="content is-size-5 has-text-justified">
-      <p>
-        When benchmarked against proteins of biotechnological interest, CodonTransformer consistently generates sequences with minimized negative cis-regulatory elements, outperforming other tools. This enhances the potential for successful heterologous expression.
-      </p>
-    </div>
-    <div class="columns is-centered" style="margin-top:15px;text-align:center;">
-      <div class="column is-nine-tenth">
-        <img src="static/images/Fig. 4.jpg" alt="Data" style="width:95%;">
+  <section class="section" id="Results2">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Learning Codon Patterns Across Organisms</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          CodonTransformer effectively learned codon usage patterns across multiple species, as shown by high codon
+          similarity indices (CSI) when generating DNA sequences for various organisms. The model adapts to the specific
+          codon preferences of each host, ensuring optimal expression.
+        </p>
+      </div>
+      <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+        <div class="column is-nine-tenth">
+          <img src="static/images/Fig. 2.jpg" alt="Data" style="width:95%;">
+        </div>
+      </div>
+      <div class="image-caption" style="margin-top: -10pt; text-align: left;">
+        <p><strong>Fig. 2: CodonTransformer learned codon patterns across organisms.</strong></p>
+        <p>Codon usage index (CSI) for all and the top 10% CSI original genes and generated DNA sequences for all
+          original proteins by CodonTransformer (base and fine-tuned models) for 9 out of 15 genomes used for
+          fine-tuning in this study. See Supplementary Figs. 2-16 for all 15 genomes and additional metrics of GC
+          content codon and distribution frequency (CDF). Source data for Fig. 2 and Supplementary Figs. 2-16 is
+          available at <a href="https://zenodo.org/records/13262517"
+            target="_blank">https://zenodo.org/records/13262517</a>.</p>
+
       </div>
     </div>
-    <div class="image-caption" style="margin-top: -10pt; text-align: left;">
-      <p><strong>Fig. 4: Model benchmark with proteins of biotechnological interest.</strong></p>
-      <p> Mean and standard deviation of Jaccard index <strong>(a)</strong>, sequence similarity <strong>(b)</strong>, and dynamic time warping <strong>(c)</strong> distance between corresponding sequences for the 52 benchmark proteins across the 5 organisms (for organism-specific results, see Supplementary Figs. 19, 20, and 21, respectively). <strong>(d)</strong>, Number of negative cis-elements in the sequences generated by different tools (✕ shows the mean). Data underlying this figure is provided in Supplementary Data 2.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="section" id="getting-started">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Getting Started</h2>
-    
-    <h3 class="title is-4" style="margin-top: 60px;">Installation</h3>
-    <div class="content is-size-5">
-      <p>Install CodonTransformer via pip:</p>
-      <pre><code class="language-sh" style="font-size: 0.9em; line-height: 1;">pip install CodonTransformer</code></pre>
-      <p>Or clone the repository:</p>
-      <pre><code class="language-sh" style="font-size: 0.9em; line-height: 1;">git clone https://github.com/adibvafa/CodonTransformer.git
+  <section class="section" id="Results3">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Generating Natural-Like Codon Distributions</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          The model produces DNA sequences with codon usage patterns closely resembling those found in nature, avoiding
+          clusters of rare or highly frequent codons that can negatively affect protein folding and expression. This is
+          visualized using %MinMax profiles and Dynamic Time Warping (DTW) distance metrics.
+        </p>
+      </div>
+      <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+        <div class="column is-nine-tenth">
+          <img src="static/images/Fig. 3.jpg" alt="Data" style="width:95%;">
+        </div>
+      </div>
+      <div class="image-caption" style="margin-top: -10pt; text-align: left;">
+        <p><strong>Fig. 3: CodonTransformer generates natural-like codon distributions.</strong></p>
+        <p> <strong>a.</strong> Schematic representation of %MinMax and dynamic time warping (DTW). %Minmax represents
+          the proportion of common and rare codons in a sliding window of 18 codons. DTW algorithm computes the minimal
+          distance between two %MinMax profiles by finding the matching positions (Methods). <strong>b.</strong> %MinMax
+          profiles for sequences generated by different models for genes yahG (E. coli), SER33 (S. cerevisiae),
+          AT4G12540 (A. ²thaliana), Csad (M. musculus), ZBTB7C (H. sapiens). <strong>c.</strong> DTW distances between
+          %MinMax profiles of model-generated sequences and their genomic counterparts for 50 random genes selected
+          among the top 10% codon similarity index (CSI). For each organism, the gene for which the %MinMax profiles are
+          represented above (b) is highlighted in grey. <strong>d.</strong> Mean and standard deviation of normalized
+          DTW distances by sequence length between sequences for the 5 organisms (for organism-specific DTW distances,
+          see Supplementary Figs. 17). Data underlying this figure is provided in Supplementary Data 1.</p>
+      </div>
+  </section>
+
+  <section class="section" id="Results4">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Benchmarking with Real World Proteins</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          When benchmarked against proteins of biotechnological interest, CodonTransformer consistently generates
+          sequences with minimized negative cis-regulatory elements, outperforming other tools. This enhances the
+          potential for successful heterologous expression.
+        </p>
+      </div>
+      <div class="columns is-centered" style="margin-top:15px;text-align:center;">
+        <div class="column is-nine-tenth">
+          <img src="static/images/Fig. 4.jpg" alt="Data" style="width:95%;">
+        </div>
+      </div>
+      <div class="image-caption" style="margin-top: -10pt; text-align: left;">
+        <p><strong>Fig. 4: Model benchmark with proteins of biotechnological interest.</strong></p>
+        <p> Mean and standard deviation of Jaccard index <strong>(a)</strong>, sequence similarity <strong>(b)</strong>,
+          and dynamic time warping <strong>(c)</strong> distance between corresponding sequences for the 52 benchmark
+          proteins across the 5 organisms (for organism-specific results, see Supplementary Figs. 19, 20, and 21,
+          respectively). <strong>(d)</strong>, Number of negative cis-elements in the sequences generated by different
+          tools (✕ shows the mean). Data underlying this figure is provided in Supplementary Data 2.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="getting-started">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Getting Started</h2>
+
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          Along with open-source the data and model, we also provide a comprehensive Python package for 
+          codon optimization. The CodonTransformer package has 5 modules:
+        </p>
+      </div>
+      <div class="content is-size-5">
+        <ul>
+          <li style="margin-top: 20px; margin-left: -20px;"><strong>CodonData</strong> <br>facilitates processing of genetic information by cleaning and translating DNA and protein sequences, FASTA files, and managing codon frequencies from databases like NCBI and Kazusa.
+          </li>
+
+          <li style="margin-top: 20px; margin-left: -20px;"><strong>CodonPrediction</strong> <br>enables preprocessing of sequences, prediction of optimized DNA sequences using the CodonTransformer model, and supports various other optimization strategies.
+          </li>
+
+          <li style="margin-top: 20px; margin-left: -20px;"><strong>CodonEvaluation</strong> <br>provides tools to compute evaluation metrics such as Codon Similarity Index (CSI), GC content, and Codon Frequency Distribution, allowing for detailed assessment of optimized sequences.
+          </li>
+
+          <li style="margin-top: 20px; margin-left: -20px;"><strong>CodonUtils</strong> <br>offers essential constants and helper functions for genetic sequence analysis, including amino acid mappings, codon tables, taxonomy ID management, and sequence validation.
+          </li>
+
+          <li style="margin-top: 20px; margin-left: -20px;"><strong>CodonJupyter</strong> <br>enhances Jupyter notebook workflows with interactive widgets for selecting organisms and inputting protein sequences, formatting and displaying optimized DNA sequence outputs.
+          </li>
+        </ul>
+      </div>
+
+      <h3 class="title is-4" style="margin-top: 60px;">Installation</h3>
+      <div class="content is-size-5">
+        <p>Install CodonTransformer via pip:</p>
+        <pre><code class="language-sh" style="font-size: 0.9em; line-height: 1;">pip install CodonTransformer</code></pre>
+        <p>Or clone the repository:</p>
+        <pre><code class="language-sh" style="font-size: 0.9em; line-height: 1;">git clone https://github.com/adibvafa/CodonTransformer.git
 cd CodonTransformer
 pip install -r requirements.txt</code></pre>
-      <p>The package requires <code>python>=3.9</code>. The requirements are <a href="https://github.com/Adibvafa/CodonTransformer/blob/main/requirements.txt" target="_blank">available here</a>.</p>
-    </div>
+        <p>The package requires <code>python>=3.9</code>. The requirements are <a
+            href="https://github.com/Adibvafa/CodonTransformer/blob/main/requirements.txt" target="_blank">available
+            here</a>.</p>
+      </div>
 
-    <h3 class="title is-4" style="margin-top: 60px;">Use Case</h3>
-    <div class="content is-size-5">
-      <p>After installing CodonTransformer, you can use:</p>
-      <pre><code class="language-python" style="font-size: 0.85em; line-height: 1.2;">import torch
+      <h3 class="title is-4" style="margin-top: 60px;">Use Case</h3>
+      <div class="content is-size-5">
+        <p>After installing CodonTransformer, you can use:</p>
+        <pre><code class="language-python" style="font-size: 0.85em; line-height: 1.2;">import torch
 from transformers import AutoTokenizer, BigBirdForMaskedLM
 from CodonTransformer.CodonPrediction import predict_dna_sequence
 from CodonTransformer.CodonJupyter import format_model_output
@@ -361,7 +454,7 @@ output = predict_dna_sequence(
 )
 print(format_model_output(output))</code></pre>
 
-      <pre><code class="language-python" style="font-size: 0.85em; line-height: 1.2;">-----------------------------
+        <pre><code class="language-python" style="font-size: 0.85em; line-height: 1.2; ">-----------------------------
 |          Organism         |
 -----------------------------
 Escherichia coli general
@@ -380,41 +473,60 @@ M_UNK A_UNK L_UNK W_UNK M_UNK R_UNK L_UNK L_UNK P_UNK L_UNK L_UNK A_UNK L_UNK L_
 |       Predicted DNA       |
 -----------------------------
 ATGGCTTTATGGATGCGTCTGCTGCCGCTGCTGGCGCTGCTGGCGCTGTGGGGCCCGGACCCGGCGGCGGCGTTTGTGAATCAGCACCTGTGCGGCAGCCACCTGGTGGAAGCGCTGTATCTGGTGTGCGGTGAGCGCGGCTTCTTCTACACGCCCAAAACCCGCCGCGAAGCGGAAGATCTGCAGGTGGGCCAGGTGGAGCTGGGCGGCTAA</code></pre>
+
+      <p>
+        You can use the <a href="https://github.com/Adibvafa/CodonTransformer/raw/main/src/CodonTransformer_inference_template.xlsx">inference template</a> for batch inference in <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab">Google Colab</a>.
+      </p>
+      </div>
+
     </div>
+  </section>
 
-    <h3 class="title is-4" style="margin-top: 60px;">Key Features</h3>
-    <div class="content is-size-5">
-      <ul>
-        <li><strong>CodonData:</strong> Preprocess NCBI or Kazusa databases and prepare data for training and inference.</li>
-        <li><strong>CodonPrediction:</strong> Tokenize input, load models, predict DNA sequences, and provide helper functions for data processing.</li>
-        <li><strong>CodonEvaluation:</strong> Calculate evaluation metrics related to codon usage and DNA sequence analysis.</li>
-        <li><strong>CodonUtils:</strong> Contain constants and helper functions for working with genetic sequences, amino acids, and organism data.</li>
-        <li><strong>CodonJupyter:</strong> Offer Jupyter-specific functions for displaying interactive widgets and enhancing user interaction.</li>
-      </ul>
+
+  <section class="section" id="Features">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3" style="margin-bottom: 40px;">Why Choose CodonTransformer?</h2>
+      <div class="content is-size-5 has-text-justified">
+        <ul style="margin-left: 25px">
+          <li style="margin-bottom: 20px;"><strong>Multispecies Support</strong><br>
+            Trained on 164 organisms, CodonTransformer can optimize codon usage
+            for a wide range of host species, including prokaryotes and eukaryotes.</li>
+          <li style="margin-bottom: 20px;"><strong>Context-Aware Optimization</strong><br>
+            The model considers both global codon usage biases and local
+            sequence patterns, ensuring optimal DNA sequence design.</li>
+          <li style="margin-bottom: 20px;"><strong>Natural-Like Codon Distribution</strong><br>
+            Generates sequences with codon distributions similar to
+            natural genes, aiding in proper protein folding and function.</li>
+          <li style="margin-bottom: 20px;"><strong>Open-Access and Flexible</strong><br>
+            The base and fine-tuned models are openly available, along
+            with a comprehensive Python package and a user-friendly Google Colab notebook.</li>
+          <li style="margin-bottom: 0px;"><strong>Custom Fine-Tuning</strong><br>
+            Users can fine-tune the model on custom datasets to meet specific
+            requirements or optimize for unique organisms.</li>
+        </ul>
+      </div>
     </div>
+  </section>
 
-  </div>
-</section>
-
-
-<section class="section" id="Features">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3">Why Choose CodonTransformer?</h2>
-    <div class="content is-size-5 has-text-justified">
-      <ul>
-        <li><strong>Multispecies Support:</strong> Trained on 164 organisms, CodonTransformer can optimize codon usage for a wide range of host species, including prokaryotes and eukaryotes.</li>
-        <li><strong>Context-Aware Optimization:</strong> The model considers both global codon usage biases and local sequence patterns, ensuring optimal DNA sequence design.</li>
-        <li><strong>Natural-Like Codon Distribution:</strong> Generates sequences with codon distributions similar to natural genes, aiding in proper protein folding and function.</li>
-        <li><strong>Minimizing Negative Cis-Regulatory Elements:</strong> Avoids sequences that could interfere with gene expression, enhancing the success rate of protein production.</li>
-        <li><strong>Open-Access and Customizable:</strong> The base and fine-tuned models are openly available, along with a comprehensive Python package and a user-friendly Google Colab notebook.</li>
-        <li><strong>Custom Fine-Tuning:</strong> Users can fine-tune the model on custom datasets to meet specific requirements or optimize for unique organisms.</li>
-      </ul>
+  <section class="section" id="Conclusion">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3" style="margin-bottom: 25px;">Conclusion</h2>
+      <div class="content is-size-5 has-text-justified">
+        <p>
+          CodonTransformer represents a significant advancement in codon optimization by leveraging a multispecies, context-aware deep learning approach trained on 164 diverse organisms. Its ability to generate natural-like codon distributions and minimize negative cis-regulatory elements ensures optimized gene expression while preserving protein structure and function.
+        </p>
+        <p>
+          The model's flexibility is further enhanced through customizable fine-tuning, allowing users to tailor optimizations to specific gene sets or unique organisms. As an open-access tool, CodonTransformer provides comprehensive resources, including a Python package and an interactive Google Colab notebook, facilitating widespread adoption and adaptation for various biotechnological applications.
+        </p>
+        <p>
+          By integrating evolutionary insights and advanced neural network architectures, CodonTransformer sets a new standard for efficient and accurate gene design, with potential extensions to protein engineering and therapeutic development.
+        </p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
 
-<!--BibTex citation -->
+  <!--BibTex citation -->
   <section class="section" id="BibTeX">
     <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
@@ -430,33 +542,38 @@ ATGGCTTTATGGATGCGTCTGCTGCCGCTGCTGGCGCTGCTGGCGCTGTGGGGCCCGGACCCGGCGGCGGCGTTTGTGAA
         journal = {bioRxiv}
       }</code></pre>
     </div>
-</section>
-<!--End BibTex citation -->
+  </section>
+  <!--End BibTex citation -->
 
 
   <footer class="footer">
-  <div class="container">
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
 
-          <p>
-            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
-            You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
-            Commons Attribution-ShareAlike 4.0 International License</a>.
-          </p>
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template"
+                target="_blank">Academic Project Page Template</a> which was adopted from the <a
+                href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the of this website, we just ask that you link back to this page in the footer.
+              <br> This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
 
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
 
-<!-- Statcounter tracking code -->
-  
-<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+  <!-- Statcounter tracking code -->
 
-    <!-- End of Statcounter Code -->
+  <!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
 
-  </body>
+  <!-- End of Statcounter Code -->
+
+</body>
+
 </html>
