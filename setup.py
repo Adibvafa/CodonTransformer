@@ -10,10 +10,11 @@ def read_requirements():
 
 def read_readme():
     here = os.path.abspath(os.path.dirname(__file__))
-    readme_path = os.path.join(here, 'README.md')
-    
-    with open(readme_path, 'r', encoding='utf-8') as f:
+    readme_path = os.path.join(here, "README.md")
+
+    with open(readme_path, "r", encoding="utf-8") as f:
         return f.read()
+
 
 setup(
     name="CodonTransformer",
