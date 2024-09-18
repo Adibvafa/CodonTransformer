@@ -593,6 +593,10 @@ def get_organism2id_dict(organism_reference: str) -> Dict[str, int]:
 
     Args:
         organism_reference (str): Path to a CSV file containing a list of all organisms.
+        The format of the CSV file should be as follows:
+            0,Escherichia coli
+            1,Homo sapiens
+            2,Mus musculus
 
     Returns:
         Dict[str, int]: A dictionary mapping organism names to their respective indices.

@@ -15,12 +15,13 @@ from transformers import (
     PreTrainedTokenizerFast,
     BigBirdConfig,
     AutoTokenizer,
-    BigBirdForMaskedLM
+    BigBirdForMaskedLM,
 )
 import numpy as np
 
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
+    AMINO_ACIDS,
     ORGANISM2ID,
     TOKEN2INDEX,
     INDEX2TOKEN,
@@ -76,18 +77,18 @@ def predict_dna_sequence(
         >>> from transformers import AutoTokenizer, BigBirdForMaskedLM
         >>> from CodonTransformer.CodonPrediction import predict_dna_sequence
         >>> from CodonTransformer.CodonJupyter import format_model_output
-        >>> 
+        >>>
         >>> # Set up device
         >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        >>> 
+        >>>
         >>> # Load tokenizer and model
         >>> tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
         >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(device)
-        >>> 
+        >>>
         >>> # Define protein sequence and organism
         >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG"
         >>> organism = "Escherichia coli general"
-        >>> 
+        >>>
         >>> # Predict DNA sequence
         >>> output = predict_dna_sequence(
         ...     protein=protein,
@@ -97,11 +98,18 @@ def predict_dna_sequence(
         ...     model=model,
         ...     attention_type="original_full"
         ... )
-        >>> 
+        >>>
         >>> print(format_model_output(output))
     """
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
+
+    if not isinstance(protein, str):
+        raise ValueError("Protein sequence must be a string.")
+
+    # Test that the input protein sequence contains only valid amino acids
+    if not all(aminoacid in AMINO_ACIDS for aminoacid in protein):
+        raise ValueError("Invalid amino acid found in protein sequence.")
 
     # Load tokenizer
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
@@ -127,9 +135,7 @@ def predict_dna_sequence(
             "codons": merged_seq,
             "organism": organism_id,
         }
-        tokenized_input = tokenize([input_dict], tokenizer=tokenizer).to(
-            device
-        )
+        tokenized_input = tokenize([input_dict], tokenizer=tokenizer).to(device)
 
         # Get the model predictions
         output_dict = model(**tokenized_input, return_dict=True)
@@ -202,7 +208,9 @@ def load_model(
         model.load_state_dict(state_dict)
 
     else:
-        raise ValueError("Unsupported file type. Please provide a .ckpt or .pt file, or None to load from HuggingFace.")
+        raise ValueError(
+            "Unsupported file type. Please provide a .ckpt or .pt file, or None to load from HuggingFace."
+        )
 
     # Prepare model for evaluation
     model.bert.set_attention_type(attention_type)
@@ -386,7 +394,7 @@ def get_high_frequency_choice_sequence(
 
 
 def precompute_most_frequent_codons(
-    codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
+    codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
 ) -> Dict[str, str]:
     """
     Precompute the most frequent codon for each amino acid.
@@ -449,7 +457,7 @@ def get_background_frequency_choice_sequence(
 
 
 def precompute_cdf(
-    codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
+    codon_frequencies: Dict[str, Tuple[List[str], List[float]]],
 ) -> Dict[str, Tuple[List[str], Any]]:
     """
     Precompute the cumulative distribution function (CDF) for each amino acid.
