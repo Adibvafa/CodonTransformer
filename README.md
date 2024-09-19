@@ -142,8 +142,7 @@ To finetune CodonTransformer on your own data, follow these steps:
 <br>
 
 3. **Run the finetuning script**
-
-   Execute finetune.py with appropriate arguments:
+   Execute finetune.py with appropriate arguments: (an example)
     ```bash
      python finetune.py \
         --dataset_dir 'your_dataset_directory/training_data.json' \
