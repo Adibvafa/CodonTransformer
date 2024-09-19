@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-    <a href="https://adibvafa.github.io/CodonTransformer/"><img alt="Documentation" src="https://img.shields.io/website/http/adibvafa.github.io/CodonTransformer/index.svg?color=00B89E&down_color=red&down_message=offline&up_message=online"></a>
-    <a href="https://github.com/adibvafa/CodonTransformer/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/adibvafa/CodonTransformer.svg?color=E80070"></a>
-    <a href="https://github.com/adibvafa/CodonTransformer/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/adibvafa/CodonTransformer.svg?color=00BEE8"></a>
-    <a href="https://pypi.org/project/CodonTransformer/"><img alt="PyPI" src="https://img.shields.io/pypi/v/CodonTransformer?color=E8C800"></a>
-    <a href="https://doi.org/10.1101/2024.09.13.612903"><img src="http://img.shields.io/badge/DOI-10.1101/2024.09.13.612903-000080.svg" alt="DOI"></a>
+  <a href="https://www.biorxiv.org/content/10.1101/2024.09.13.612903" target="_blank"><img src="https://img.shields.io/badge/arXiv-Paper-FF6B6B?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv"></a>
+  <a href="https://github.com/Adibvafa/CodonTransformer"><img src="https://img.shields.io/badge/GitHub-Code-4A90E2?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://adibvafa.github.io/CodonTransformer/"><img src="https://img.shields.io/badge/Website-Online-00B89E?style=for-the-badge&logo=internet-explorer&logoColor=white" alt="Website"></a>
+  <a href="https://huggingface.co/adibvafa/CodonTransformer"><img src="https://img.shields.io/badge/HuggingFace-Model-FFBF00?style=for-the-badge&logo=huggingface&logoColor=white" alt="HuggingFace Model"></a>
+  <a href="https://adibvafa.github.io/CodonTransformer/GoogleColab"><img src="https://img.shields.io/badge/Colab-Notebook-e2006a?style=for-the-badge&logo=googlecolab&logoColor=white" alt="Colab"></a>
 </p>
 
 ## Table of Contents
@@ -115,14 +115,14 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 To finetune CodonTransformer on your own data, follow these steps:
 
 1. **Prepare your dataset**
-   
+
    Create a CSV file with the following columns:
    - `dna`: DNA sequences (string, preferably uppercase ATCG)
    - `protein`: Protein sequences (string, preferably uppercase amino acid letters)
    - `organism`: Target organism (string or int, must be from `ORGANISM2ID` in `CodonUtils`)
 
 
-   Note: 
+   Note:
    - Use organisms from the `FINE_TUNE_ORGANISMS` list for best results.
    - For E. coli, use `Escherichia coli general`.
    - DNA sequences should ideally contain only A, T, C, and G. Ambiguous codons are replaced with 'UNK' for tokenization.
@@ -132,7 +132,7 @@ To finetune CodonTransformer on your own data, follow these steps:
 <br>
 
 2. **Prepare training data**
-   
+
    Use the `prepare_training_data` function from `CodonData` to prepare training data from your dataset.
 
    ```python
@@ -142,8 +142,7 @@ To finetune CodonTransformer on your own data, follow these steps:
 <br>
 
 3. **Run the finetuning script**
-   
-   Execute finetune.py with appropriate arguments:
+   Execute finetune.py with appropriate arguments: (an example)
     ```bash
      python finetune.py \
         --dataset_dir 'your_dataset_directory/training_data.json' \
@@ -166,19 +165,19 @@ To finetune CodonTransformer on your own data, follow these steps:
 
 ## Key Features
 - **CodonData** <br>
-For preprocessing NCBI or Kazusa databases and preparing the data for training and inference of models. Includes functions for working with DNA sequences, protein sequences, and codon frequencies.
+CodonData facilitates preprocessing of genetic information by cleaning and translating DNA and protein sequences, handling FASTA files, and managing codon frequencies from databases like NCBI and Kazusa.
 
 - **CodonPrediction** <br>
-For tokenizing input, loading models, predicting DNA sequences, and providing helper functions for data processing. Includes tools for working with the BigBird transformer model, tokenization, and various codon optimization strategies.
+CodonPrediction enables preprocessing of sequences, the prediction of optimized DNA sequences tailored to specific organisms using the CodonTransformer model, and supports various other optimization strategies.
 
 - **CodonEvaluation** <br>
-For calculating evaluation metrics related to codon usage and DNA sequence analysis. Enables in-depth analysis and comparison of DNA sequences across different organisms.
+CodonEvaluation provides tools to compute evaluation metrics such as Codon Similarity Index (CSI), GC content, and Codon Frequency Distribution, allowing for detailed assessment of optimized sequences.
 
 - **CodonUtils** <br>
-Contains constants and helper functions for working with genetic sequences, amino acids, and organism data. Provides robust tools for genetic sequence analysis and data processing.
+CodonUtils offers essential constants and helper functions for genetic sequence analysis, including amino acid mappings, codon tables, taxonomy ID management, and sequence validation.
 
 - **CodonJupyter** <br>
-Offers Jupyter-specific functions for displaying interactive widgets, enhancing user interaction with the CodonTransformer package in a Jupyter notebook environment. Provides interactive and visually appealing interfaces for input and output.
+CodonJupyter enhances Jupyter notebook workflows with interactive widgets for selecting organisms and inputting protein sequences, as well as formatting and displaying optimized DNA sequence outputs.
 <br></br>
 
 

@@ -4,18 +4,16 @@ File: CodonUtils.py
 Includes constants and helper functions used by other Python scripts.
 """
 
-import os
-import re
-import pickle
-import requests
 import itertools
-
-import torch
-import pandas as pd
+import os
+import pickle
+import re
 from dataclasses import dataclass
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from typing import Any, List, Dict, Tuple, Optional, Iterator
-
+import pandas as pd
+import requests
+import torch
 
 # List of all amino acids
 AMINO_ACIDS: List[str] = [
@@ -470,10 +468,10 @@ class DNASequencePrediction:
     A class to hold the output of the DNA sequence prediction.
 
     Attributes:
-        organism (str): The name of the organism used for prediction.
-        protein (str): The input protein sequence for which DNA sequence is predicted.
-        processed_input (str): The processed input sequence (merged protein and DNA).
-        predicted_dna (str): The predicted DNA sequence.
+        organism (str): Name of the organism used for prediction.
+        protein (str): Input protein sequence for which DNA sequence is predicted.
+        processed_input (str): Processed input sequence (merged protein and DNA).
+        predicted_dna (str): Predicted DNA sequence.
     """
 
     organism: str
@@ -488,7 +486,8 @@ class IterableData(torch.utils.data.IterableDataset):
     data) in parallel multi-processing environments, e.g., multi-GPU.
 
     Args:
-        dist_env (Optional[str]): The distribution environment identifier (e.g., "slurm").
+        dist_env (Optional[str]): The distribution environment identifier
+        (e.g., "slurm").
 
     Credit: Guillaume Filion
     """
@@ -501,7 +500,7 @@ class IterableData(torch.utils.data.IterableDataset):
 
     @property
     def iterator(self) -> Iterator:
-        """Define the stream logic for the dataset. Should be implemented in subclasses."""
+        """Define the stream logic for the dataset. Implement in subclasses."""
         raise NotImplementedError
 
     def __iter__(self) -> Iterator:
@@ -573,7 +572,8 @@ def save_python_object_to_disk(input_object: Any, file_path: str) -> None:
 
 def find_pattern_in_fasta(keyword: str, text: str) -> str:
     """
-    Find a specific keyword pattern in text. Helpful for identifying parts of a FASTA sequence.
+    Find a specific keyword pattern in text. Helpful for identifying parts
+    of a FASTA sequence.
 
     Args:
         keyword (str): The keyword pattern to search for.
@@ -589,13 +589,19 @@ def find_pattern_in_fasta(keyword: str, text: str) -> str:
 
 def get_organism2id_dict(organism_reference: str) -> Dict[str, int]:
     """
-    Return a dictionary mapping each organism in training data to an index used for training.
+    Return a dictionary mapping each organism in training data to an index
+    used for training.
 
     Args:
-        organism_reference (str): Path to a CSV file containing a list of all organisms.
+        organism_reference (str): Path to a CSV file containing a list of
+            all organisms. The format of the CSV file should be as follows:
+
+                0,Escherichia coli
+                1,Homo sapiens
+                2,Mus musculus
 
     Returns:
-        Dict[str, int]: A dictionary mapping organism names to their respective indices.
+        Dict[str, int]: Dictionary mapping organism names to their respective indices.
     """
     # Read the CSV file and create a dictionary mapping organisms to their indices
     organisms = pd.read_csv(organism_reference, index_col=0, header=None)
