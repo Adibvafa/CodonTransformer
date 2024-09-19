@@ -5,31 +5,29 @@ Includes helper functions for preprocessing NCBI or Kazusa databases and
 preparing the data for training and inference of the CodonTransformer model.
 """
 
-import os
 import json
+import os
+from typing import Dict, List, Optional, Tuple, Union
+
 import pandas as pd
+import python_codon_tables as pct
+from Bio import SeqIO
+from Bio.Seq import Seq
 from sklearn.utils import shuffle as sk_shuffle
+from tqdm import tqdm
 
 from CodonTransformer.CodonUtils import (
+    AMBIGUOUS_AMINOACID_MAP,
+    AMINO2CODON_TYPE,
     AMINO_ACIDS,
+    ORGANISM2ID,
     START_CODONS,
     STOP_CODONS,
     STOP_SYMBOL,
-    AMINO2CODON_TYPE,
-    AMBIGUOUS_AMINOACID_MAP,
-    ORGANISM2ID,
     find_pattern_in_fasta,
-    sort_amino2codon_skeleton,
     get_taxonomy_id,
+    sort_amino2codon_skeleton,
 )
-
-from Bio import SeqIO
-from Bio.Seq import Seq
-
-import python_codon_tables as pct
-
-from typing import List, Dict, Tuple, Union, Optional
-from tqdm import tqdm
 
 
 def prepare_training_data(
@@ -50,7 +48,8 @@ def prepare_training_data(
     Args:
         dataset (Union[str, pd.DataFrame]): Input dataset in CSV or DataFrame format.
         output_file (str): Path to save the output JSON dataset.
-        shuffle (bool, optional): Whether to shuffle the dataset before saving. Defaults to True.
+        shuffle (bool, optional): Whether to shuffle the dataset before saving.
+            Defaults to True.
 
     Returns:
         None
@@ -78,7 +77,7 @@ def prepare_training_data(
 
 def dataframe_to_json(df: pd.DataFrame, output_file: str, shuffle: bool = True) -> None:
     """
-    Convert a pandas DataFrame to a JSON file format suitable for training CodonTransformer.
+    Convert pandas DataFrame to JSON file format suitable for training CodonTransformer.
 
     This function takes a preprocessed DataFrame and writes it to a JSON file
     where each line is a JSON object representing a single record.
@@ -86,7 +85,8 @@ def dataframe_to_json(df: pd.DataFrame, output_file: str, shuffle: bool = True) 
     Args:
         df (pd.DataFrame): The input DataFrame with 'codons' and 'organism' columns.
         output_file (str): Path to the output JSON file.
-        shuffle (bool, optional): Whether to shuffle the dataset before saving. Defaults to True.
+        shuffle (bool, optional): Whether to shuffle the dataset before saving.
+            Defaults to True.
 
     Returns:
         None
@@ -123,8 +123,9 @@ def process_organism(organism: Union[str, int], organism_to_id: Dict[str, int]) 
     It validates the input against a provided mapping of organism names to IDs.
 
     Args:
-        organism (Union[str, int]): The input organism, either as a name (str) or ID (int).
-        organism_to_id (Dict[str, int]): A dictionary mapping organism names to their corresponding IDs.
+        organism (Union[str, int]): Input organism, either as a name (str) or ID (int).
+        organism_to_id (Dict[str, int]): Dictionary mapping organism names to their
+            corresponding IDs.
 
     Returns:
         int: The validated organism ID.
@@ -150,7 +151,8 @@ def process_organism(organism: Union[str, int], organism_to_id: Dict[str, int]) 
 
 def preprocess_protein_sequence(protein: str) -> str:
     """
-    Preprocess a protein sequence by cleaning, standardizing, and handling ambiguous amino acids.
+    Preprocess a protein sequence by cleaning, standardizing, and handling
+    ambiguous amino acids.
 
     Args:
         protein (str): The input protein sequence.
@@ -221,7 +223,8 @@ def replace_ambiguous_codons(dna: str) -> str:
 
 def preprocess_dna_sequence(dna: str) -> str:
     """
-    Cleans and preprocesses a DNA sequence by standardizing it and replacing ambiguous codons.
+    Cleans and preprocesses a DNA sequence by standardizing it and replacing
+    ambiguous codons.
 
     Args:
         dna (str): The DNA sequence to preprocess.
@@ -247,8 +250,9 @@ def preprocess_dna_sequence(dna: str) -> str:
 
 def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
     """
-    Return the merged sequence of protein amino acids and DNA codons in the form of tokens
-    separated by space, where each token is composed of an amino acid + separator + codon.
+    Return the merged sequence of protein amino acids and DNA codons in the form
+    of tokens separated by space, where each token is composed of an amino acid +
+    separator + codon.
 
     Args:
         protein (str): Protein sequence.
@@ -274,8 +278,9 @@ def get_merged_seq(protein: str, dna: str = "", separator: str = "_") -> str:
     # Check if the length of protein and dna sequences are equal
     if len(dna) > 0 and len(protein) != len(dna) / 3:
         raise ValueError(
-            'Length of protein (including stop symbol such as "_") and \
-                         the number of codons in DNA sequence (including stop codon) must be equal.'
+            'Length of protein (including stop symbol such as "_") and '
+            "the number of codons in DNA sequence (including stop codon) "
+            "must be equal."
         )
 
     # Merge protein and DNA sequences into tokens
@@ -331,8 +336,8 @@ def get_amino_acid_sequence(
         return_correct_seq (bool): Whether to return if the sequence is correct.
 
     Returns:
-        Union[str, Tuple[str, bool]]: Protein sequence and correctness flag if return_correct_seq is True,
-                                      otherwise just the protein sequence.
+        Union[str, Tuple[str, bool]]: Protein sequence and correctness flag if
+        return_correct_seq is True, otherwise just the protein sequence.
     """
     dna_seq = Seq(dna).strip()
 
@@ -355,24 +360,32 @@ def get_amino_acid_sequence(
 
 def read_fasta_file(
     input_file: str,
-    output_path: str,
+    save_to_file: Optional[str] = None,
     organism: str = "",
-    return_dataframe: bool = True,
     buffer_size: int = 50000,
 ) -> pd.DataFrame:
     """
-    Read a FASTA file of DNA sequences and save it to a Pandas DataFrame.
+    Read a FASTA file of DNA sequences and convert it to a Pandas DataFrame.
+    Optionally, save the DataFrame to a CSV file.
 
     Args:
         input_file (str): Path to the input FASTA file.
-        output_path (str): Path to save the output DataFrame.
-        organism (str): Name of the organism.
-        return_dataframe (bool): Whether to return the DataFrame.
-        buffer_size (int): Buffer size for reading the file.
+        save_to_file (Optional[str]): Path to save the output DataFrame. If None,
+            data is only returned.
+        organism (str): Name of the organism. If empty, it will be extracted from
+            the FASTA description.
+        buffer_size (int): Number of records to process before writing to file.
 
     Returns:
-        pd.DataFrame: DataFrame containing the DNA sequences.
+        pd.DataFrame: DataFrame containing the DNA sequences if return_dataframe
+        is True, else None.
+
+    Raises:
+        FileNotFoundError: If the input file does not exist.
     """
+    if not os.path.exists(input_file):
+        raise FileNotFoundError(f"Input file not found: {input_file}")
+
     buffer = []
     columns = [
         "dna",
@@ -384,20 +397,25 @@ def read_fasta_file(
         "tokenized",
     ]
 
-    # Read the FASTA file and process each sequence record
+    # Initialize DataFrame to store all data if return_dataframe is True
+    all_data = pd.DataFrame(columns=columns)
+
     with open(input_file, "r") as fasta_file:
         for record in tqdm(
-            SeqIO.parse(fasta_file, "fasta"), desc=f"{organism}", unit=" Rows"
+            SeqIO.parse(fasta_file, "fasta"),
+            desc=f"Processing {organism}",
+            unit=" Records",
         ):
-            dna = str(record.seq).strip()
+            dna = str(record.seq).strip().upper()  # Ensure uppercase DNA sequence
 
             # Determine the organism from the record if not provided
-            if not organism:
-                organism = find_pattern_in_fasta("organism", record.description)
-            GeneID = find_pattern_in_fasta("GeneID", record.description)
+            current_organism = organism or find_pattern_in_fasta(
+                "organism", record.description
+            )
+            gene_id = find_pattern_in_fasta("GeneID", record.description)
 
             # Get the appropriate codon table for the organism
-            codon_table = get_codon_table(organism)
+            codon_table = get_codon_table(current_organism)
 
             # Translate DNA to protein sequence
             protein, correct_seq = get_amino_acid_sequence(
@@ -406,44 +424,46 @@ def read_fasta_file(
                 codon_table=codon_table,
                 return_correct_seq=True,
             )
-            description = str(record.description[: record.description.find("[")])
-            tokenized = get_merged_seq(protein, dna, seperator=STOP_SYMBOL)
+            description = record.description.split("[", 1)[0].strip()
+            tokenized = get_merged_seq(protein, dna, separator=STOP_SYMBOL)
 
             # Create a data row for the current sequence
             data_row = {
                 "dna": dna,
                 "protein": protein,
                 "correct_seq": correct_seq,
-                "organism": organism,
-                "GeneID": GeneID,
+                "organism": current_organism,
+                "GeneID": gene_id,
                 "description": description,
                 "tokenized": tokenized,
             }
             buffer.append(data_row)
 
             # Write buffer to CSV file when buffer size is reached
-            if len(buffer) >= buffer_size:
-                buffer_df = pd.DataFrame(buffer, columns=columns)
-                buffer_df.to_csv(
-                    output_path,
-                    mode="a",
-                    header=(not os.path.exists(output_path)),
-                    index=True,
-                )
+            if save_to_file and len(buffer) >= buffer_size:
+                write_buffer_to_csv(buffer, save_to_file, columns)
                 buffer = []
 
-        # Write remaining buffer to CSV file
-        if buffer:
-            buffer_df = pd.DataFrame(buffer, columns=columns)
-            buffer_df.to_csv(
-                output_path,
-                mode="a",
-                header=(not os.path.exists(output_path)),
-                index=True,
+            all_data = pd.concat(
+                [all_data, pd.DataFrame([data_row])], ignore_index=True
             )
 
-    if return_dataframe:
-        return pd.read_csv(output_path, index_col=0)
+    # Write remaining buffer to CSV file
+    if save_to_file and buffer:
+        write_buffer_to_csv(buffer, save_to_file, columns)
+
+    return all_data
+
+
+def write_buffer_to_csv(buffer: List[Dict], output_path: str, columns: List[str]):
+    """Helper function to write buffer to CSV file."""
+    buffer_df = pd.DataFrame(buffer, columns=columns)
+    buffer_df.to_csv(
+        output_path,
+        mode="a",
+        header=(not os.path.exists(output_path)),
+        index=True,
+    )
 
 
 def download_codon_frequencies_from_kazusa(
@@ -486,7 +506,8 @@ def download_codon_frequencies_from_kazusa(
 
 def build_amino2codon_skeleton(organism: str) -> AMINO2CODON_TYPE:
     """
-    Return the empty skeleton of the amino2codon dictionary, needed for get_codon_frequencies.
+    Return the empty skeleton of the amino2codon dictionary, needed for
+    get_codon_frequencies.
 
     Args:
         organism (str): Name of the organism.
@@ -502,7 +523,8 @@ def build_amino2codon_skeleton(organism: str) -> AMINO2CODON_TYPE:
         return_correct_seq=False,
     )
 
-    # Initialize the amino2codon skeleton with all possible codons and set their frequencies to 0
+    # Initialize the amino2codon skeleton with all possible codons and set their
+    # frequencies to 0
     for i, (codon, amino) in enumerate(zip(possible_codons, possible_aminoacids)):
         if amino not in amino2codon:
             amino2codon[amino] = ([], [])
@@ -531,7 +553,8 @@ def get_codon_frequencies(
         organism (Optional[str]): Name of the organism.
 
     Returns:
-        AMINO2CODON_TYPE: Dictionary mapping each amino acid to a tuple of codons and frequencies.
+        AMINO2CODON_TYPE: Dictionary mapping each amino acid to a tuple of codons
+        and frequencies.
     """
     if organism:
         codon_table = get_codon_table(organism)
@@ -571,7 +594,8 @@ def get_organism_to_codon_frequencies(
         organisms (List[str]): List of organisms.
 
     Returns:
-        Dict[str, AMINO2CODON_TYPE]: Dictionary mapping each organism to its codon frequency distribution.
+        Dict[str, AMINO2CODON_TYPE]: Dictionary mapping each organism to its codon
+        frequency distribution.
     """
     organism2frequencies = {}
 
@@ -605,7 +629,8 @@ def get_codon_table(organism: str) -> int:
         "Arabidopsis thaliana",
         "Caenorhabditis elegans",
         "Chlamydomonas reinhardtii",
-        "Saccharomyces cerevisiae" "Danio rerio",
+        "Saccharomyces cerevisiae",
+        "Danio rerio",
         "Drosophila melanogaster",
         "Homo sapiens",
         "Mus musculus",

@@ -7,13 +7,13 @@ Includes Jupyter-specific functions for displaying interactive widgets.
 from typing import Dict, List, Tuple
 
 import ipywidgets as widgets
-from IPython.display import display, HTML
+from IPython.display import HTML, display
 
 from CodonTransformer.CodonUtils import (
-    DNASequencePrediction,
     COMMON_ORGANISMS,
-    ORGANISM2ID,
     ID2ORGANISM,
+    ORGANISM2ID,
+    DNASequencePrediction,
 )
 
 
@@ -49,11 +49,11 @@ def create_styled_options(
         organism_id = organism2id[organism]
         if is_fine_tuned:
             if organism_id < 10:
-                styled_options.append(f"\u200B{organism_id:>6}.  {organism}")
+                styled_options.append(f"\u200b{organism_id:>6}.  {organism}")
             elif organism_id < 100:
-                styled_options.append(f"\u200B{organism_id:>5}.  {organism}")
+                styled_options.append(f"\u200b{organism_id:>5}.  {organism}")
             else:
-                styled_options.append(f"\u200B{organism_id:>4}.  {organism}")
+                styled_options.append(f"\u200b{organism_id:>4}.  {organism}")
         else:
             if organism_id < 10:
                 styled_options.append(f"{organism_id:>6}.  {organism}")
@@ -160,7 +160,7 @@ def get_dropdown_style() -> str:
             flex-direction: column;
             align-items: flex-start;
         }
-        .widget-dropdown option[value^="\u200B"] {
+        .widget-dropdown option[value^="\u200b"] {
             font-family: sans-serif;
             font-weight: bold;
             font-size: 18px;
@@ -188,7 +188,8 @@ def display_organism_dropdown(container: UserContainer) -> None:
     """
     dropdown = create_organism_dropdown(container)
     header = widgets.HTML(
-        '<b style="font-size:20px;">Select Organism:</b><div style="height:10px;"></div>'
+        '<b style="font-size:20px;">Select Organism:</b>'
+        '<div style="height:10px;"></div>'
     )
     container_widget = widgets.VBox(
         [header, dropdown],
@@ -242,7 +243,8 @@ def display_protein_input(container: UserContainer) -> None:
         Save the input protein sequence to the container.
 
         Args:
-            change (Dict[str, str]): A dictionary containing information about the change in textarea value.
+            change (Dict[str, str]): A dictionary containing information about
+            the change in textarea value.
         """
         container.protein = (
             change["new"]
@@ -258,7 +260,8 @@ def display_protein_input(container: UserContainer) -> None:
 
     # Display the input widget
     header = widgets.HTML(
-        '<b style="font-size:20px;">Enter Protein Sequence:</b><div style="height:18px;"></div>'
+        '<b style="font-size:20px;">Enter Protein Sequence:</b>'
+        '<div style="height:18px;"></div>'
     )
     container_widget = widgets.VBox(
         [header, protein_input], layout=widgets.Layout(padding="12px 12px 0 25px")
@@ -270,13 +273,13 @@ def display_protein_input(container: UserContainer) -> None:
 
 def format_model_output(output: DNASequencePrediction) -> str:
     """
-    Format the DNA sequence prediction output in a visually appealing and easy-to-read manner.
+    Format DNA sequence prediction output in an appealing and easy-to-read manner.
 
     This function takes the prediction output and formats it into
     a structured string with clear section headers and separators.
 
     Args:
-        output (DNASequencePrediction): An object containing the prediction output.
+        output (DNASequencePrediction): Object containing the prediction output.
             Expected attributes:
             - organism (str): The organism name.
             - protein (str): The input protein sequence.
