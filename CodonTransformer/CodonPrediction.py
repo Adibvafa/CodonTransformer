@@ -5,27 +5,28 @@ Includes functions to tokenize input, load models, infer predicted dna sequences
 helper functions related to processing data for passing to the model.
 """
 
-from typing import Any, List, Dict, Tuple, Optional, Union
-import onnxruntime as rt
+import warnings
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
+import onnxruntime as rt
 import torch
 import transformers
 from transformers import (
-    BatchEncoding,
-    PreTrainedTokenizerFast,
-    BigBirdConfig,
     AutoTokenizer,
+    BatchEncoding,
+    BigBirdConfig,
     BigBirdForMaskedLM,
+    PreTrainedTokenizerFast,
 )
-import numpy as np
 
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
     AMINO_ACIDS,
-    ORGANISM2ID,
-    TOKEN2INDEX,
     INDEX2TOKEN,
     NUM_ORGANISMS,
+    ORGANISM2ID,
+    TOKEN2INDEX,
     DNASequencePrediction,
 )
 
@@ -37,6 +38,7 @@ def predict_dna_sequence(
     tokenizer: Union[str, PreTrainedTokenizerFast] = None,
     model: Union[str, torch.nn.Module] = None,
     attention_type: str = "original_full",
+    deterministic: bool = True,
 ) -> DNASequencePrediction:
     """
     Predict the DNA sequence for a given protein using CodonTransformer model.
@@ -47,30 +49,38 @@ def predict_dna_sequence(
 
     Args:
         protein (str): The input protein sequence to predict the DNA sequence for.
-        organism (Union[int, str]): Either the ID of the organism or its name (e.g., "Escherichia coli general").
-            If a string is provided, it will be converted to the corresponding ID using ORGANISM2ID.
+        organism (Union[int, str]): Either the ID of the organism or its name (e.g.,
+            "Escherichia coli general"). If a string is provided, it will be converted
+            to the corresponding ID using ORGANISM2ID.
         device (torch.device): The device (CPU or GPU) to run the model on.
-        tokenizer (Union[str, PreTrainedTokenizerFast, None], optional): Either a file path to load the tokenizer from,
-            a pre-loaded tokenizer object, or None. If None, it will be loaded from HuggingFace. Defaults to None.
-        model (Union[str, torch.nn.Module, None], optional): Either a file path to load the model from,
-            a pre-loaded model object, or None. If None, it will be loaded from HuggingFace. Defaults to None.
-        attention_type (str, optional): The type of attention mechanism to use in the model.
-            Can be either 'block_sparse' or 'original_full'. Defaults to "original_full".
+        tokenizer (Union[str, PreTrainedTokenizerFast, None], optional): Either a file
+            path to load the tokenizer from, a pre-loaded tokenizer object, or None. If
+            None, it will be loaded from HuggingFace. Defaults to None.
+        model (Union[str, torch.nn.Module, None], optional): Either a file path to load
+            the model from, a pre-loaded model object, or None. If None, it will be
+            loaded from HuggingFace. Defaults to None.
+        attention_type (str, optional): The type of attention mechanism to use in the
+            model. Can be either 'block_sparse' or 'original_full'. Defaults to
+            "original_full".
+        deterministic (bool, optional): Whether to use deterministic decoding (most
+            likely tokens). If False, samples tokens according to their probabilities.
+            Defaults to True.
 
     Returns:
         DNASequencePrediction: An object containing the prediction results:
-            - organism (str): The name of the organism used for prediction.
-            - protein (str): The input protein sequence for which DNA sequence is predicted.
-            - processed_input (str): The processed input sequence (merged protein and DNA).
-            - predicted_dna (str): The predicted DNA sequence.
+            - organism (str): Name of the organism used for prediction.
+            - protein (str): Input protein sequence for which DNA sequence is predicted.
+            - processed_input (str): Processed input sequence (merged protein and DNA).
+            - predicted_dna (str): Predicted DNA sequence.
 
     Raises:
         ValueError: If the protein sequence is empty or if the organism is invalid.
 
     Note:
-        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from CodonTransformer.CodonUtils.
-        ORGANISM2ID maps organism names to their corresponding IDs.
-        INDEX2TOKEN maps model output indices (token ids) to respective codons.
+        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from
+        CodonTransformer.CodonUtils. ORGANISM2ID maps organism names to their
+        corresponding IDs. INDEX2TOKEN maps model output indices (token ids) to
+        respective codons.
 
     Example:
         >>> import torch
@@ -83,29 +93,40 @@ def predict_dna_sequence(
         >>>
         >>> # Load tokenizer and model
         >>> tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
-        >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(device)
+        >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
+        >>> model = model.to(device)
         >>>
         >>> # Define protein sequence and organism
-        >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG"
+        >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLA"
         >>> organism = "Escherichia coli general"
         >>>
-        >>> # Predict DNA sequence
+        >>> # Predict DNA sequence with deterministic decoding
         >>> output = predict_dna_sequence(
         ...     protein=protein,
         ...     organism=organism,
         ...     device=device,
         ...     tokenizer=tokenizer,
         ...     model=model,
-        ...     attention_type="original_full"
+        ...     attention_type="original_full",
+        ...     deterministic=True
+        ... )
+        >>>
+        >>> # Predict DNA sequence with probabilistic sampling
+        >>> output_sampler = predict_dna_sequence(
+        ...     protein=protein,
+        ...     organism=organism,
+        ...     device=device,
+        ...     tokenizer=tokenizer,
+        ...     model=model,
+        ...     attention_type="original_full",
+        ...     deterministic=False
         ... )
         >>>
         >>> print(format_model_output(output))
+        >>> print(format_model_output(output_sampler))
     """
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
-
-    if not isinstance(protein, str):
-        raise ValueError("Protein sequence must be a string.")
 
     # Test that the input protein sequence contains only valid amino acids
     if not all(aminoacid in AMINO_ACIDS for aminoacid in protein):
@@ -139,12 +160,23 @@ def predict_dna_sequence(
 
         # Get the model predictions
         output_dict = model(**tokenized_input, return_dict=True)
-        output = output_dict.logits.detach().cpu().numpy()
+        logits = output_dict.logits.detach().cpu()
 
         # Decode the predicted DNA sequence from the model output
-        predicted_dna = list(
-            map(INDEX2TOKEN.__getitem__, output.argmax(axis=-1).squeeze().tolist())
-        )
+        if deterministic:
+            # Select the most probable tokens (argmax)
+            predicted_indices = logits.argmax(dim=-1).squeeze().tolist()
+        else:
+            # Sample tokens according to their probability distribution
+            # Convert logits to probabilities using softmax
+            probabilities = torch.softmax(logits, dim=-1)
+            # Sample from the probability distribution at each position
+            probabilities = probabilities.squeeze(0)  # Shape: [seq_len, vocab_size]
+            predicted_indices = (
+                torch.multinomial(probabilities, num_samples=1).squeeze(-1).tolist()
+            )
+
+        predicted_dna = list(map(INDEX2TOKEN.__getitem__, predicted_indices))
 
         # Skip special tokens [CLS] and [SEP] to create the predicted_dna
         predicted_dna = (
@@ -170,17 +202,21 @@ def load_model(
     Load a BigBirdForMaskedLM model from a model file, checkpoint, or HuggingFace.
 
     Args:
-        model_path (Optional[str]): Path to the model file or checkpoint. If None, load from HuggingFace.
+        model_path (Optional[str]): Path to the model file or checkpoint. If None,
+            load from HuggingFace.
         device (torch.device, optional): The device to load the model onto.
-        attention_type (str, optional): The type of attention, 'block_sparse' or 'original_full'.
-        num_organisms (int, optional): Number of organisms, needed if loading from a checkpoint that requires this.
-        remove_prefix (bool, optional): Whether to remove the "model." prefix from the keys in the state dict.
+        attention_type (str, optional): The type of attention, 'block_sparse'
+            or 'original_full'.
+        num_organisms (int, optional): Number of organisms, needed if loading from a
+            checkpoint that requires this.
+        remove_prefix (bool, optional): Whether to remove the "model." prefix from the
+            keys in the state dict.
 
     Returns:
         torch.nn.Module: The loaded model.
     """
     if not model_path:
-        print("Warning: Model path not provided. Loading from HuggingFace.")
+        warnings.warn("Model path not provided. Loading from HuggingFace.", UserWarning)
         model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
 
     elif model_path.endswith(".ckpt"):
@@ -209,7 +245,8 @@ def load_model(
 
     else:
         raise ValueError(
-            "Unsupported file type. Please provide a .ckpt or .pt file, or None to load from HuggingFace."
+            "Unsupported file type. Please provide a .ckpt or .pt file, "
+            "or None to load from HuggingFace."
         )
 
     # Prepare model for evaluation
@@ -260,16 +297,19 @@ def create_model_from_checkpoint(
 
 def load_tokenizer(tokenizer_path: Optional[str] = None) -> PreTrainedTokenizerFast:
     """
-    Create and return a tokenizer object from the given tokenizer path or HuggingFace.
+    Create and return a tokenizer object from tokenizer path or HuggingFace.
 
     Args:
-        tokenizer_path (Optional[str]): Path to the tokenizer file. If None, load from HuggingFace.
+        tokenizer_path (Optional[str]): Path to the tokenizer file. If None,
+        load from HuggingFace.
 
     Returns:
         PreTrainedTokenizerFast: The tokenizer object.
     """
     if not tokenizer_path:
-        print("Warning: Tokenizer path not provided. Loading from HuggingFace.")
+        warnings.warn(
+            "Tokenizer path not provided. Loading from HuggingFace.", UserWarning
+        )
         return AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
 
     return transformers.PreTrainedTokenizerFast(
@@ -291,11 +331,14 @@ def tokenize(
 ) -> BatchEncoding:
     """
     Return the tokenized sequences given a batch of input data.
-    Each data in the batch is expected to be a dictionary with "codons" and "organism" keys.
+    Each data in the batch is expected to be a dictionary with "codons" and
+    "organism" keys.
 
     Args:
-        batch (List[Dict[str, Any]]): A list of dictionaries with "codons" and "organism" keys.
-        tokenizer (PreTrainedTokenizerFast, str, optional): The tokenizer object or path to the tokenizer file.
+        batch (List[Dict[str, Any]]): A list of dictionaries with "codons" and
+            "organism" keys.
+        tokenizer (PreTrainedTokenizerFast, str, optional): The tokenizer object or
+            path to the tokenizer file.
         max_len (int, optional): Maximum length of the tokenized sequence.
 
     Returns:
@@ -326,28 +369,32 @@ def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
     """
     Validate and convert the organism input to both ID and name.
 
-    This function takes either an organism ID or name as input and returns both the ID and name.
-    It performs validation to ensure the input corresponds to a valid organism in the ORGANISM2ID dictionary.
+    This function takes either an organism ID or name as input and returns both
+    the ID and name. It performs validation to ensure the input corresponds to
+    a valid organism in the ORGANISM2ID dictionary.
 
     Args:
-        organism (Union[int, str]): Either the ID of the organism (int) or its name (str).
+        organism (Union[int, str]): Either the ID of the organism (int) or its
+        name (str).
 
     Returns:
         Tuple[int, str]: A tuple containing the organism ID (int) and name (str).
 
     Raises:
-        ValueError: If the input is neither a string nor an integer, if the organism name is not found
-                    in ORGANISM2ID, if the organism ID is not a value in ORGANISM2ID, or if no name
-                    is found for a given ID.
+        ValueError: If the input is neither a string nor an integer, if the
+        organism name is not found in ORGANISM2ID, if the organism ID is not a
+        value in ORGANISM2ID, or if no name is found for a given ID.
 
     Note:
-        This function relies on the ORGANISM2ID dictionary imported from CodonTransformer.CodonUtils,
-        which maps organism names to their corresponding IDs.
+        This function relies on the ORGANISM2ID dictionary imported from
+        CodonTransformer.CodonUtils, which maps organism names to their
+        corresponding IDs.
     """
     if isinstance(organism, str):
         if organism not in ORGANISM2ID:
             raise ValueError(
-                f"Invalid organism name: {organism}. Please use a valid organism name or ID."
+                f"Invalid organism name: {organism}. "
+                "Please use a valid organism name or ID."
             )
         organism_id = ORGANISM2ID[organism]
         organism_name = organism
@@ -355,7 +402,8 @@ def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
     elif isinstance(organism, int):
         if organism not in ORGANISM2ID.values():
             raise ValueError(
-                f"Invalid organism ID: {organism}. Please use a valid organism name or ID."
+                f"Invalid organism ID: {organism}. "
+                "Please use a valid organism name or ID."
             )
 
         organism_id = organism
@@ -365,9 +413,6 @@ def validate_and_convert_organism(organism: Union[int, str]) -> Tuple[int, str]:
         if organism_name is None:
             raise ValueError(f"No organism name found for ID: {organism}")
 
-    else:
-        raise ValueError("Organism must be either a string (name) or an integer (ID).")
-
     return organism_id, organism_name
 
 
@@ -375,12 +420,13 @@ def get_high_frequency_choice_sequence(
     protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
 ) -> str:
     """
-    Return the DNA sequence optimized using High Frequency Choice (HFC) approach in which
-    the most frequent codon for a given amino acid is always chosen.
+    Return the DNA sequence optimized using High Frequency Choice (HFC) approach
+    in which the most frequent codon for a given amino acid is always chosen.
 
     Args:
         protein (str): The protein sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         str: The optimized DNA sequence.
@@ -400,7 +446,8 @@ def precompute_most_frequent_codons(
     Precompute the most frequent codon for each amino acid.
 
     Args:
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         Dict[str, str]: The most frequent codon for each amino acid.
@@ -421,7 +468,8 @@ def get_high_frequency_choice_sequence_optimized(
 
     Args:
         protein (str): The protein sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         str: The optimized DNA sequence.
@@ -436,17 +484,20 @@ def get_background_frequency_choice_sequence(
     protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
 ) -> str:
     """
-    Return the DNA sequence optimized using Background Frequency Choice (BFC) approach in which
-    a random codon for a given amino acid is chosen using the codon frequencies probability distribution.
+    Return the DNA sequence optimized using Background Frequency Choice (BFC)
+    approach in which a random codon for a given amino acid is chosen using
+    the codon frequencies probability distribution.
 
     Args:
         protein (str): The protein sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         str: The optimized DNA sequence.
     """
-    # Select a random codon for each amino acid based on the codon frequencies probability distribution
+    # Select a random codon for each amino acid based on the codon frequencies
+    # probability distribution
     dna_codons = [
         np.random.choice(
             codon_frequencies[aminoacid][0], p=codon_frequencies[aminoacid][1]
@@ -463,7 +514,8 @@ def precompute_cdf(
     Precompute the cumulative distribution function (CDF) for each amino acid.
 
     Args:
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         Dict[str, Tuple[List[str], Any]]: CDFs for each amino acid.
@@ -486,7 +538,8 @@ def get_background_frequency_choice_sequence_optimized(
 
     Args:
         protein (str): The protein sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         str: The optimized DNA sequence.
@@ -507,12 +560,14 @@ def get_uniform_random_choice_sequence(
     protein: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]]
 ) -> str:
     """
-    Return the DNA sequence optimized using Uniform Random Choice (URC) approach in which
-    a random codon for a given amino acid is chosen using a uniform prior.
+    Return the DNA sequence optimized using Uniform Random Choice (URC) approach
+    in which a random codon for a given amino acid is chosen using a uniform
+    prior.
 
     Args:
         protein (str): The protein sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequencies for each amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+        frequencies for each amino acid.
 
     Returns:
         str: The optimized DNA sequence.
@@ -529,7 +584,8 @@ def get_icor_prediction(input_seq: str, model_path: str, stop_symbol: str) -> st
     Return the optimized codon sequence for the given protein sequence using ICOR.
 
     Credit: ICOR: improving codon optimization with recurrent neural networks
-            Rishab Jain, Aditya Jain, Elizabeth Mauro, Kevin LeShane, Douglas Densmore
+            Rishab Jain, Aditya Jain, Elizabeth Mauro, Kevin LeShane, Douglas
+            Densmore
 
     Args:
         input_seq (str): The input protein sequence.

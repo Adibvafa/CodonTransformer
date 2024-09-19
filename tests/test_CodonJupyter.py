@@ -1,13 +1,15 @@
 import unittest
+
 import ipywidgets
+
 from CodonTransformer.CodonJupyter import (
+    DNASequencePrediction,
     UserContainer,
-    create_organism_dropdown,
     create_dropdown_options,
+    create_organism_dropdown,
     display_organism_dropdown,
     display_protein_input,
     format_model_output,
-    DNASequencePrediction,
 )
 from CodonTransformer.CodonUtils import ORGANISM2ID
 

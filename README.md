@@ -115,14 +115,14 @@ The package requires `python>=3.9`. The requirements are [availabe here](require
 To finetune CodonTransformer on your own data, follow these steps:
 
 1. **Prepare your dataset**
-   
+
    Create a CSV file with the following columns:
    - `dna`: DNA sequences (string, preferably uppercase ATCG)
    - `protein`: Protein sequences (string, preferably uppercase amino acid letters)
    - `organism`: Target organism (string or int, must be from `ORGANISM2ID` in `CodonUtils`)
 
 
-   Note: 
+   Note:
    - Use organisms from the `FINE_TUNE_ORGANISMS` list for best results.
    - For E. coli, use `Escherichia coli general`.
    - DNA sequences should ideally contain only A, T, C, and G. Ambiguous codons are replaced with 'UNK' for tokenization.
@@ -132,7 +132,7 @@ To finetune CodonTransformer on your own data, follow these steps:
 <br>
 
 2. **Prepare training data**
-   
+
    Use the `prepare_training_data` function from `CodonData` to prepare training data from your dataset.
 
    ```python
@@ -142,7 +142,7 @@ To finetune CodonTransformer on your own data, follow these steps:
 <br>
 
 3. **Run the finetuning script**
-   
+
    Execute finetune.py with appropriate arguments:
     ```bash
      python finetune.py \

@@ -1,16 +1,15 @@
 """
 File: CodonEvaluation.py
 ---------------------------
-Includes functions to calculate various evaluation metrics along with helper functions.
+Includes functions to calculate various evaluation metrics along with helper
+functions.
 """
 
+from typing import Dict, List, Tuple
+
 import pandas as pd
-
 from CAI import CAI, relative_adaptiveness
-
-from typing import List, Dict, Tuple
 from tqdm import tqdm
-
 
 
 def get_CSI_weights(sequences: List[str]) -> Dict[str, float]:
@@ -47,7 +46,7 @@ def get_organism_to_CSI_weights(
     Calculate the Codon Similarity Index (CSI) weights for a list of organisms.
 
     Args:
-        dataset (pd.DataFrame): The dataset containing organism and DNA sequence information.
+        dataset (pd.DataFrame): Dataset containing organism and DNA sequence info.
         organisms (List[str]): List of organism names.
 
     Returns:
@@ -91,7 +90,8 @@ def get_cfd(
 
     Args:
         dna (str): The DNA sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequency distribution per amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+            frequency distribution per amino acid.
         threshold (float): Frequency threshold for counting rare codons.
 
     Returns:
@@ -127,7 +127,8 @@ def get_min_max_percentage(
 
     Args:
         dna (str): The DNA sequence.
-        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon frequency distribution per amino acid.
+        codon_frequencies (Dict[str, Tuple[List[str], List[float]]]): Codon
+            frequency distribution per amino acid.
         window_size (int): Size of the window to calculate %MinMax.
 
     Returns:
@@ -147,14 +148,12 @@ def get_min_max_percentage(
 
     # Iterate through the DNA sequence using the specified window size
     for i in range(len(codons) - window_size + 1):
-        codon_window = codons[
-            i : i + window_size
-        ]  # List of the codons in the current window
+        codon_window = codons[i : i + window_size]  # Codons in the current window
 
         Actual = 0.0  # Average of the actual codon frequencies
         Max = 0.0  # Average of the min codon frequencies
         Min = 0.0  # Average of the max codon frequencies
-        Avg = 0.0  # Average of the averages of all the frequencies associated with each amino acid
+        Avg = 0.0  # Average of the averages of all frequencies for each amino acid
 
         # Sum the frequencies for codons in the current window
         for codon in codon_window:
@@ -210,7 +209,7 @@ def get_sequence_complexity(dna: str) -> float:
             return x + sum_up_to(x - 1)
 
     def f(x):
-        """Function that returns 4 if x is greater than or equal to 4, else returns x."""
+        """Returns 4 if x is greater than or equal to 4, else returns x."""
         if x >= 4:
             return 4
         elif x < 4:
@@ -242,8 +241,10 @@ def get_sequence_similarity(
     Args:
         original (str): The original sequence.
         predicted (str): The predicted sequence.
-        truncate (bool): If True, truncate the original sequence to match the length of the predicted sequence.
-        window_length (int): Length of the window for comparison (1 for amino acids, 3 for codons).
+        truncate (bool): If True, truncate the original sequence to match the length
+            of the predicted sequence.
+        window_length (int): Length of the window for comparison (1 for amino acids,
+            3 for codons).
 
     Returns:
         float: The sequence similarity as a percentage.

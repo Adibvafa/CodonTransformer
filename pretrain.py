@@ -3,23 +3,23 @@ File: pretrain.py
 -------------------
 Pretrain the CodonTransformer model.
 
-The dataset is a JSON file. You can use prepare_training_data from CodonData to prepare the dataset.
-The repository Readme has a guide on how to prepare the dataset and use this script.
+The dataset is a JSON file. You can use prepare_training_data from CodonData to
+prepare the dataset. The repository README has a guide on how to prepare the
+dataset and use this script.
 """
 
-import os
-import torch
 import argparse
+import os
 
 import pytorch_lightning as pl
+import torch
 from torch.utils.data import DataLoader
-
-from transformers import PreTrainedTokenizerFast, BigBirdConfig, BigBirdForMaskedLM
+from transformers import BigBirdConfig, BigBirdForMaskedLM, PreTrainedTokenizerFast
 
 from CodonTransformer.CodonUtils import (
-    TOKEN2MASK,
-    NUM_ORGANISMS,
     MAX_LEN,
+    NUM_ORGANISMS,
+    TOKEN2MASK,
     IterableJSONData,
 )
 

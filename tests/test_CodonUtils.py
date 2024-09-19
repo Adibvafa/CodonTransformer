@@ -2,14 +2,15 @@ import os
 import pickle
 import tempfile
 import unittest
+
 from CodonTransformer.CodonUtils import (
-    load_python_object_from_disk,
-    save_python_object_to_disk,
     find_pattern_in_fasta,
     get_organism2id_dict,
     get_taxonomy_id,
-    sort_amino2codon_skeleton,
     load_pkl_from_url,
+    load_python_object_from_disk,
+    save_python_object_to_disk,
+    sort_amino2codon_skeleton,
 )
 
 
@@ -32,7 +33,10 @@ class TestCodonUtils(unittest.TestCase):
         os.remove(temp_file_name)
 
     def test_find_pattern_in_fasta(self):
-        text = ">seq1 [keyword=value1]\nATGCGTACGTAGCTAG\n>seq2 [keyword=value2]\nGGTACGATCGATCGAT"
+        text = (
+            ">seq1 [keyword=value1]\nATGCGTACGTAGCTAG\n"
+            ">seq2 [keyword=value2]\nGGTACGATCGATCGAT"
+        )
         self.assertEqual(find_pattern_in_fasta("keyword", text), "value1")
         self.assertEqual(find_pattern_in_fasta("nonexistent", text), "")
 

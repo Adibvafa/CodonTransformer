@@ -1,13 +1,15 @@
 import tempfile
 import unittest
+
 import pandas as pd
+from Bio.Data.CodonTable import TranslationError
+
 from CodonTransformer.CodonData import (
-    read_fasta_file,
     build_amino2codon_skeleton,
     get_amino_acid_sequence,
     is_correct_seq,
+    read_fasta_file,
 )
-from Bio.Data.CodonTable import TranslationError
 
 
 class TestCodonData(unittest.TestCase):

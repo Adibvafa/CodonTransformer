@@ -1,6 +1,7 @@
 # setup.py
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 
 def read_requirements():
@@ -23,7 +24,11 @@ setup(
     install_requires=read_requirements(),
     author="Adibvafa Fallahpour",
     author_email="Adibvafa.fallahpour@mail.utoronto.ca",
-    description="The ultimate tool for codon optimization, transforming protein sequences into optimized DNA sequences specific for your target organisms.",
+    description=(
+        "The ultimate tool for codon optimization, "
+        "transforming protein sequences into optimized DNA sequences "
+        "specific for your target organisms."
+    ),
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/adibvafa/CodonTransformer",
