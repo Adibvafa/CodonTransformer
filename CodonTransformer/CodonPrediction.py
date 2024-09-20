@@ -39,6 +39,7 @@ def predict_dna_sequence(
     attention_type: str = "original_full",
     deterministic: bool = True,
     temperature: float = 0.2,
+    top_p: float = 0.95,
 ) -> DNASequencePrediction:
     """
     Predict the DNA sequence for a given protein using the CodonTransformer model.
@@ -75,6 +76,10 @@ def predict_dna_sequence(
                 - Medium randomness: 0.5
                 - High randomness: 0.8
             The temperature must be a positive float. Defaults to 0.2.
+        top_p (float, optional): The cumulative probability threshold for nucleus sampling.
+            Tokens with cumulative probability up to `top_p` are considered for sampling.
+            This parameter helps balance diversity and coherence in the predicted DNA sequences.
+            The value must be a float between 0 and 1. Defaults to 0.95.
 
     Returns:
         DNASequencePrediction: An object containing the prediction results:
@@ -85,7 +90,7 @@ def predict_dna_sequence(
 
     Raises:
         ValueError: If the protein sequence is empty, if the organism is invalid,
-            or if the temperature is not a positive float.
+            if the temperature is not a positive float, or if `top_p` is not between 0 and 1.
 
     Note:
         This function uses `ORGANISM2ID` and `INDEX2TOKEN` dictionaries imported from
@@ -122,7 +127,7 @@ def predict_dna_sequence(
         ...     deterministic=True
         ... )
         >>>
-        >>> # Predict DNA sequence with low randomness
+        >>> # Predict DNA sequence with low randomness and top_p sampling
         >>> output_random = predict_dna_sequence(
         ...     protein=protein,
         ...     organism=organism,
@@ -131,7 +136,8 @@ def predict_dna_sequence(
         ...     model=model,
         ...     attention_type="original_full",
         ...     deterministic=False,
-        ...     temperature=0.2
+        ...     temperature=0.2,
+        ...     top_p=0.95
         ... )
         >>>
         >>> print(format_model_output(output))
@@ -147,6 +153,10 @@ def predict_dna_sequence(
     # Validate temperature
     if not isinstance(temperature, (float, int)) or temperature <= 0:
         raise ValueError("Temperature must be a positive float.")
+
+    # Validate top_p
+    if not isinstance(top_p, (float, int)) or not 0 < top_p <= 1.0:
+        raise ValueError("top_p must be a float between 0 and 1.")
 
     # Load tokenizer
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
@@ -180,18 +190,11 @@ def predict_dna_sequence(
 
         # Decode the predicted DNA sequence from the model output
         if deterministic:
-            # Select the most probable tokens (argmax)
             predicted_indices = logits.argmax(dim=-1).squeeze().tolist()
         else:
-            # Sample tokens according to their probability distribution
-            # Apply temperature scaling and convert logits to probabilities
-            logits = logits / temperature
-            probabilities = torch.softmax(logits, dim=-1)
-
-            # Sample from the probability distribution at each position
-            probabilities = probabilities.squeeze(0)  # Shape: [seq_len, vocab_size]
-            predicted_indices = (
-                torch.multinomial(probabilities, num_samples=1).squeeze(-1).tolist()
+            # Use the standalone non-deterministic sampling function
+            predicted_indices = sample_non_deterministic(
+                logits=logits, temperature=temperature, top_p=top_p
             )
 
         predicted_dna = list(map(INDEX2TOKEN.__getitem__, predicted_indices))
@@ -207,6 +210,75 @@ def predict_dna_sequence(
         processed_input=merged_seq,
         predicted_dna=predicted_dna,
     )
+
+
+def sample_non_deterministic(
+    logits: torch.Tensor,
+    temperature: float = 1.0,
+    top_p: float = 0.95,
+) -> List[int]:
+    """
+    Sample token indices from logits using temperature scaling and nucleus (top-p) sampling.
+
+    This function applies temperature scaling to the logits, computes probabilities,
+    and then performs nucleus sampling to select token indices. It is used for
+    non-deterministic decoding in language models to introduce randomness while
+    maintaining coherence in the generated sequences.
+
+    Args:
+        logits (torch.Tensor): The logits output from the model of shape
+            [seq_len, vocab_size] or [batch_size, seq_len, vocab_size].
+        temperature (float, optional): Temperature value for scaling logits.
+            Must be a positive float. Defaults to 1.0.
+        top_p (float, optional): Cumulative probability threshold for nucleus sampling.
+            Must be a float between 0 and 1. Tokens with cumulative probability up to
+            `top_p` are considered for sampling. Defaults to 0.95.
+
+    Returns:
+        List[int]: A list of sampled token indices corresponding to the predicted tokens.
+
+    Raises:
+        ValueError: If `temperature` is not a positive float or if `top_p` is not between 0 and 1.
+
+    Example:
+        >>> logits = model_output.logits  # Assume logits is a tensor of shape [seq_len, vocab_size]
+        >>> predicted_indices = sample_non_deterministic(logits, temperature=0.7, top_p=0.9)
+    """
+    if not isinstance(temperature, (float, int)) or temperature <= 0:
+        raise ValueError("Temperature must be a positive float.")
+    if not isinstance(top_p, (float, int)) or not 0 < top_p <= 1.0:
+        raise ValueError("top_p must be a float between 0 and 1.")
+
+    # Apply temperature scaling and compute probabilities
+    logits = logits / temperature
+    probabilities = torch.softmax(logits, dim=-1)
+
+    # Remove batch dimension if present
+    if probabilities.dim() == 3 and probabilities.size(0) == 1:
+        probabilities = probabilities.squeeze(0)  # Shape: [seq_len, vocab_size]
+
+    predicted_indices = []
+    for probs in probabilities:
+        sorted_probs, sorted_indices = torch.sort(probs, descending=True)
+        cumulative_probs = torch.cumsum(sorted_probs, dim=0)
+
+        # Find the cutoff index where cumulative_probs exceeds top_p
+        cutoff_index = torch.where(cumulative_probs > top_p)[0]
+        if len(cutoff_index) > 0:
+            cutoff_index = cutoff_index[0].item()
+            # Keep only tokens up to the cutoff index
+            sorted_probs = sorted_probs[: cutoff_index + 1]
+            sorted_indices = sorted_indices[: cutoff_index + 1]
+
+        # Re-normalize the probabilities after filtering
+        filtered_probs = sorted_probs / sorted_probs.sum()
+
+        # Sample from the filtered distribution
+        sampled_index = torch.multinomial(filtered_probs, num_samples=1).item()
+        predicted_index = sorted_indices[sampled_index].item()
+        predicted_indices.append(predicted_index)
+
+    return predicted_indices
 
 
 def load_model(
