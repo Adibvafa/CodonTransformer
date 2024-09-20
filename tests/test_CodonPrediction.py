@@ -1,19 +1,19 @@
+import random
 import unittest
 import warnings
-import random
 
 import torch
 
 from CodonTransformer.CodonData import get_amino_acid_sequence
-from CodonTransformer.CodonUtils import (
-    AMINO_ACIDS,
-    STOP_SYMBOLS,
-    ORGANISM2ID,
-)
 from CodonTransformer.CodonPrediction import (
     load_model,
     load_tokenizer,
     predict_dna_sequence,
+)
+from CodonTransformer.CodonUtils import (
+    AMINO_ACIDS,
+    ORGANISM2ID,
+    STOP_SYMBOLS,
 )
 
 
