@@ -122,7 +122,7 @@ def predict_dna_sequence(
         ...     deterministic=True
         ... )
         >>>
-        >>> # Predict DNA sequence with medium randomness
+        >>> # Predict DNA sequence with low randomness
         >>> output_random = predict_dna_sequence(
         ...     protein=protein,
         ...     organism=organism,
@@ -131,7 +131,7 @@ def predict_dna_sequence(
         ...     model=model,
         ...     attention_type="original_full",
         ...     deterministic=False,
-        ...     temperature=1.0
+        ...     temperature=0.2
         ... )
         >>>
         >>> print(format_model_output(output))
