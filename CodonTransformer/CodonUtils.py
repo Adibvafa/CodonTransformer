@@ -38,6 +38,7 @@ AMINO_ACIDS: List[str] = [
     "W",  # Tryptophan
     "Y",  # Tyrosine
 ]
+STOP_SYMBOLS = ["_", "*"]  # Stop codon symbols
 
 # Dictionary ambiguous amino acids to standard amino acids
 AMBIGUOUS_AMINOACID_MAP: Dict[str, list[str]] = {

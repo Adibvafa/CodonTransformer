@@ -22,6 +22,8 @@ from transformers import (
 
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
+    AMINO_ACIDS,
+    STOP_SYMBOLS,
     INDEX2TOKEN,
     NUM_ORGANISMS,
     ORGANISM2ID,
@@ -147,7 +149,7 @@ def predict_dna_sequence(
         raise ValueError("Protein sequence cannot be empty.")
 
     # Ensure the protein sequence contains only valid amino acids
-    if not all(aminoacid in AMINO_ACIDS for aminoacid in protein):
+    if not all(aminoacid in AMINO_ACIDS + STOP_SYMBOLS for aminoacid in protein):
         raise ValueError("Invalid amino acid found in protein sequence.")
 
     # Validate temperature
