@@ -44,7 +44,8 @@ class TestCodonPrediction(unittest.TestCase):
     def test_predict_dna_sequence_non_deterministic(self):
         protein_sequence = "MFWY"
         organism = "Escherichia coli general"
-        num_iterations = 64
+        num_iterations = 100
+        temperatures = [0.2, 0.5, 0.8]
         possible_outputs = set()
         possible_encodings_wo_stop = {
             "ATGTTTTGGTAT",
@@ -54,15 +55,17 @@ class TestCodonPrediction(unittest.TestCase):
         }
 
         for _ in range(num_iterations):
-            result = predict_dna_sequence(
-                protein=protein_sequence,
-                organism=organism,
-                device=self.device,
-                tokenizer=self.tokenizer,
-                model=self.model,
-                deterministic=False,
-            )
-            possible_outputs.add(result.predicted_dna[:-3])  # Remove stop codon
+            for temperature in temperatures:
+                result = predict_dna_sequence(
+                    protein=protein_sequence,
+                    organism=organism,
+                    device=self.device,
+                    tokenizer=self.tokenizer,
+                    model=self.model,
+                    deterministic=False,
+                    temperature=temperature,
+                )
+                possible_outputs.add(result.predicted_dna[:-3])  # Remove stop codon
 
         self.assertEqual(possible_outputs, possible_encodings_wo_stop)
 
