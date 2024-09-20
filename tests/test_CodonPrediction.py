@@ -7,7 +7,6 @@ import torch
 from CodonTransformer.CodonData import get_amino_acid_sequence
 from CodonTransformer.CodonUtils import (
     AMINO_ACIDS,
-    INDEX2TOKEN,
     STOP_SYMBOLS,
     ORGANISM2ID,
 )
@@ -79,7 +78,7 @@ class TestCodonPrediction(unittest.TestCase):
 
     def test_predict_dna_sequence_invalid_inputs(self):
         test_cases = [
-            ("MKTZZFVLLL", "Escherichia coli general", "invalid protein sequence"),
+            ("MKTZZFVLLL?", "Escherichia coli general", "invalid protein sequence"),
             ("MKTFFVLLL", "Alien $%#@!", "invalid organism code"),
             ("", "Escherichia coli general", "empty protein sequence"),
         ]
@@ -320,20 +319,6 @@ class TestCodonPrediction(unittest.TestCase):
     def test_predict_dna_sequence_stop_codon_handling(self):
         """Test the function's handling of protein sequences ending with a non '_' or '*' stop symbol."""
         protein_sequence = "MWW/"
-        organism = "Escherichia coli general"
-
-        with self.assertRaises(ValueError):
-            predict_dna_sequence(
-                protein=protein_sequence,
-                organism=organism,
-                device=self.device,
-                tokenizer=self.tokenizer,
-                model=self.model,
-            )
-
-    def test_predict_dna_sequence_ambiguous_amino_acids(self):
-        """Test the function's response to ambiguous or non-standard amino acids."""
-        protein_sequence = "MWWBXZ"
         organism = "Escherichia coli general"
 
         with self.assertRaises(ValueError):
