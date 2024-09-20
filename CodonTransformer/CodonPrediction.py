@@ -22,7 +22,6 @@ from transformers import (
 
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
-    AMINO_ACIDS,
     INDEX2TOKEN,
     NUM_ORGANISMS,
     ORGANISM2ID,
@@ -127,10 +126,6 @@ def predict_dna_sequence(
     """
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
-
-    # Test that the input protein sequence contains only valid amino acids
-    if not all(aminoacid in AMINO_ACIDS for aminoacid in protein):
-        raise ValueError("Invalid amino acid found in protein sequence.")
 
     # Load tokenizer
     if not isinstance(tokenizer, PreTrainedTokenizerFast):

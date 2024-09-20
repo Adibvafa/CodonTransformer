@@ -7,6 +7,7 @@ preparing the data for training and inference of the CodonTransformer model.
 
 import json
 import os
+import random
 from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -24,6 +25,7 @@ from CodonTransformer.CodonUtils import (
     START_CODONS,
     STOP_CODONS,
     STOP_SYMBOL,
+    ConfigManager,
     find_pattern_in_fasta,
     get_taxonomy_id,
     sort_amino2codon_skeleton,
@@ -161,7 +163,7 @@ def preprocess_protein_sequence(protein: str) -> str:
         str: The preprocessed protein sequence.
 
     Raises:
-        ValueError: If the protein sequence is invalid.
+        ValueError: If the protein sequence is invalid or if the configuration is invalid.
     """
     if not protein:
         raise ValueError("Protein sequence is empty.")
@@ -171,10 +173,28 @@ def preprocess_protein_sequence(protein: str) -> str:
         protein.upper().strip().replace("\n", "").replace(" ", "").replace("\t", "")
     )
 
-    # Replace ambiguous amino acids with standard 20 amino acids
-    protein = "".join(
-        AMBIGUOUS_AMINOACID_MAP.get(aminoacid, aminoacid) for aminoacid in protein
-    )
+    # Handle ambiguous amino acids based on the specified behavior
+    config = ConfigManager()
+    ambiguous_aminoacid_map_override = config.get('ambiguous_aminoacid_map_override')
+    ambiguous_aminoacid_behavior = config.get('ambiguous_aminoacid_behavior')
+    ambiguous_aminoacid_map = AMBIGUOUS_AMINOACID_MAP.copy()
+    
+    for aminoacid, standard_aminoacids in ambiguous_aminoacid_map_override.items():
+        ambiguous_aminoacid_map[aminoacid] = standard_aminoacids
+
+    if ambiguous_aminoacid_behavior == 'raise_error':
+        if any(aminoacid in ambiguous_aminoacid_map for aminoacid in protein):
+            raise ValueError("Ambiguous amino acids found in protein sequence.")
+    elif ambiguous_aminoacid_behavior == 'standardize_deterministic':
+        protein = "".join(
+            ambiguous_aminoacid_map.get(aminoacid, [aminoacid])[0] for aminoacid in protein
+        )
+    elif ambiguous_aminoacid_behavior == 'standardize_random':
+        protein = "".join(
+            random.choice(ambiguous_aminoacid_map.get(aminoacid, [aminoacid])) for aminoacid in protein
+        )
+    else:
+        raise ValueError(f"Invalid ambiguous_aminoacid_behavior: {ambiguous_aminoacid_behavior}.")
 
     # Check for sequence validity
     if any(
