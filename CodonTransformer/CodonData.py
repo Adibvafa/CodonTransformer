@@ -17,7 +17,6 @@ from sklearn.utils import shuffle as sk_shuffle
 from tqdm import tqdm
 
 from CodonTransformer.CodonUtils import (
-    STOP_SYMBOLS,
     AMBIGUOUS_AMINOACID_MAP,
     AMINO2CODON_TYPE,
     AMINO_ACIDS,
@@ -25,6 +24,7 @@ from CodonTransformer.CodonUtils import (
     START_CODONS,
     STOP_CODONS,
     STOP_SYMBOL,
+    STOP_SYMBOLS,
     find_pattern_in_fasta,
     get_taxonomy_id,
     sort_amino2codon_skeleton,
