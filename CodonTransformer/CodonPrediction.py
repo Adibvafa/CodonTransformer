@@ -192,7 +192,6 @@ def predict_dna_sequence(
         if deterministic:
             predicted_indices = logits.argmax(dim=-1).squeeze().tolist()
         else:
-            # Use the standalone non-deterministic sampling function
             predicted_indices = sample_non_deterministic(
                 logits=logits, temperature=temperature, top_p=top_p
             )
