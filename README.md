@@ -275,6 +275,10 @@ This subpackage contains functions and classes that handle the core prediction f
 
   Predict the DNA sequence for a given protein using the CodonTransformer model.
 
+- `sample_non_deterministic(logits: torch.Tensor, temperature: float = 0.2, top_p: float = 0.95) -> List[int]`
+
+  Sample token indices from logits using temperature scaling and nucleus (top-p) sampling.
+
 - `load_model(path: str, device: torch.device = None, num_organisms: int = None, remove_prefix: bool = True, attention_type: str = "original_full") -> torch.nn.Module`
 
   Load a BigBirdForMaskedLM model from a file or checkpoint.
@@ -383,6 +387,7 @@ The CodonUtils subpackage contains constants and helper functions essential for 
 #### Constants
 
 - `AMINO_ACIDS`: List of all standard amino acids
+- `STOP_SYMBOLS`: List of possible stop symbols to end the protein with
 - `AMBIGUOUS_AMINOACID_MAP`: Mapping of ambiguous amino acids to standard amino acids
 - `START_CODONS` and `STOP_CODONS`: Lists of start and stop codons
 - `TOKEN2INDEX` and `INDEX2TOKEN`: Mappings between tokens and their indices

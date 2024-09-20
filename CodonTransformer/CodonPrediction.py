@@ -215,7 +215,7 @@ def predict_dna_sequence(
 
 def sample_non_deterministic(
     logits: torch.Tensor,
-    temperature: float = 1.0,
+    temperature: float = 0.2,
     top_p: float = 0.95,
 ) -> List[int]:
     """
