@@ -14,6 +14,7 @@ from CodonTransformer.CodonUtils import (
     AMINO_ACIDS,
     ORGANISM2ID,
     STOP_SYMBOLS,
+    DNASequencePrediction,
 )
 
 
@@ -415,6 +416,81 @@ class TestCodonPrediction(unittest.TestCase):
             protein_sequence[:max_length],
             "Translated protein does not match the original protein sequence up to the maximum length supported.",
         )
+
+    def test_predict_dna_sequence_multi_output(self):
+        """Test that the function returns multiple sequences when num_sequences > 1."""
+        protein_sequence = "MFQLLAPWY"
+        organism = "Escherichia coli general"
+        num_sequences = 20
+
+        result = predict_dna_sequence(
+            protein=protein_sequence,
+            organism=organism,
+            device=self.device,
+            tokenizer=self.tokenizer,
+            model=self.model,
+            deterministic=False,
+            num_sequences=num_sequences,
+        )
+
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), num_sequences)
+
+        for prediction in result:
+            self.assertIsInstance(prediction, DNASequencePrediction)
+            self.assertTrue(
+                all(nucleotide in "ATCG" for nucleotide in prediction.predicted_dna)
+            )
+
+            # Check that all predicted DNA sequences translate back to the original protein
+            translated_protein = get_amino_acid_sequence(prediction.predicted_dna[:-3])
+            self.assertEqual(translated_protein, protein_sequence)
+
+    def test_predict_dna_sequence_deterministic_multi_raises_error(self):
+        """Test that requesting multiple sequences in deterministic mode raises an error."""
+        protein_sequence = "MFWY"
+        organism = "Escherichia coli general"
+
+        with self.assertRaises(ValueError):
+            predict_dna_sequence(
+                protein=protein_sequence,
+                organism=organism,
+                device=self.device,
+                tokenizer=self.tokenizer,
+                model=self.model,
+                deterministic=True,
+                num_sequences=3,
+            )
+
+    def test_predict_dna_sequence_multi_diversity(self):
+        """Test that multiple sequences generated are diverse."""
+        protein_sequence = "MFWYMFWY"
+        organism = "Escherichia coli general"
+        num_sequences = 10
+
+        result = predict_dna_sequence(
+            protein=protein_sequence,
+            organism=organism,
+            device=self.device,
+            tokenizer=self.tokenizer,
+            model=self.model,
+            deterministic=False,
+            num_sequences=num_sequences,
+            temperature=0.8,
+        )
+
+        unique_sequences = set(prediction.predicted_dna for prediction in result)
+
+        self.assertGreater(
+            len(unique_sequences),
+            2,
+            "Multiple sequence generation should produce diverse results",
+        )
+
+        # Check that all sequences are valid translations of the input protein
+        for prediction in result:
+            translated_protein = get_amino_acid_sequence(prediction.predicted_dna[:-3])
+            self.assertEqual(translated_protein, protein_sequence)
 
 
 if __name__ == "__main__":
