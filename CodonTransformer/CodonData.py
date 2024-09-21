@@ -24,6 +24,7 @@ from CodonTransformer.CodonUtils import (
     START_CODONS,
     STOP_CODONS,
     STOP_SYMBOL,
+    STOP_SYMBOLS,
     find_pattern_in_fasta,
     get_taxonomy_id,
     sort_amino2codon_skeleton,
@@ -177,13 +178,13 @@ def preprocess_protein_sequence(protein: str) -> str:
     )
 
     # Check for sequence validity
-    if any(
-        aminoacid not in AMINO_ACIDS + ["*", STOP_SYMBOL] for aminoacid in protein[:-1]
-    ):
+    if any(aminoacid not in AMINO_ACIDS + STOP_SYMBOLS for aminoacid in protein):
         raise ValueError("Invalid characters in protein sequence.")
 
-    if protein[-1] not in AMINO_ACIDS + ["*", STOP_SYMBOL]:
-        raise ValueError("Protein sequence must end with *, or _, or an amino acid.")
+    if protein[-1] not in AMINO_ACIDS + STOP_SYMBOLS:
+        raise ValueError(
+            "Protein sequence must end with `*`, or `_`, or an amino acid."
+        )
 
     # Replace '*' at the end of protein with STOP_SYMBOL if present
     if protein[-1] == "*":
