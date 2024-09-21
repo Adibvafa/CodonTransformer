@@ -60,7 +60,6 @@ class TestCodonPrediction(unittest.TestCase):
             "ATGTTTTGGTAC",
             "ATGTTCTGGTAC",
         }
-
         for _ in range(num_iterations):
             for temperature in temperatures:
                 result = predict_dna_sequence(
