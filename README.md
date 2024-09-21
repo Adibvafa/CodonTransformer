@@ -34,6 +34,7 @@ The genetic code is degenerate allowing a multitude of possible DNA sequences to
 **For an interactive demo, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
 <br></br>
 After installing CodonTransformer, you can use:
+
 ```python
 import torch
 from transformers import AutoTokenizer, BigBirdForMaskedLM
@@ -156,7 +157,7 @@ To finetune CodonTransformer on your own data, follow these steps:
         --learning_rate 0.00005 \
         --warmup_fraction 0.1 \
         --save_every_n_steps 512 \
-        --seed 123
+        --seed 23
     ```
    This script automatically loads the pretrained model from Hugging Face and finetunes it on your dataset.
    For an example of a SLURM job request, see the `slurm` directory in the repository.
@@ -271,7 +272,7 @@ This subpackage contains functions and classes that handle the core prediction f
 
 ### Available Functions and Classes
 
-- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full") -> DNASequencePrediction`
+- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full", deterministic: bool = True, temperature: float = 0.2, top_p: float = 0.95, num_sequences: int = 1) -> DNASequencePrediction`
 
   Predict the DNA sequence for a given protein using the CodonTransformer model.
 
