@@ -96,7 +96,7 @@ Set `deterministic=False` to generate variable sequences. Control the variabilit
   - Lower values (e.g., 0.2): More conservative predictions
   - Higher values (e.g., 0.8): More diverse predictions
 
-Using very high temperatures might result in prediction of DNA sequences that do not translate to the exact input protein. <br>
+Using high temperatures might result in prediction of DNA sequences that do not translate to the input protein. <br>
 Generate multiple sequences by setting `num_sequences` to a value greater than 1.
 <br>
 
