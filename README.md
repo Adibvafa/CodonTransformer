@@ -61,6 +61,7 @@ output = predict_dna_sequence(
     tokenizer=tokenizer,
     model=model,
     attention_type="original_full",
+    deterministic=True
 )
 print(format_model_output(output))
 ```
@@ -86,12 +87,22 @@ M_UNK A_UNK L_UNK W_UNK M_UNK R_UNK L_UNK L_UNK P_UNK L_UNK L_UNK A_UNK L_UNK L_
 -----------------------------
 ATGGCTTTATGGATGCGTCTGCTGCCGCTGCTGGCGCTGCTGGCGCTGTGGGGCCCGGACCCGGCGGCGGCGTTTGTGAATCAGCACCTGTGCGGCAGCCACCTGGTGGAAGCGCTGTATCTGGTGTGCGGTGAGCGCGGCTTCTTCTACACGCCCAAAACCCGCCGCGAAGCGGAAGATCTGCAGGTGGGCCAGGTGGAGCTGGGCGGCTAA
 ```
+
+### Generating Multiple Variable Sequences
+
+Set `deterministic=False` to generate variable sequences. Control the variability using `temperature`:
+
+- `temperature`: (recommended between 0.2 and 0.8)
+  - Lower values (e.g., 0.2): More conservative predictions
+  - Higher values (e.g., 0.8): More diverse predictions
+
+Using very high temperatures might result in prediction of DNA sequences that do not translate to the exact input protein. <br>
+Generate multiple sequences by setting `num_sequences` to a value greater than 1.
 <br>
 
 **You can use the [inference template](https://github.com/Adibvafa/CodonTransformer/raw/main/src/CodonTransformer_inference_template.xlsx) for batch inference in [Google Colab](https://adibvafa.github.io/CodonTransformer/GoogleColab).**
 
 <br>
-
 
 ## Installation
 Install CodonTransformer via pip:
