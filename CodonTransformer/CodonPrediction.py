@@ -40,19 +40,20 @@ def predict_dna_sequence(
     deterministic: bool = True,
     temperature: float = 0.2,
     top_p: float = 0.95,
-) -> DNASequencePrediction:
+    num_sequences: int = 1,
+) -> Union[DNASequencePrediction, List[DNASequencePrediction]]:
     """
-    Predict the DNA sequence for a given protein using the CodonTransformer model.
+    Predict the DNA sequence(s) for a given protein using the CodonTransformer model.
 
     This function takes a protein sequence and an organism (as ID or name) as input
-    and returns the predicted DNA sequence using the CodonTransformer model. It can use
+    and returns the predicted DNA sequence(s) using the CodonTransformer model. It can use
     either provided tokenizer and model objects or load them from specified paths.
 
     Args:
         protein (str): The input protein sequence for which to predict the DNA sequence.
         organism (Union[int, str]): Either the ID of the organism or its name (e.g.,
             "Escherichia coli general"). If a string is provided, it will be converted
-            to the corresponding ID using `ORGANISM2ID`.
+            to the corresponding ID using ORGANISM2ID.
         device (torch.device): The device (CPU or GPU) to run the model on.
         tokenizer (Union[str, PreTrainedTokenizerFast, None], optional): Either a file
             path to load the tokenizer from, a pre-loaded tokenizer object, or None. If
@@ -77,12 +78,15 @@ def predict_dna_sequence(
                 - High randomness: 0.8
             The temperature must be a positive float. Defaults to 0.2.
         top_p (float, optional): The cumulative probability threshold for nucleus sampling.
-            Tokens with cumulative probability up to `top_p` are considered for sampling.
+            Tokens with cumulative probability up to top_p are considered for sampling.
             This parameter helps balance diversity and coherence in the predicted DNA sequences.
             The value must be a float between 0 and 1. Defaults to 0.95.
+        num_sequences (int, optional): The number of DNA sequences to generate. Only applicable
+            when deterministic is False. Defaults to 1.
 
     Returns:
-        DNASequencePrediction: An object containing the prediction results:
+        Union[DNASequencePrediction, List[DNASequencePrediction]]: An object or list of objects
+        containing the prediction results:
             - organism (str): Name of the organism used for prediction.
             - protein (str): Input protein sequence for which DNA sequence is predicted.
             - processed_input (str): Processed input sequence (merged protein and DNA).
@@ -90,12 +94,13 @@ def predict_dna_sequence(
 
     Raises:
         ValueError: If the protein sequence is empty, if the organism is invalid,
-            if the temperature is not a positive float, or if `top_p` is not between 0 and 1.
+            if the temperature is not a positive float, if top_p is not between 0 and 1,
+            or if num_sequences is less than 1 or used with deterministic mode.
 
     Note:
-        This function uses `ORGANISM2ID` and `INDEX2TOKEN` dictionaries imported from
-        `CodonTransformer.CodonUtils`. `ORGANISM2ID` maps organism names to their
-        corresponding IDs. `INDEX2TOKEN` maps model output indices (token IDs) to
+        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from
+        CodonTransformer.CodonUtils. ORGANISM2ID maps organism names to their
+        corresponding IDs. INDEX2TOKEN maps model output indices (token IDs) to
         respective codons.
 
     Example:
@@ -116,7 +121,7 @@ def predict_dna_sequence(
         >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLA"
         >>> organism = "Escherichia coli general"
         >>>
-        >>> # Predict DNA sequence with deterministic decoding
+        >>> # Predict DNA sequence with deterministic decoding (single sequence)
         >>> output = predict_dna_sequence(
         ...     protein=protein,
         ...     organism=organism,
@@ -127,7 +132,7 @@ def predict_dna_sequence(
         ...     deterministic=True
         ... )
         >>>
-        >>> # Predict DNA sequence with low randomness and top_p sampling
+        >>> # Predict multiple DNA sequences with low randomness and top_p sampling
         >>> output_random = predict_dna_sequence(
         ...     protein=protein,
         ...     organism=organism,
@@ -137,22 +142,32 @@ def predict_dna_sequence(
         ...     attention_type="original_full",
         ...     deterministic=False,
         ...     temperature=0.2,
-        ...     top_p=0.95
+        ...     top_p=0.95,
+        ...     num_sequences=3
         ... )
         >>>
         >>> print(format_model_output(output))
-        >>> print(format_model_output(output_random))
+        >>> for i, seq in enumerate(output_random, 1):
+        ...     print(f"Sequence {i}:")
+        ...     print(format_model_output(seq))
+        ...     print()
     """
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
 
-    # Validate temperature
     if not isinstance(temperature, (float, int)) or temperature <= 0:
         raise ValueError("Temperature must be a positive float.")
 
-    # Validate top_p
     if not isinstance(top_p, (float, int)) or not 0 < top_p <= 1.0:
         raise ValueError("top_p must be a float between 0 and 1.")
+
+    if not isinstance(num_sequences, int) or num_sequences < 1:
+        raise ValueError("num_sequences must be a positive integer.")
+
+    if deterministic and num_sequences > 1:
+        raise ValueError(
+            "Multiple sequences can only be generated in non-deterministic mode."
+        )
 
     # Load tokenizer
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
@@ -184,27 +199,31 @@ def predict_dna_sequence(
         output_dict = model(**tokenized_input, return_dict=True)
         logits = output_dict.logits.detach().cpu()
 
-        # Decode the predicted DNA sequence from the model output
-        if deterministic:
-            predicted_indices = logits.argmax(dim=-1).squeeze().tolist()
-        else:
-            predicted_indices = sample_non_deterministic(
-                logits=logits, temperature=temperature, top_p=top_p
+        predictions = []
+        for _ in range(num_sequences):
+            # Decode the predicted DNA sequence from the model output
+            if deterministic:
+                predicted_indices = logits.argmax(dim=-1).squeeze().tolist()
+            else:
+                predicted_indices = sample_non_deterministic(
+                    logits=logits, temperature=temperature, top_p=top_p
+                )
+
+            predicted_dna = list(map(INDEX2TOKEN.__getitem__, predicted_indices))
+            predicted_dna = (
+                "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
             )
 
-        predicted_dna = list(map(INDEX2TOKEN.__getitem__, predicted_indices))
+            predictions.append(
+                DNASequencePrediction(
+                    organism=organism_name,
+                    protein=protein,
+                    processed_input=merged_seq,
+                    predicted_dna=predicted_dna,
+                )
+            )
 
-        # Skip special tokens [CLS] and [SEP] to create the predicted_dna
-        predicted_dna = (
-            "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
-        )
-
-    return DNASequencePrediction(
-        organism=organism_name,
-        protein=protein,
-        processed_input=merged_seq,
-        predicted_dna=predicted_dna,
-    )
+    return predictions[0] if num_sequences == 1 else predictions
 
 
 def sample_non_deterministic(
