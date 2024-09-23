@@ -9,10 +9,32 @@ from CodonTransformer.CodonData import (
     get_amino_acid_sequence,
     is_correct_seq,
     read_fasta_file,
+    preprocess_protein_sequence,
 )
-
+from CodonTransformer.CodonUtils import ConfigManager
 
 class TestCodonData(unittest.TestCase):
+    def test_preprocess_protein_sequence(self):
+        with ConfigManager() as config:
+            protein = "Z_"
+            try:
+                preprocess_protein_sequence(protein)
+                self.fail("Expected ValueError")
+            except ValueError:
+                pass
+            config.set("ambiguous_aminoacid_behavior", "standardize_deterministic")
+            for _ in range(10):
+                preprocessed_protein = preprocess_protein_sequence(protein)
+                self.assertEqual(preprocessed_protein, "Q_")
+            config.set("ambiguous_aminoacid_behavior", "standardize_random")
+            random_results = set()
+            # The probability of getting the same result 30 times in a row is
+            # 1 in 1.073741824*10^9 if there are only two possible results.
+            for _ in range(30):
+                preprocessed_protein = preprocess_protein_sequence(protein)
+                random_results.add(preprocessed_protein)
+            self.assertGreater(len(random_results), 1)
+
     def test_read_fasta_file(self):
         fasta_content = ">sequence1\n" "ATGATGATGATGATG\n" ">sequence2\n" "TGATGATGATGA"
 

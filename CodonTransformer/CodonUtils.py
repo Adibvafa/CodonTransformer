@@ -566,12 +566,17 @@ class ConfigManager:
         """
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
-            cls._instance._config = {
-                'ambiguous_aminoacid_behavior': 'raise_error',
-                'ambiguous_aminoacid_map_override': {}
-            }
+            cls._instance.reset_config()
         return cls._instance
 
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            print(f"Exception occurred: {exc_type}, {exc_value}, {traceback}")
+        self.reset_config()
+    
     def get(self, key: str) -> Any:
         """
         Get the value of a configuration key.
@@ -638,6 +643,14 @@ class ConfigManager:
                     raise ValueError(f"Invalid amino acid in ambiguous_aminoacid_map_override: {ambiguous_aminoacid}")
         else:
             raise ValueError(f"Invalid configuration key: {key}")
+    def reset_config(self) -> None:
+        """
+        Reset the configuration to the default values.
+        """
+        self._config = {
+            'ambiguous_aminoacid_behavior': 'raise_error',
+            'ambiguous_aminoacid_map_override': {}
+        }
 
 
 def load_python_object_from_disk(file_path: str) -> Any:
