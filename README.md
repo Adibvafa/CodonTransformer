@@ -98,9 +98,12 @@ Set `deterministic=False` to generate variable sequences. Control the variabilit
 
 Using high temperatures might result in prediction of DNA sequences that do not translate to the input protein. <br>
 Generate multiple sequences by setting `num_sequences` to a value greater than 1.
-<br>
+<br><br>
 
-**You can use the [inference template](https://github.com/Adibvafa/CodonTransformer/raw/main/src/CodonTransformer_inference_template.xlsx) for batch inference in [Google Colab](https://adibvafa.github.io/CodonTransformer/GoogleColab).**
+
+### Batch Inference
+**You can use the [inference template](https://github.com/Adibvafa/CodonTransformer/raw/main/src/CodonTransformer_inference_template.xlsx) to setup your dataset for batch inference in [Google Colab](https://adibvafa.github.io/CodonTransformer/GoogleColab).**
+A sample dataset is provided under [\demo](https://github.com/Adibvafa/CodonTransformer/tree/main/demo) . A typical inference might take 1-3 seconds based on available compute.
 
 <br>
 
@@ -119,7 +122,7 @@ cd CodonTransformer
 pip install -r requirements.txt
 ```
 
-The package requires `python>=3.9`. The requirements are [availabe here](requirements.txt).
+The package requires `python>=3.9`, supports all major operating systems, and takes about 10-30 seconds depending on already installed requirements, [availabe here](requirements.txt).
 <br><br><br>
 
 
