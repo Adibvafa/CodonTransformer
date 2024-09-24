@@ -11,11 +11,11 @@ from CodonTransformer.CodonData import (
     read_fasta_file,
     preprocess_protein_sequence,
 )
-from CodonTransformer.CodonUtils import ConfigManager
+from CodonTransformer.CodonUtils import ProteinConfig
 
 class TestCodonData(unittest.TestCase):
     def test_preprocess_protein_sequence(self):
-        with ConfigManager() as config:
+        with ProteinConfig() as config:
             protein = "Z_"
             try:
                 preprocess_protein_sequence(protein)

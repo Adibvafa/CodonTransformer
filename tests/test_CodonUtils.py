@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 from CodonTransformer.CodonUtils import (
-    ConfigManager,
+    ProteinConfig,
     find_pattern_in_fasta,
     get_organism2id_dict,
     get_taxonomy_id,
@@ -17,7 +17,7 @@ from CodonTransformer.CodonUtils import (
 
 class TestCodonUtils(unittest.TestCase):
     def test_config_manager(self):
-        with ConfigManager() as config:
+        with ProteinConfig() as config:
             config.set(
                 "ambiguous_aminoacid_behavior",
                 "standardize_deterministic"
@@ -51,7 +51,7 @@ class TestCodonUtils(unittest.TestCase):
                 self.fail("Expected ValueError")
             except ValueError:
                 pass
-        with ConfigManager() as config:
+        with ProteinConfig() as config:
             self.assertEqual(
                 config.get("ambiguous_aminoacid_behavior"),
                 "raise_error"

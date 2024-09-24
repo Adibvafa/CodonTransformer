@@ -8,6 +8,7 @@ import itertools
 import os
 import pickle
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
@@ -545,30 +546,12 @@ class IterableJSONData(IterableData):
         self.train = train
 
 
-class ConfigManager:
+class ConfigManager(ABC):
     """
-    A class to manage configuration settings.
-
-    This class ensures that the configuration is a singleton.
-    It provides methods to get, set, and update configuration values.
-
-    Attributes:
-        _instance (Optional[ConfigManager]): The singleton instance of the ConfigManager.
-        _config (Dict[str, Any]): The configuration dictionary.
+    Abstract base class for managing configuration settings.
     """
-    _instance = None
-
-    def __new__(cls):
-        """
-        Create a new instance of the ConfigManager class.
-
-        Returns:
-            ConfigManager: The singleton instance of the ConfigManager.
-        """
-        if cls._instance is None:
-            cls._instance = super(ConfigManager, cls).__new__(cls)
-            cls._instance.reset_config()
-        return cls._instance
+    def __init__(self):
+        self._config: Dict[str, Any] = {}
 
     def __enter__(self):
         return self
@@ -578,6 +561,11 @@ class ConfigManager:
             print(f"Exception occurred: {exc_type}, {exc_value}, {traceback}")
         self.reset_config()
     
+    @abstractmethod
+    def reset_config(self) -> None:
+        """Reset the configuration to default values."""
+        pass
+
     def get(self, key: str) -> Any:
         """
         Get the value of a configuration key.
@@ -610,8 +598,37 @@ class ConfigManager:
         """
         for key, value in config_dict.items():
             self.validate_inputs(key, value)
-        for key, value in config_dict.items():
-            self.set(key, value)
+        self._config.update(config_dict)
+
+    @abstractmethod
+    def validate_inputs(self, key: str, value: Any) -> None:
+        """Validate the inputs for the configuration."""
+        pass
+    
+class ProteinConfig(ConfigManager):
+    """
+    A class to manage configuration settings for protein sequences.
+
+    This class ensures that the configuration is a singleton.
+    It provides methods to get, set, and update configuration values.
+
+    Attributes:
+        _instance (Optional[ConfigManager]): The singleton instance of the ConfigManager.
+        _config (Dict[str, Any]): The configuration dictionary.
+    """
+    _instance = None
+
+    def __new__(cls):
+        """
+        Create a new instance of the ProteinConfig class.
+
+        Returns:
+            ProteinConfig: The singleton instance of the ProteinConfig.
+        """
+        if cls._instance is None:
+            cls._instance = super(ProteinConfig, cls).__new__(cls)
+            cls._instance.reset_config()
+        return cls._instance
     
     def validate_inputs(self, key: str, value: Any) -> None:
         """
@@ -644,6 +661,7 @@ class ConfigManager:
                     raise ValueError(f"Invalid amino acid in ambiguous_aminoacid_map_override: {ambiguous_aminoacid}")
         else:
             raise ValueError(f"Invalid configuration key: {key}")
+
     def reset_config(self) -> None:
         """
         Reset the configuration to the default values.

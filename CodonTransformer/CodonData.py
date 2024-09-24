@@ -26,7 +26,7 @@ from CodonTransformer.CodonUtils import (
     STOP_CODONS,
     STOP_SYMBOL,
     STOP_SYMBOLS,
-    ConfigManager,
+    ProteinConfig,
     find_pattern_in_fasta,
     get_taxonomy_id,
     sort_amino2codon_skeleton,
@@ -175,7 +175,7 @@ def preprocess_protein_sequence(protein: str) -> str:
     )
 
     # Handle ambiguous amino acids based on the specified behavior
-    config = ConfigManager()
+    config = ProteinConfig()
     ambiguous_aminoacid_map_override = config.get('ambiguous_aminoacid_map_override')
     ambiguous_aminoacid_behavior = config.get('ambiguous_aminoacid_behavior')
     ambiguous_aminoacid_map = AMBIGUOUS_AMINOACID_MAP.copy()
