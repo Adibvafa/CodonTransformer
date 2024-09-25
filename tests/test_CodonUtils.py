@@ -54,7 +54,7 @@ class TestCodonUtils(unittest.TestCase):
         with ProteinConfig() as config:
             self.assertEqual(
                 config.get("ambiguous_aminoacid_behavior"),
-                "raise_error"
+                "standardize_random"
             )
             self.assertEqual(
                 config.get("ambiguous_aminoacid_map_override"),

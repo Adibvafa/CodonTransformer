@@ -16,6 +16,7 @@ from CodonTransformer.CodonUtils import ProteinConfig
 class TestCodonData(unittest.TestCase):
     def test_preprocess_protein_sequence(self):
         with ProteinConfig() as config:
+            config.set("ambiguous_aminoacid_behavior", "raise_error")
             protein = "Z_"
             try:
                 preprocess_protein_sequence(protein)

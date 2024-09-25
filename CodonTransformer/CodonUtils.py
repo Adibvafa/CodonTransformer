@@ -667,7 +667,7 @@ class ProteinConfig(ConfigManager):
         Reset the configuration to the default values.
         """
         self._config = {
-            'ambiguous_aminoacid_behavior': 'raise_error',
+            'ambiguous_aminoacid_behavior': 'standardize_random',
             'ambiguous_aminoacid_map_override': {}
         }
 
