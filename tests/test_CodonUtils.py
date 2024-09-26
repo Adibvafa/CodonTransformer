@@ -28,11 +28,11 @@ class TestCodonUtils(unittest.TestCase):
             )
             config.set(
                 "ambiguous_aminoacid_map_override",
-                {"R": ["A", "G"]}
+                {"X": ["A", "G"]}
             )
             self.assertEqual(
                 config.get("ambiguous_aminoacid_map_override"),
-                {"R": ["A", "G"]}
+                {"X": ["A", "G"]}
             )
             config.update({
                 "ambiguous_aminoacid_behavior": "raise_error",
