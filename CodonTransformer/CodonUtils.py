@@ -550,9 +550,6 @@ class ConfigManager(ABC):
     """
     Abstract base class for managing configuration settings.
     """
-    def __init__(self):
-        self._config: Dict[str, Any] = {}
-
     def __enter__(self):
         return self
     
