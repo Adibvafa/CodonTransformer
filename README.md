@@ -232,7 +232,7 @@ This subpackage is suitable for:
 
 - `preprocess_protein_sequence(protein: str) -> str`
 
-  Clean, standardize, and handle ambiguous amino acids in a protein sequence.
+  Clean, standardize, and handle ambiguous amino acids in a protein sequence. Utilizes the `ProteinConfig` to handle ambiguous amino acids based on user-defined settings.
 
 - `replace_ambiguous_codons(dna: str) -> str`
 
@@ -424,6 +424,15 @@ The CodonUtils subpackage contains constants and helper functions essential for 
 - `IterableJSONData`
 
   Class for iterating over lines of a JSON file.
+
+- `ConfigManager`
+
+  An abstract base class for managing configuration settings.
+
+- `ProteinConfig`:
+
+  A singleton class derived from `ConfigManager` for managing protein-specific configurations. It allows customization of ambiguous amino acid handling.
+
 
 #### Functions
 
