@@ -177,6 +177,29 @@ To finetune CodonTransformer on your own data, follow these steps:
    For an example of a SLURM job request, see the `slurm` directory in the repository.
 <br></br>
 
+## Handling Ambiguous Amino Acids
+
+CodonTransformer provides a flexible system for handling ambiguous amino acids through the `ProteinConfig` class. By default, CodonUtils includes a [predefined mapping for ambiguous amino acids](https://github.com/Adibvafa/CodonTransformer/blob/main/CodonTransformer/CodonUtils.py#L45), but users can customize this behavior:
+
+```python
+from CodonTransformer.CodonUtils import ProteinConfig
+
+# Configure protein preprocessing
+config = ProteinConfig()
+config.set('ambiguous_aminoacid_behavior', 'standardize_random')
+config.set('ambiguous_aminoacid_map_override', {'X': ['A', 'G', 'S']})
+
+# Run CodonTransformer
+...
+```
+
+Options for `ambiguous_aminoacid_behavior`:
+- `standardize_random` (default): Randomly selects a random amino acid from the mapping list.
+- `standardize_deterministic`: Selects the first amino acid from the mapping list.
+- `raise_error`: Treats ambiguous amino acids as invalid.
+
+Users can override the default mapping with `ambiguous_aminoacid_map_override`.
+<br></br>
 
 ## Key Features
 - **CodonData** <br>
