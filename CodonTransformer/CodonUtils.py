@@ -8,6 +8,7 @@ import itertools
 import os
 import pickle
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
@@ -41,13 +42,13 @@ AMINO_ACIDS: List[str] = [
 STOP_SYMBOLS = ["_", "*"]  # Stop codon symbols
 
 # Dictionary ambiguous amino acids to standard amino acids
-AMBIGUOUS_AMINOACID_MAP: Dict[str, str] = {
-    "B": "N",  # Aspartic acid (D) or Asparagine (N)
-    "Z": "Q",  # Glutamic acid (E) or Glutamine (Q)
-    "X": "A",  # Any amino acid (typically replaced with Alanine)
-    "J": "L",  # Leucine (L) or Isoleucine (I)
-    "U": "C",  # Selenocysteine (typically replaced with Cysteine)
-    "O": "K",  # Pyrrolysine (typically replaced with Lysine)
+AMBIGUOUS_AMINOACID_MAP: Dict[str, list[str]] = {
+    "B": ["N", "D"],  # Asparagine (N) or Aspartic acid (D)
+    "Z": ["Q", "E"],  # Glutamine (Q) or Glutamic acid (E)
+    "X": ["A"],  # Any amino acid (typically replaced with Alanine)
+    "J": ["L", "I"],  # Leucine (L) or Isoleucine (I)
+    "U": ["C"],  # Selenocysteine (typically replaced with Cysteine)
+    "O": ["K"],  # Pyrrolysine (typically replaced with Lysine)
 }
 
 # List of all possible start and stop codons
@@ -543,6 +544,129 @@ class IterableJSONData(IterableData):
         super().__init__(**kwargs)
         self.data_path = data_path
         self.train = train
+
+
+class ConfigManager(ABC):
+    """
+    Abstract base class for managing configuration settings.
+    """
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            print(f"Exception occurred: {exc_type}, {exc_value}, {traceback}")
+        self.reset_config()
+    
+    @abstractmethod
+    def reset_config(self) -> None:
+        """Reset the configuration to default values."""
+        pass
+
+    def get(self, key: str) -> Any:
+        """
+        Get the value of a configuration key.
+
+        Args:
+            key (str): The key to retrieve the value for.
+
+        Returns:
+            Any: The value of the configuration key.
+        """
+        return self._config.get(key)
+
+    def set(self, key: str, value: Any) -> None:
+        """
+        Set the value of a configuration key.
+
+        Args:
+            key (str): The key to set the value for.
+            value (Any): The value to set for the key.
+        """
+        self.validate_inputs(key, value)
+        self._config[key] = value
+
+    def update(self, config_dict: dict) -> None:
+        """
+        Update the configuration with a dictionary of key-value pairs after validating them.
+
+        Args:
+            config_dict (dict): A dictionary of key-value pairs to update the configuration.
+        """
+        for key, value in config_dict.items():
+            self.validate_inputs(key, value)
+        self._config.update(config_dict)
+
+    @abstractmethod
+    def validate_inputs(self, key: str, value: Any) -> None:
+        """Validate the inputs for the configuration."""
+        pass
+    
+class ProteinConfig(ConfigManager):
+    """
+    A class to manage configuration settings for protein sequences.
+
+    This class ensures that the configuration is a singleton.
+    It provides methods to get, set, and update configuration values.
+
+    Attributes:
+        _instance (Optional[ConfigManager]): The singleton instance of the ConfigManager.
+        _config (Dict[str, Any]): The configuration dictionary.
+    """
+    _instance = None
+
+    def __new__(cls):
+        """
+        Create a new instance of the ProteinConfig class.
+
+        Returns:
+            ProteinConfig: The singleton instance of the ProteinConfig.
+        """
+        if cls._instance is None:
+            cls._instance = super(ProteinConfig, cls).__new__(cls)
+            cls._instance.reset_config()
+        return cls._instance
+    
+    def validate_inputs(self, key: str, value: Any) -> None:
+        """
+        Validate the inputs for the configuration.
+
+        Args:
+            key (str): The key to validate.
+            value (Any): The value to validate.
+        
+        Raises:
+            ValueError: If the value is invalid.
+            TypeError: If the value is of the wrong type.
+        """
+        if key == 'ambiguous_aminoacid_behavior':
+            if value not in [
+                'raise_error',
+                'standardize_deterministic',
+                'standardize_random'
+            ]:
+                raise ValueError(f"Invalid value for ambiguous_aminoacid_behavior: {value}.")
+        elif key == 'ambiguous_aminoacid_map_override':
+            if not isinstance(value, dict):
+                raise TypeError(f"Invalid type for ambiguous_aminoacid_map_override: {value}.")
+            for ambiguous_aminoacid, aminoacids in value.items():
+                if not isinstance(aminoacids, list):
+                    raise TypeError(f"Invalid type for aminoacids: {aminoacids}.")
+                if not aminoacids:
+                    raise ValueError(f"Override for aminoacid '{ambiguous_aminoacid}' cannot be empty list.")
+                if ambiguous_aminoacid not in AMBIGUOUS_AMINOACID_MAP:
+                    raise ValueError(f"Invalid amino acid in ambiguous_aminoacid_map_override: {ambiguous_aminoacid}")
+        else:
+            raise ValueError(f"Invalid configuration key: {key}")
+
+    def reset_config(self) -> None:
+        """
+        Reset the configuration to the default values.
+        """
+        self._config = {
+            'ambiguous_aminoacid_behavior': 'standardize_random',
+            'ambiguous_aminoacid_map_override': {}
+        }
 
 
 def load_python_object_from_disk(file_path: str) -> Any:
