@@ -40,12 +40,12 @@ import torch
 from transformers import AutoTokenizer, BigBirdForMaskedLM
 from CodonTransformer.CodonPrediction import predict_dna_sequence
 from CodonTransformer.CodonJupyter import format_model_output
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # Load model and tokenizer
 tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
-model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(DEVICE)
+model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer").to(device)
 
 
 # Set your input data
@@ -57,7 +57,7 @@ organism = "Escherichia coli general"
 output = predict_dna_sequence(
     protein=protein,
     organism=organism,
-    device=DEVICE,
+    device=device,
     tokenizer=tokenizer,
     model=model,
     attention_type="original_full",
