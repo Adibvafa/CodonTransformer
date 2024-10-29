@@ -96,7 +96,8 @@ Set `deterministic=False` to generate variable sequences. Control the variabilit
   - Lower values (e.g., 0.2): More conservative predictions
   - Higher values (e.g., 0.8): More diverse predictions
 
-Using high temperatures (e.g. more than 1) might result in prediction of DNA sequences that do not translate to the input protein. <br>
+Using high temperatures (e.g. more than 1) might result in prediction of DNA sequences that do not translate to the input protein.<br>
+You can set `match_protein=True` to ensure predicted DNA sequences translate to the input protein.<br>
 Generate multiple sequences by setting `num_sequences` to a value greater than 1.
 <br><br>
 
@@ -309,7 +310,7 @@ This subpackage contains functions and classes that handle the core prediction f
 
 ### Available Functions and Classes
 
-- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full", deterministic: bool = True, temperature: float = 0.2, top_p: float = 0.95, num_sequences: int = 1) -> DNASequencePrediction`
+- `predict_dna_sequence(protein: str, organism: Union[int, str], device: torch.device, tokenizer: Union[str, PreTrainedTokenizerFast], model: Union[str, torch.nn.Module], attention_type: str = "original_full", deterministic: bool = True, temperature: float = 0.2, top_p: float = 0.95, num_sequences: int = 1, match_protein: bool = False) -> DNASequencePrediction`
 
   Predict the DNA sequence for a given protein using the CodonTransformer model.
 
@@ -429,6 +430,7 @@ The CodonUtils subpackage contains constants and helper functions essential for 
 - `AMBIGUOUS_AMINOACID_MAP`: Mapping of ambiguous amino acids to standard amino acids
 - `START_CODONS` and `STOP_CODONS`: Lists of start and stop codons
 - `TOKEN2INDEX` and `INDEX2TOKEN`: Mappings between tokens and their indices
+- `AMINO_ACID_TO_INDEX`: Dictionary mapping each amino acid and stop symbol to indices of codon tokens that translate to it
 - `TOKEN2MASK`: Mapping for mask tokens
 - `FINE_TUNE_ORGANISMS`: List of organisms used for fine-tuning
 - `ORGANISM2ID`: Dictionary mapping organisms to their respective IDs
