@@ -152,6 +152,15 @@ TOKEN2INDEX: Dict[str, int] = {
 # Index-to-token mapping, reverse of TOKEN2INDEX
 INDEX2TOKEN: Dict[int, str] = {i: c for c, i in TOKEN2INDEX.items()}
 
+# Dictionary mapping each amino acid and stop symbol to indices of codon tokens that translate to it
+AMINO_ACID_TO_INDEX = {
+    aa: sorted(
+        [i for t, i in TOKEN2INDEX.items() if t[0].upper() == aa and t[-3:] != "unk"]
+    )
+    for aa in (AMINO_ACIDS + STOP_SYMBOLS)
+}
+
+
 # Mask token mapping
 TOKEN2MASK: Dict[int, int] = {
     0: 0,
@@ -550,14 +559,15 @@ class ConfigManager(ABC):
     """
     Abstract base class for managing configuration settings.
     """
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type is not None:
             print(f"Exception occurred: {exc_type}, {exc_value}, {traceback}")
         self.reset_config()
-    
+
     @abstractmethod
     def reset_config(self) -> None:
         """Reset the configuration to default values."""
@@ -601,7 +611,8 @@ class ConfigManager(ABC):
     def validate_inputs(self, key: str, value: Any) -> None:
         """Validate the inputs for the configuration."""
         pass
-    
+
+
 class ProteinConfig(ConfigManager):
     """
     A class to manage configuration settings for protein sequences.
@@ -613,6 +624,7 @@ class ProteinConfig(ConfigManager):
         _instance (Optional[ConfigManager]): The singleton instance of the ConfigManager.
         _config (Dict[str, Any]): The configuration dictionary.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -626,7 +638,7 @@ class ProteinConfig(ConfigManager):
             cls._instance = super(ProteinConfig, cls).__new__(cls)
             cls._instance.reset_config()
         return cls._instance
-    
+
     def validate_inputs(self, key: str, value: Any) -> None:
         """
         Validate the inputs for the configuration.
@@ -634,28 +646,36 @@ class ProteinConfig(ConfigManager):
         Args:
             key (str): The key to validate.
             value (Any): The value to validate.
-        
+
         Raises:
             ValueError: If the value is invalid.
             TypeError: If the value is of the wrong type.
         """
-        if key == 'ambiguous_aminoacid_behavior':
+        if key == "ambiguous_aminoacid_behavior":
             if value not in [
-                'raise_error',
-                'standardize_deterministic',
-                'standardize_random'
+                "raise_error",
+                "standardize_deterministic",
+                "standardize_random",
             ]:
-                raise ValueError(f"Invalid value for ambiguous_aminoacid_behavior: {value}.")
-        elif key == 'ambiguous_aminoacid_map_override':
+                raise ValueError(
+                    f"Invalid value for ambiguous_aminoacid_behavior: {value}."
+                )
+        elif key == "ambiguous_aminoacid_map_override":
             if not isinstance(value, dict):
-                raise TypeError(f"Invalid type for ambiguous_aminoacid_map_override: {value}.")
+                raise TypeError(
+                    f"Invalid type for ambiguous_aminoacid_map_override: {value}."
+                )
             for ambiguous_aminoacid, aminoacids in value.items():
                 if not isinstance(aminoacids, list):
                     raise TypeError(f"Invalid type for aminoacids: {aminoacids}.")
                 if not aminoacids:
-                    raise ValueError(f"Override for aminoacid '{ambiguous_aminoacid}' cannot be empty list.")
+                    raise ValueError(
+                        f"Override for aminoacid '{ambiguous_aminoacid}' cannot be empty list."
+                    )
                 if ambiguous_aminoacid not in AMBIGUOUS_AMINOACID_MAP:
-                    raise ValueError(f"Invalid amino acid in ambiguous_aminoacid_map_override: {ambiguous_aminoacid}")
+                    raise ValueError(
+                        f"Invalid amino acid in ambiguous_aminoacid_map_override: {ambiguous_aminoacid}"
+                    )
         else:
             raise ValueError(f"Invalid configuration key: {key}")
 
@@ -664,8 +684,8 @@ class ProteinConfig(ConfigManager):
         Reset the configuration to the default values.
         """
         self._config = {
-            'ambiguous_aminoacid_behavior': 'standardize_random',
-            'ambiguous_aminoacid_map_override': {}
+            "ambiguous_aminoacid_behavior": "standardize_random",
+            "ambiguous_aminoacid_map_override": {},
         }
 
 
