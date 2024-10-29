@@ -121,7 +121,7 @@ A sample dataset is provided under [\demo](https://github.com/Adibvafa/CodonTran
 | `temperature` | `float` | Controls randomness in non-deterministic mode. Lower values (0.2) are conservative and pick high probability tokens, while higher values (0.8) allow more diversity. Must be positive | `0.2` |
 | `top_p` | `float` | Nucleus sampling threshold - only tokens with cumulative probability up to this value are considered. Balances diversity and quality of predictions. Must be between 0 and 1 | `0.95` |
 | `num_sequences` | `int` | Number of different DNA sequences to generate. Only works when deterministic=False. Each sequence will be sampled based on the temperature and top_p parameters. Must be positive | `1` |
-| `match_protein` | `bool` | Constrains predictions to only use codons that translate back to the exact input protein sequence. Only recommended when using high temperatures or error prone input proteins (e.g. not starting with methionine or having numerous repitions) | `False` |
+| `match_protein` | `bool` | Constrains predictions to only use codons that translate back to the exact input protein sequence. Only recommended when using high temperatures or error prone input proteins (e.g. not starting with methionine or having numerous repetitions) | `False` |
 
 Returns: `Union[DNASequencePrediction, List[DNASequencePrediction]]` containing predicted DNA sequence(s) and metadata
 <br>
