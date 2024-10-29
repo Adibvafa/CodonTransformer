@@ -176,26 +176,30 @@ def preprocess_protein_sequence(protein: str) -> str:
 
     # Handle ambiguous amino acids based on the specified behavior
     config = ProteinConfig()
-    ambiguous_aminoacid_map_override = config.get('ambiguous_aminoacid_map_override')
-    ambiguous_aminoacid_behavior = config.get('ambiguous_aminoacid_behavior')
+    ambiguous_aminoacid_map_override = config.get("ambiguous_aminoacid_map_override")
+    ambiguous_aminoacid_behavior = config.get("ambiguous_aminoacid_behavior")
     ambiguous_aminoacid_map = AMBIGUOUS_AMINOACID_MAP.copy()
-    
+
     for aminoacid, standard_aminoacids in ambiguous_aminoacid_map_override.items():
         ambiguous_aminoacid_map[aminoacid] = standard_aminoacids
 
-    if ambiguous_aminoacid_behavior == 'raise_error':
+    if ambiguous_aminoacid_behavior == "raise_error":
         if any(aminoacid in ambiguous_aminoacid_map for aminoacid in protein):
             raise ValueError("Ambiguous amino acids found in protein sequence.")
-    elif ambiguous_aminoacid_behavior == 'standardize_deterministic':
+    elif ambiguous_aminoacid_behavior == "standardize_deterministic":
         protein = "".join(
-            ambiguous_aminoacid_map.get(aminoacid, [aminoacid])[0] for aminoacid in protein
+            ambiguous_aminoacid_map.get(aminoacid, [aminoacid])[0]
+            for aminoacid in protein
         )
-    elif ambiguous_aminoacid_behavior == 'standardize_random':
+    elif ambiguous_aminoacid_behavior == "standardize_random":
         protein = "".join(
-            random.choice(ambiguous_aminoacid_map.get(aminoacid, [aminoacid])) for aminoacid in protein
+            random.choice(ambiguous_aminoacid_map.get(aminoacid, [aminoacid]))
+            for aminoacid in protein
         )
     else:
-        raise ValueError(f"Invalid ambiguous_aminoacid_behavior: {ambiguous_aminoacid_behavior}.")
+        raise ValueError(
+            f"Invalid ambiguous_aminoacid_behavior: {ambiguous_aminoacid_behavior}."
+        )
 
     # Check for sequence validity
     if any(aminoacid not in AMINO_ACIDS + STOP_SYMBOLS for aminoacid in protein):
