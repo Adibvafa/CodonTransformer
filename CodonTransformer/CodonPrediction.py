@@ -103,10 +103,11 @@ def predict_dna_sequence(
             or if num_sequences is less than 1 or used with deterministic mode.
 
     Note:
-        This function uses ORGANISM2ID and INDEX2TOKEN dictionaries imported from
-        CodonTransformer.CodonUtils. ORGANISM2ID maps organism names to their
+        This function uses ORGANISM2ID, INDEX2TOKEN, and AMINO_ACID_TO_INDEX dictionaries
+        imported from CodonTransformer.CodonUtils. ORGANISM2ID maps organism names to their
         corresponding IDs. INDEX2TOKEN maps model output indices (token IDs) to
-        respective codons.
+        respective codons. AMINO_ACID_TO_INDEX maps each amino acid and stop symbol to indices
+        of codon tokens that translate to it.
 
     Example:
         >>> import torch
