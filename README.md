@@ -123,7 +123,7 @@ A sample dataset is provided under [\demo](https://github.com/Adibvafa/CodonTran
 | `num_sequences` | `int` | Number of different DNA sequences to generate. Only works when deterministic=False. Each sequence will be sampled based on the temperature and top_p parameters. Must be positive | `1` |
 | `match_protein` | `bool` | Constrains predictions to only use codons that translate back to the exact input protein sequence. Only recommended when using high temperatures or error prone input proteins (e.g. not starting with methionine or having numerous repetitions) | `False` |
 
-Returns: `Union[DNASequencePrediction, List[DNASequencePrediction]]` containing predicted DNA sequence(s) and metadata
+Returns: `Union[DNASequencePrediction, List[DNASequencePrediction]]` containing predicted DNA sequence(s) and metadata.
 <br>
 
 ## Installation
