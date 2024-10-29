@@ -492,6 +492,103 @@ class TestCodonPrediction(unittest.TestCase):
             translated_protein = get_amino_acid_sequence(prediction.predicted_dna[:-3])
             self.assertEqual(translated_protein, protein_sequence)
 
+    def test_predict_dna_sequence_match_protein_repetitive(self):
+        """Test that match_protein=True correctly handles highly repetitive and unconventional sequences."""
+        test_sequences = (
+            "QQQQQQQQQQQQQQQQ_",
+            "KRKRKRKRKRKRKRKR_",
+            "PGPGPGPGPGPGPGPG_",
+            "DEDEDEDEDEDEDEDEDE_",
+            "M_M_M_M_M_",
+            "MMMMMMMMMM_",
+            "WWWWWWWWWW_",
+            "CCCCCCCCCC_",
+            "MWCHMWCHMWCH_",
+            "Q_QQ_QQQ_QQQQ_",
+            "MWMWMWMWMWMW_",
+            "CCCHHHMMMWWW_",
+            "_",
+            "M_",
+            "MGWC_",
+        )
+
+        organism = "Homo sapiens"
+
+        for protein_sequence in test_sequences:
+            # Generate sequence with match_protein=True
+            result = predict_dna_sequence(
+                protein=protein_sequence,
+                organism=organism,
+                device=self.device,
+                tokenizer=self.tokenizer,
+                model=self.model,
+                deterministic=False,
+                temperature=20,  # High temperature to test protein matching
+                match_protein=True,
+            )
+
+            dna_sequence = result.predicted_dna
+            translated_protein = get_amino_acid_sequence(dna_sequence)
+
+            self.assertEqual(
+                translated_protein,
+                protein_sequence,
+                f"Translated protein must match original when match_protein=True. Failed for sequence: {protein_sequence}",
+            )
+
+    def test_predict_dna_sequence_match_protein_rare_amino_acids(self):
+        """Test match_protein with rare amino acids that have limited codon options."""
+        # Methionine (M) and Tryptophan (W) have only one codon each
+        # While Leucine (L) has 6 codons - testing contrast
+        protein_sequence = "MWLLLMWLLL"
+        organism = "Escherichia coli general"
+
+        # Run multiple predictions
+        results = []
+        num_iterations = 10
+
+        for _ in range(num_iterations):
+            result = predict_dna_sequence(
+                protein=protein_sequence,
+                organism=organism,
+                device=self.device,
+                tokenizer=self.tokenizer,
+                model=self.model,
+                deterministic=False,
+                temperature=20,  # High temperature to test protein matching
+                match_protein=True,
+            )
+            results.append(result.predicted_dna)
+
+        # Check all sequences
+        for dna_sequence in results:
+            # Verify M always uses ATG
+            m_positions = [0, 5]  # Known positions of M in sequence
+            for pos in m_positions:
+                self.assertEqual(
+                    dna_sequence[pos * 3 : (pos + 1) * 3],
+                    "ATG",
+                    "Methionine must use ATG codon.",
+                )
+
+            # Verify W always uses TGG
+            w_positions = [1, 6]  # Known positions of W in sequence
+            for pos in w_positions:
+                self.assertEqual(
+                    dna_sequence[pos * 3 : (pos + 1) * 3],
+                    "TGG",
+                    "Tryptophan must use TGG codon.",
+                )
+
+            # Verify all L codons are valid
+            l_positions = [2, 3, 4, 7, 8, 9]  # Known positions of L in sequence
+            l_codons = [dna_sequence[pos * 3 : (pos + 1) * 3] for pos in l_positions]
+            valid_l_codons = {"TTA", "TTG", "CTT", "CTC", "CTA", "CTG"}
+            self.assertTrue(
+                all(codon in valid_l_codons for codon in l_codons),
+                "All Leucine codons must be valid",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

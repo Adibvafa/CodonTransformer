@@ -22,6 +22,7 @@ from transformers import (
 
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
+    AMINO_ACID_TO_INDEX,
     INDEX2TOKEN,
     NUM_ORGANISMS,
     ORGANISM2ID,
@@ -41,6 +42,7 @@ def predict_dna_sequence(
     temperature: float = 0.2,
     top_p: float = 0.95,
     num_sequences: int = 1,
+    match_protein: bool = False,
 ) -> Union[DNASequencePrediction, List[DNASequencePrediction]]:
     """
     Predict the DNA sequence(s) for a given protein using the CodonTransformer model.
@@ -83,6 +85,9 @@ def predict_dna_sequence(
             The value must be a float between 0 and 1. Defaults to 0.95.
         num_sequences (int, optional): The number of DNA sequences to generate. Only applicable
             when deterministic is False. Defaults to 1.
+        match_protein (bool, optional): Ensures the predicted DNA sequence is translated
+            to the input protein sequence by sampling from only the respective codons of
+            given amino acids. Defaults to False.
 
     Returns:
         Union[DNASequencePrediction, List[DNASequencePrediction]]: An object or list of objects
@@ -198,6 +203,19 @@ def predict_dna_sequence(
         # Get the model predictions
         output_dict = model(**tokenized_input, return_dict=True)
         logits = output_dict.logits.detach().cpu()
+        logits = logits[:, 1:-1, :]  # Remove [CLS] and [SEP] tokens
+
+        # Mask the logits of codons that do not correspond to the input protein sequence
+        if match_protein:
+            possible_tokens_per_position = [
+                AMINO_ACID_TO_INDEX[token[0]] for token in merged_seq.split(" ")
+            ]
+            mask = torch.full_like(logits, float("-inf"))
+
+            for pos, possible_tokens in enumerate(possible_tokens_per_position):
+                mask[:, pos, possible_tokens] = 0
+
+            logits = mask + logits
 
         predictions = []
         for _ in range(num_sequences):
@@ -211,7 +229,7 @@ def predict_dna_sequence(
 
             predicted_dna = list(map(INDEX2TOKEN.__getitem__, predicted_indices))
             predicted_dna = (
-                "".join([token[-3:] for token in predicted_dna[1:-1]]).strip().upper()
+                "".join([token[-3:] for token in predicted_dna]).strip().upper()
             )
 
             predictions.append(
