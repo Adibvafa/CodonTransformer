@@ -8,10 +8,11 @@ from CodonTransformer.CodonData import (
     build_amino2codon_skeleton,
     get_amino_acid_sequence,
     is_correct_seq,
-    read_fasta_file,
     preprocess_protein_sequence,
+    read_fasta_file,
 )
 from CodonTransformer.CodonUtils import ProteinConfig
+
 
 class TestCodonData(unittest.TestCase):
     def test_preprocess_protein_sequence(self):

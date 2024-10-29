@@ -18,33 +18,23 @@ from CodonTransformer.CodonUtils import (
 class TestCodonUtils(unittest.TestCase):
     def test_config_manager(self):
         with ProteinConfig() as config:
-            config.set(
-                "ambiguous_aminoacid_behavior",
-                "standardize_deterministic"
-            )
+            config.set("ambiguous_aminoacid_behavior", "standardize_deterministic")
             self.assertEqual(
-                config.get("ambiguous_aminoacid_behavior"),
-                "standardize_deterministic"
+                config.get("ambiguous_aminoacid_behavior"), "standardize_deterministic"
             )
-            config.set(
-                "ambiguous_aminoacid_map_override",
-                {"X": ["A", "G"]}
-            )
+            config.set("ambiguous_aminoacid_map_override", {"X": ["A", "G"]})
             self.assertEqual(
-                config.get("ambiguous_aminoacid_map_override"),
-                {"X": ["A", "G"]}
+                config.get("ambiguous_aminoacid_map_override"), {"X": ["A", "G"]}
             )
-            config.update({
-                "ambiguous_aminoacid_behavior": "raise_error",
-                "ambiguous_aminoacid_map_override": {"X": ["A", "G"]},
-            })
-            self.assertEqual(
-                config.get("ambiguous_aminoacid_behavior"),
-                "raise_error"
+            config.update(
+                {
+                    "ambiguous_aminoacid_behavior": "raise_error",
+                    "ambiguous_aminoacid_map_override": {"X": ["A", "G"]},
+                }
             )
+            self.assertEqual(config.get("ambiguous_aminoacid_behavior"), "raise_error")
             self.assertEqual(
-                config.get("ambiguous_aminoacid_map_override"),
-                {"X": ["A", "G"]}
+                config.get("ambiguous_aminoacid_map_override"), {"X": ["A", "G"]}
             )
             try:
                 config.set("invalid_key", "invalid_value")
@@ -53,13 +43,9 @@ class TestCodonUtils(unittest.TestCase):
                 pass
         with ProteinConfig() as config:
             self.assertEqual(
-                config.get("ambiguous_aminoacid_behavior"),
-                "standardize_random"
+                config.get("ambiguous_aminoacid_behavior"), "standardize_random"
             )
-            self.assertEqual(
-                config.get("ambiguous_aminoacid_map_override"),
-                {}
-            )
+            self.assertEqual(config.get("ambiguous_aminoacid_map_override"), {})
 
     def test_load_python_object_from_disk(self):
         test_obj = {"key1": "value1", "key2": 2}
