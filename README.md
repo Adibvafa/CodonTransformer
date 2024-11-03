@@ -220,6 +220,16 @@ Options for `ambiguous_aminoacid_behavior`:
 Users can override the default mapping with `ambiguous_aminoacid_map_override`.
 <br></br>
 
+
+## Star History
+<p align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adibvafa/codontransformer&type=Date)](https://star-history.com/#adibvafa/codontransformer&Date)
+
+</p>
+<br>
+
+
 ## Key Features
 - **CodonData** <br>
 CodonData facilitates preprocessing of genetic information by cleaning and translating DNA and protein sequences, handling FASTA files, and managing codon frequencies from databases like NCBI and Kazusa.
