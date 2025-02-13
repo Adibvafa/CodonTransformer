@@ -20,6 +20,23 @@ from transformers import (
     PreTrainedTokenizerFast,
 )
 
+# Local imports - adjust paths based on your project structure
+
+try:
+    from CodonComplexity import (  # Try direct import first
+        ComplexityConfig,
+        check_sequence_complexity,
+        format_complexity_report,
+        get_total_complexity_score,
+    )
+except ImportError:
+    from .CodonComplexity import (  # Try relative import
+        ComplexityConfig,
+        check_sequence_complexity,
+        format_complexity_report,
+        get_total_complexity_score,
+    )
+
 from CodonTransformer.CodonData import get_merged_seq
 from CodonTransformer.CodonUtils import (
     AMINO_ACID_TO_INDEX,
@@ -30,20 +47,22 @@ from CodonTransformer.CodonUtils import (
     DNASequencePrediction,
 )
 
-
 def predict_dna_sequence(
-    protein: str,
-    organism: Union[int, str],
-    device: torch.device,
-    tokenizer: Union[str, PreTrainedTokenizerFast] = None,
-    model: Union[str, torch.nn.Module] = None,
-    attention_type: str = "original_full",
-    deterministic: bool = True,
-    temperature: float = 0.2,
-    top_p: float = 0.95,
-    num_sequences: int = 1,
-    match_protein: bool = False,
-) -> Union[DNASequencePrediction, List[DNASequencePrediction]]:
+        protein: str,
+        organism: Union[int, str],
+        device: torch.device,
+        tokenizer: Union[str, PreTrainedTokenizerFast] = None,
+        model: Union[str, torch.nn.Module] = None,
+        attention_type: str = "original_full",
+        deterministic: bool = True,
+        temperature: float = 0.2,
+        top_p: float = 0.95,
+        num_sequences: int = 1,
+        match_protein: bool = False,
+        check_complexity: bool = False,
+        complexity_config: Optional[ComplexityConfig] = None,
+        max_complexity_attempts: int = 10
+) -> Union[DNASequencePrediction, List[DNASequencePrediction], Tuple[DNASequencePrediction, str]]:
     """
     Predict the DNA sequence(s) for a given protein using the CodonTransformer model.
 
@@ -88,14 +107,23 @@ def predict_dna_sequence(
         match_protein (bool, optional): Ensures the predicted DNA sequence is translated
             to the input protein sequence by sampling from only the respective codons of
             given amino acids. Defaults to False.
+        check_complexity (bool, optional): Whether to check sequence complexity and attempt
+            regeneration if complexity checks fail. Defaults to False.
+        complexity_config (Optional[ComplexityConfig], optional): Configuration for complexity
+            checking. If None, default configuration is used. See ComplexityConfig class for
+            options. Defaults to None.
+        max_complexity_attempts (int, optional): Maximum number of attempts to generate a
+            sequence that passes complexity checks. Only used if check_complexity is True.
+            Defaults to 10.
 
     Returns:
-        Union[DNASequencePrediction, List[DNASequencePrediction]]: An object or list of objects
-        containing the prediction results:
-            - organism (str): Name of the organism used for prediction.
-            - protein (str): Input protein sequence for which DNA sequence is predicted.
-            - processed_input (str): Processed input sequence (merged protein and DNA).
-            - predicted_dna (str): Predicted DNA sequence.
+        Union[DNASequencePrediction, List[DNASequencePrediction], Tuple[DNASequencePrediction, str]]:
+            If check_complexity is False:
+                - Single prediction (DNASequencePrediction) when num_sequences=1
+                - List of predictions (List[DNASequencePrediction]) when num_sequences>1
+            If check_complexity is True:
+                - Tuple of (prediction, complexity_report) where complexity_report is a
+                  formatted string containing complexity analysis results
 
     Raises:
         ValueError: If the protein sequence is empty, if the organism is invalid,
@@ -109,54 +137,44 @@ def predict_dna_sequence(
         respective codons. AMINO_ACID_TO_INDEX maps each amino acid and stop symbol to indices
         of codon tokens that translate to it.
 
+        When check_complexity is True, the function will attempt to generate sequences
+        that pass complexity checks according to synthesis requirements (e.g., Twist's rules).
+        The complexity checks include:
+            - Repeat sequence detection (≥20bp or Tm ≥60°C)
+            - GC content checks (25-65% globally, max 52% deviation)
+            - Homopolymer identification
+            - HIS tag pattern validation
+
     Example:
         >>> import torch
         >>> from transformers import AutoTokenizer, BigBirdForMaskedLM
         >>> from CodonTransformer.CodonPrediction import predict_dna_sequence
         >>> from CodonTransformer.CodonJupyter import format_model_output
         >>>
+        >>> # Note: This is just the example structure. Running this exact code
+        >>> # requires proper setup of device, model, and tokenizer.
+        >>> # For actual usage, see the README or documentation.
+        >>>
         >>> # Set up device
-        >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        >>> device = torch.device("cpu")  # Use "cuda" if available
         >>>
-        >>> # Load tokenizer and model
-        >>> tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
-        >>> model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
-        >>> model = model.to(device)
-        >>>
-        >>> # Define protein sequence and organism
+        >>> # Define test input
         >>> protein = "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLA"
         >>> organism = "Escherichia coli general"
         >>>
-        >>> # Predict DNA sequence with deterministic decoding (single sequence)
-        >>> output = predict_dna_sequence(
-        ...     protein=protein,
-        ...     organism=organism,
-        ...     device=device,
-        ...     tokenizer=tokenizer,
-        ...     model=model,
-        ...     attention_type="original_full",
-        ...     deterministic=True
-        ... )
+        >>> # In practice, you would load real tokenizer and model:
+        >>> # tokenizer = AutoTokenizer.from_pretrained("adibvafa/CodonTransformer")
+        >>> # model = BigBirdForMaskedLM.from_pretrained("adibvafa/CodonTransformer")
         >>>
-        >>> # Predict multiple DNA sequences with low randomness and top_p sampling
-        >>> output_random = predict_dna_sequence(
-        ...     protein=protein,
-        ...     organism=organism,
-        ...     device=device,
-        ...     tokenizer=tokenizer,
-        ...     model=model,
-        ...     attention_type="original_full",
-        ...     deterministic=False,
-        ...     temperature=0.2,
-        ...     top_p=0.95,
-        ...     num_sequences=3
-        ... )
-        >>>
-        >>> print(format_model_output(output))
-        >>> for i, seq in enumerate(output_random, 1):
-        ...     print(f"Sequence {i}:")
-        ...     print(format_model_output(seq))
-        ...     print()
+        >>> # For this example, we'll skip the actual prediction
+        >>> # output = predict_dna_sequence(
+        >>> #     protein=protein,
+        >>> #     organism=organism,
+        >>> #     device=device,
+        >>> #     tokenizer=tokenizer,
+        >>> #     model=model,
+        >>> #     check_complexity=True
+        >>> # )
     """
     if not protein:
         raise ValueError("Protein sequence cannot be empty.")
@@ -175,6 +193,66 @@ def predict_dna_sequence(
             "Multiple sequences can only be generated in non-deterministic mode."
         )
 
+    # Handle complexity checking
+    if check_complexity:
+        from CodonComplexity import (
+            check_sequence_complexity,
+            format_complexity_report,
+            get_total_complexity_score,
+        )
+
+        def generate_single_prediction():
+            # Force non-deterministic mode for multiple attempts
+            local_deterministic = False
+            local_temperature = temperature
+
+            prediction = predict_dna_sequence(
+                protein=protein,
+                organism=organism,
+                device=device,
+                tokenizer=tokenizer,
+                model=model,
+                attention_type=attention_type,
+                deterministic=local_deterministic,
+                temperature=local_temperature,
+                top_p=top_p,
+                num_sequences=1,
+                match_protein=match_protein,
+                check_complexity=False  # Avoid recursion
+            )
+            return prediction if isinstance(prediction, DNASequencePrediction) else prediction[0]
+
+        # Try generating sequences until we find one that passes complexity checks
+        best_prediction = None
+        best_score = float('inf')
+        best_report = None
+
+        for attempt in range(max_complexity_attempts):
+            # Increase temperature slightly with each attempt
+            temperature = 0.2 + (attempt * 0.1)
+
+            prediction = generate_single_prediction()
+            violations = check_sequence_complexity(
+                prediction.predicted_dna,
+                config=complexity_config
+            )
+            score = get_total_complexity_score(violations)
+            report = format_complexity_report(prediction.predicted_dna, violations)
+
+            # Keep track of best sequence seen
+            if score < best_score:
+                best_prediction = prediction
+                best_score = score
+                best_report = report
+
+            # If this sequence passes complexity checks, return it
+            if score < 10:
+                return prediction, report
+
+        # If we couldn't find a sequence that passes checks, return best one seen
+        return best_prediction, best_report
+
+    # Original prediction logic
     # Load tokenizer
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
         tokenizer = load_tokenizer(tokenizer)
