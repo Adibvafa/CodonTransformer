@@ -689,9 +689,11 @@ def get_uniform_random_choice_sequence(
         str: The optimized DNA sequence.
     """
     # Select a random codon for each amino acid using a uniform prior distribution
-    dna_codons = [
-        np.random.choice(codon_frequencies[aminoacid][0]) for aminoacid in protein
-    ]
+    dna_codons = []
+    for aminoacid in protein:
+        codons = codon_frequencies[aminoacid][0]
+        random_index = np.random.randint(0, len(codons))
+        dna_codons.append(codons[random_index])
     return "".join(dna_codons)
 
 
