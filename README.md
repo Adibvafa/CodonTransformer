@@ -31,7 +31,7 @@ The genetic code is degenerate allowing a multitude of possible DNA sequences to
 
 
 ## Use Case
-**For an interactive demo, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
+**For a user-friendly interface, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
 <br></br>
 After installing CodonTransformer, you can use:
 
