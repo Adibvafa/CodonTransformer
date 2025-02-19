@@ -31,7 +31,7 @@ The genetic code is degenerate allowing a multitude of possible DNA sequences to
 
 
 ## Use Case
-**For an interactive demo, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
+**For a user-friendly interface, check out our [Google Colab Notebook.](https://adibvafa.github.io/CodonTransformer/GoogleColab)**
 <br></br>
 After installing CodonTransformer, you can use:
 
@@ -219,6 +219,16 @@ Options for `ambiguous_aminoacid_behavior`:
 
 Users can override the default mapping with `ambiguous_aminoacid_map_override`.
 <br></br>
+
+
+## Star History
+<p align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adibvafa/codontransformer&type=Date)](https://star-history.com/#adibvafa/codontransformer&Date)
+
+</p>
+<br>
+
 
 ## Key Features
 - **CodonData** <br>
