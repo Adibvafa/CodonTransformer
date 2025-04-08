@@ -565,15 +565,18 @@ We welcome contributions to CodonTransformer! Please fork the repository and sub
 If you use CodonTransformer or our data in your research, please cite our work:
 
 ```sh
-@article {Fallahpour2024.09.13.612903,
-	author = {Fallahpour, Adibvafa and Gureghian, Vincent and Filion, Guillaume J. and Lindner, Ariel B. and Pandi, Amir},
-	title = {CodonTransformer: a multispecies codon optimizer using context-aware neural networks},
-	elocation-id = {2024.09.13.612903},
-	year = {2024},
-	doi = {10.1101/2024.09.13.612903},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2024/09/13/2024.09.13.612903},
-	eprint = {https://www.biorxiv.org/content/early/2024/09/13/2024.09.13.612903.full.pdf},
-	journal = {bioRxiv}
+@article{Fallahpour_Gureghian_Filion_Lindner_Pandi_2025,
+  title={CodonTransformer: a multispecies codon optimizer using context-aware neural networks},
+  volume={16},
+  ISSN={2041-1723},
+  url={https://www.nature.com/articles/s41467-025-58588-7},
+  DOI={10.1038/s41467-025-58588-7},
+  number={1},
+  journal={Nature Communications},
+  author={Fallahpour, Adibvafa and Gureghian, Vincent and Filion, Guillaume J. and Lindner, Ariel B. and Pandi, Amir},
+  year={2025},
+  month=apr,
+  pages={3205},
+  language={en}
 }
 ```
