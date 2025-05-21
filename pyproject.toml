@@ -18,7 +18,7 @@ python = "^3.9"
 biopython = "^1.83"
 ipywidgets = "^7.0.0"
 numpy = "<2.0.0"
-onnxruntime = "^1.17.3"
+onnxruntime = "^1.16.3"
 pandas = "^2.0.0"
 python_codon_tables = "^0.1.12"
 pytorch_lightning = "^2.2.1"
@@ -31,7 +31,7 @@ transformers = "^4.40.0"
 CAI-PyPI = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
-coverage = "^7.0"
+coverage = {version = "^7.0", extras = ["toml"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -51,3 +51,9 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.coverage.run]
+omit = [
+    # omit pytorch-generated files in /tmp
+    "/tmp/*",
+]
