@@ -51,3 +51,9 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.coverage.run]
+omit = [
+    # omit pytorch-generated files in /tmp
+    "/tmp/*",
+]
