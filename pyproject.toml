@@ -31,7 +31,7 @@ transformers = "^4.40.0"
 CAI-PyPI = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
-coverage = "^7.0"
+coverage = {version = "^7.0", extras = ["toml"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
