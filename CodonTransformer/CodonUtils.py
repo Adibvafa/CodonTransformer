@@ -3,7 +3,7 @@ File: CodonUtils.py
 ---------------------
 Includes constants and helper functions used by other Python scripts.
 """
-
+import json
 import itertools
 import os
 import pickle
@@ -15,6 +15,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 import pandas as pd
 import requests
 import torch
+import torch.utils.data
 
 # List of all amino acids
 AMINO_ACIDS: List[str] = [
@@ -510,34 +511,54 @@ class IterableData(torch.utils.data.IterableDataset):
         }.get(dist_env, ("WORLD_SIZE", "LOCAL_RANK"))
 
     @property
+    def total_examples(self) -> int:
+        """Number of examples in dataset. Must be implemented by subclasses."""
+        raise NotImplementedError
+
+    @property
     def iterator(self) -> Iterator:
-        """Define the stream logic for the dataset. Implement in subclasses."""
+        """Iterator over dataset. Must be implemented by subclasses."""
         raise NotImplementedError
 
     def __iter__(self) -> Iterator:
-        """
-        Create an iterator for the dataset, handling multi-processing contexts.
-
-        Returns:
-            Iterator: The iterator for the dataset.
-        """
+        """Create iterator with proper work distribution in multi-processing contexts."""
         worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None:
+
+        if worker_info is None:  # Single-process data loading
             return self.iterator
 
-        # In multi-processing context, use 'os.environ' to
-        # find global worker rank. Then use 'islice' to allocate
-        # the items of the stream to the workers.
-        world_size = int(os.environ.get(self.world_size_handle))
-        global_rank = int(os.environ.get(self.rank_handle))
+        # In multi-processing context, calculate global worker rank
+        world_size = int(os.environ.get(self.world_size_handle, 1))
+        global_rank = int(os.environ.get(self.rank_handle, 0))
         local_rank = worker_info.id
         local_num_workers = worker_info.num_workers
 
-        # Assume that each process has the same number of local workers.
+        # Calculate worker rank and total workers
         worker_rk = global_rank * local_num_workers + local_rank
         worker_nb = world_size * local_num_workers
+
         return itertools.islice(self.iterator, worker_rk, None, worker_nb)
 
+    def get_total_steps(self, batch_size: int, n_gpus: int, grad_accum: int = 1) -> int:
+        """
+        Calculate total training steps for scheduler configuration.
+
+        Args:
+            batch_size: Training batch size per GPU
+            n_gpus: Number of GPUs being used
+            grad_accum: Gradient accumulation steps
+
+        Returns:
+            int: Total number of training steps
+        """
+        effective_batch = batch_size * n_gpus * grad_accum
+        total_steps = self.total_examples // effective_batch
+
+        # Add one more step if there's a remainder
+        if self.total_examples % effective_batch != 0:
+            total_steps += 1
+
+        return total_steps
 
 class IterableJSONData(IterableData):
     """
@@ -549,10 +570,37 @@ class IterableJSONData(IterableData):
         **kwargs: Additional keyword arguments for the base class.
     """
 
-    def __init__(self, data_path: str, train: bool = True, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, data_path: str, train: bool = True, dist_env: Optional[str] = None):
+        super().__init__(dist_env=dist_env)
         self.data_path = data_path
         self.train = train
+        self._total_examples = None
+
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(f"Data file not found: {data_path}")
+
+    @property
+    def total_examples(self) -> int:
+        """Calculate and cache total number of examples."""
+        if self._total_examples is None:
+            self._total_examples = sum(1 for _ in open(self.data_path))
+        return self._total_examples
+
+    @property
+    def iterator(self) -> Iterator[Dict[str, Any]]:
+        """
+        Iterate over JSON lines in the data file.
+
+        Returns:
+            Iterator[Dict[str, Any]]: Iterator yielding parsed JSON objects
+        """
+        with open(self.data_path, 'r') as f:
+            for line in f:
+                try:
+                    yield json.loads(line.strip())
+                except json.JSONDecodeError as e:
+                    print(f"Warning: Skipping malformed JSON line: {e}")
+                    continue
 
 
 class ConfigManager(ABC):

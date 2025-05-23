@@ -10,6 +10,7 @@ dataset and use this script.
 
 import argparse
 import os
+from typing import Optional
 
 import pytorch_lightning as pl
 import torch
@@ -72,23 +73,57 @@ class MaskedTokenizerCollator:
 
 
 class plTrainHarness(pl.LightningModule):
-    def __init__(self, model, learning_rate, warmup_fraction):
+    def __init__(
+            self,
+            model: torch.nn.Module,
+            learning_rate: float,
+            warmup_fraction: float,
+            train_dataset: Optional[IterableJSONData] = None,
+            batch_size: Optional[int] = None,
+            n_gpus: Optional[int] = None,
+            grad_accum: Optional[int] = None
+    ):
         super().__init__()
         self.model = model
         self.learning_rate = learning_rate
         self.warmup_fraction = warmup_fraction
+
+        # Store dataset info for scheduler configuration
+        self.train_dataset = train_dataset
+        self.batch_size = batch_size
+        self.n_gpus = n_gpus
+        self.grad_accum = grad_accum
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.model.parameters(),
             lr=self.learning_rate,
         )
+
+        # Calculate total steps from dataset if possible
+        if all(x is not None for x in [
+            self.train_dataset,
+            self.batch_size,
+            self.n_gpus,
+            self.grad_accum
+        ]):
+            total_steps = self.train_dataset.get_total_steps(
+                batch_size=self.batch_size,
+                n_gpus=self.n_gpus,
+                grad_accum=self.grad_accum
+            )
+        else:
+            total_steps = self.trainer.estimated_stepping_batches
+
+        print(f"\nConfiguring OneCycleLR with total_steps: {total_steps}\n")
+
         lr_scheduler = {
             "scheduler": torch.optim.lr_scheduler.OneCycleLR(
                 optimizer,
                 max_lr=self.learning_rate,
-                total_steps=self.trainer.estimated_stepping_batches,
+                total_steps=total_steps,
                 pct_start=self.warmup_fraction,
+                anneal_strategy='linear'
             ),
             "interval": "step",
             "frequency": 1,
@@ -96,6 +131,7 @@ class plTrainHarness(pl.LightningModule):
         return [optimizer], [lr_scheduler]
 
     def training_step(self, batch, batch_idx):
+        """Execute a single training step."""
         self.model.bert.set_attention_type("block_sparse")
         outputs = self.model(**batch)
         self.log_dict(
@@ -147,10 +183,39 @@ def main(args):
         sep_token_id=2,
     )
     model = BigBirdForMaskedLM(config=config)
-    harnessed_model = plTrainHarness(model, args.learning_rate, args.warmup_fraction)
 
     # Load the training data
-    train_data = IterableJSONData(args.train_data_path, dist_env="slurm")
+    train_data = IterableJSONData(
+        data_path=args.train_data_path,
+        train=True,
+        dist_env="slurm" if not args.debug else None
+    )
+
+    # Print dataset info
+    print(f"\nTotal examples in dataset: {train_data.total_examples}")
+    print(f"Batch size per GPU: {args.batch_size}")
+    print(f"Number of GPUs: {args.num_gpus}")
+    print(f"Gradient accumulation steps: {args.accumulate_grad_batches}")
+
+    total_steps = train_data.get_total_steps(
+        batch_size=args.batch_size,
+        n_gpus=args.num_gpus,
+        grad_accum=args.accumulate_grad_batches
+    )
+    print(f"Calculated total training steps: {total_steps}\n")
+
+    # Create harness
+    harnessed_model = plTrainHarness(
+        model=model,
+        learning_rate=args.learning_rate,
+        warmup_fraction=args.warmup_fraction,
+        train_dataset=train_data,
+        batch_size=args.batch_size,
+        n_gpus=args.num_gpus,
+        grad_accum=args.accumulate_grad_batches
+    )
+
+    # Create data loader
     data_loader = DataLoader(
         dataset=train_data,
         collate_fn=MaskedTokenizerCollator(tokenizer),
@@ -161,6 +226,7 @@ def main(args):
 
     # Setup trainer and callbacks
     save_checkpoint = EpochCheckpoint(args.checkpoint_dir, args.save_interval)
+
     trainer = pl.Trainer(
         default_root_dir=args.checkpoint_dir,
         strategy="ddp_find_unused_parameters_true",
@@ -172,9 +238,11 @@ def main(args):
         enable_checkpointing=True,
         callbacks=[save_checkpoint],
         accumulate_grad_batches=args.accumulate_grad_batches,
+        gradient_clip_val=1.0,  # Add gradient clipping
+        log_every_n_steps=10,
     )
 
-    # Pretrain the model
+    # Train the model
     trainer.fit(harnessed_model, data_loader)
 
 
@@ -237,3 +305,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     args = parser.parse_args()
     main(args)
+
