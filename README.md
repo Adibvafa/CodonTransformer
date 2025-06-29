@@ -221,6 +221,115 @@ Users can override the default mapping with `ambiguous_aminoacid_map_override`.
 <br></br>
 
 
+## Organisms
+
+This project utilizes a dataset of 164 distinct organisms for training and fine-tuning. The full dataset, including genomic sequences and codon adaptation indices, can be found at [Zenodo (DOI: 10.5281/zenodo.12509224)](https://zenodo.org/records/12509224).
+
+### Summary by Kingdom
+
+| Kingdom  | Number of Organisms |
+| :------- | :------------------ |
+| Bacteria | 142                 |
+| Archaea  | 11                  |
+| Plantae  | 5                   |
+| Animalia | 5                   |
+| Fungi    | 1                   |
+| **Total**| **164** |
+
+### Detailed Breakdown by Clade
+
+#### Animalia
+
+| Class          | Number of Organisms | Organism Names                                   |
+| :------------- | :------------------ | :----------------------------------------------- |
+| Mammalia       | 2                   | *Homo sapiens*, *Mus musculus* |
+| Insecta        | 1                   | *Drosophila melanogaster* |
+| Actinopterygii | 1                   | *Danio rerio* (zebrafish)                        |
+| Chromadorea    | 1                   | *Caenorhabditis elegans* |
+
+#### Plantae
+
+The list includes two plant species, a green alga, and their corresponding chloroplasts, which are treated as separate entries in the dataset.
+
+| Phylum       | Class         | Number of Organisms | Organism Names                                                                |
+| :----------- | :------------ | :------------------ | :---------------------------------------------------------------------------- |
+| Tracheophyta | Magnoliopsida | 3                   | *Arabidopsis thaliana*, *Nicotiana tabacum*, *Nicotiana tabacum chloroplast* |
+| Chlorophyta  | Chlorophyceae | 2                   | *Chlamydomonas reinhardtii*, *Chlamydomonas reinhardtii chloroplast* |
+
+#### Fungi
+
+| Phylum     | Class           | Number of Organisms | Organism Name              |
+| :--------- | :-------------- | :------------------ | :------------------------- |
+| Ascomycota | Saccharomycetes | 1                   | *Saccharomyces cerevisiae* |
+
+#### Archaea
+
+The archaeal organisms in this dataset are all extremophiles.
+
+| Phylum       | Class        | Number of Organisms | Genera                          |
+| :----------- | :----------- | :------------------ | :------------------------------ |
+| Euryarchaeota| Thermococci  | 10                  | *Pyrococcus*, *Thermococcus* |
+| Crenarchaeota| Thermoprotei | 1                   | *Saccharolobus* |
+
+#### Bacteria
+
+The vast majority of the organisms in the dataset are bacteria, primarily from the phylum Pseudomonadota (formerly Proteobacteria).
+
+| Phylum        | Number of Organisms | Notable Genera                                                                                    |
+| :------------ | :------------------ | :------------------------------------------------------------------------------------------------ |
+| Pseudomonadota| 141                 | *Escherichia*, *Salmonella*, *Klebsiella*, *Pseudomonas*, *Yersinia*, *Serratia*, *Enterobacter*, *Proteus*, etc. |
+| Bacillota     | 1                   | *Bacillus* |
+
+### Full Organism List
+
+The model supports the following 164 organisms. Organisms can be referenced by their name or by their corresponding ID (0-163) when using the tool.
+
+| | | | |
+| :-- | :-- | :-- | :-- |
+| Arabidopsis thaliana | Enterobacter hormaechei | Klebsiella variicola | Proteus penneri |
+| Atlantibacter hermannii | Enterobacter kobei | Kosakonia cowanii | Proteus terrae subsp. cibarius |
+| Bacillus subtilis | Enterobacter ludwigii | Kosakonia radicincitans | Proteus vulgaris |
+| Brenneria goodwinii | Enterobacter mori | Leclercia adecarboxylata | Providencia alcalifaciens |
+| Buchnera aphidicola (Schizaphis graminum) | Enterobacter quasiroggenkampii | Lelliottia amnigena | Providencia heimbachae |
+| Caenorhabditis elegans | Enterobacter roggenkampii | Lonsdalea populi | Providencia rettgeri |
+| Candidatus Erwinia haradaeae | Enterobacter sichuanensis | Moellerella wisconsensis | Providencia rustigianii |
+| Candidatus Hamiltonella defensa 5AT (Acyrthosiphon pisum) | Erwinia amylovora CFBP1430 | Morganella morganii | Providencia stuartii |
+| Chlamydomonas reinhardtii | Erwinia persicina | Mus musculus | Providencia thailandensis |
+| Chlamydomonas reinhardtii chloroplast | Escherichia albertii | Nicotiana tabacum | Pseudomonas putida |
+| Citrobacter amalonaticus | Escherichia coli general | Nicotiana tabacum chloroplast | Pyrococcus furiosus |
+| Citrobacter braakii | Escherichia coli O157-H7 str. Sakai | Obesumbacterium proteus | Pyrococcus horikoshii |
+| Citrobacter cronae | Escherichia coli str. K-12 substr. MG1655 | Pantoea agglomerans | Pyrococcus yayanosii |
+| Citrobacter europaeus | Escherichia fergusonii | Pantoea allii | Rahnella aquatilis CIP 78.65 = ATCC 33071 |
+| Citrobacter farmeri | Escherichia marmotae | Pantoea ananatis PA13 | Raoultella ornithinolytica |
+| Citrobacter freundii | Escherichia ruysiae | Pantoea dispersa | Raoultella planticola |
+| Citrobacter koseri ATCC BAA-895 | Ewingella americana | Pantoea stewartii | Raoultella terrigena |
+| Citrobacter portucalensis | Hafnia alvei | Pantoea vagans | Rosenbergiella epipactidis |
+| Citrobacter werkmanii | Hafnia paralvei | Pectobacterium aroidearum | Rouxiella badensis |
+| Citrobacter youngae | Homo sapiens | Pectobacterium atrosepticum | Saccharomyces cerevisiae |
+| Cronobacter dublinensis subsp. dublinensis LMG 23823 | Kalamiella piersonii | Pectobacterium brasiliense | Saccharolobus solfataricus |
+| Cronobacter malonaticus LMG 23826 | Klebsiella aerogenes | Pectobacterium carotovorum | Salmonella bongori N268-08 |
+| Cronobacter sakazakii | Klebsiella grimontii | Pectobacterium odoriferum | Salmonella enterica subsp. enterica serovar Typhimurium str. LT2 |
+| Cronobacter turicensis | Klebsiella michiganensis | Pectobacterium parmentieri | Serratia bockelmannii |
+| Danio rerio | Klebsiella oxytoca | Pectobacterium polaris | Serratia entomophila |
+| Dickeya dadantii 3937 | Klebsiella pasteurii | Pectobacterium versatile | Serratia ficaria |
+| Dickeya dianthicola | Klebsiella pneumoniae subsp. pneumoniae HS11286 | Photorhabdus laumondii subsp. laumondii TTO1 | Serratia fonticola |
+| Dickeya fangzhongdai | Klebsiella quasipneumoniae | Plesiomonas shigelloides | Serratia grimesii |
+| Dickeya solani | Klebsiella quasivariicola | Pluralibacter gergoviae | Serratia liquefaciens |
+| Dickeya zeae | Thermoccoccus kodakarensis | Proteus faecis | Serratia marcescens |
+| Drosophila melanogaster | Thermococcus barophilus MPT | Proteus mirabilis HI4320 | Serratia nevei |
+| Edwardsiella anguillarum ET080813 | Thermococcus chitonophagus | Yersinia aldovae 670-83 | Serratia plymuthica AS9 |
+| Edwardsiella ictaluri | Thermococcus gammatolerans | Yersinia aleksiciae | Serratia proteamaculans |
+| Edwardsiella piscicida | Thermococcus litoralis | Yersinia alsatica | Serratia quinivorans |
+| Edwardsiella tarda | Thermococcus onnurineus | Yersinia enterocolitica | Serratia rubidaea |
+| Enterobacter asburiae | Thermococcus sibiricus | Yersinia frederiksenii ATCC 33641 | Serratia ureilytica |
+| Enterobacter bugandensis | Xenorhabdus bovienii str. feltiae Florida | Yersinia intermedia | Shigella boydii |
+| Enterobacter cancerogenus | Yersinia kristensenii | Yersinia massiliensis CCUG 53443 | Shigella dysenteriae |
+| Enterobacter chengduensis | Yersinia mollaretii ATCC 43969 | Yersinia pestis A1122 | Shigella flexneri 2a str. 301 |
+| Enterobacter cloacae | Yersinia proxima | Yersinia pseudotuberculosis IP 32953 | Shigella sonnei |
+| Yersinia rochesterensis | Yersinia rohdei | Yersinia ruckeri | Yokenella regensburgei |
+
+<br><br>
+
 ## Star History
 <p align="center">
 
