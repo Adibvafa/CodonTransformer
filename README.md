@@ -536,10 +536,6 @@ The CodonEvaluation module includes functions to compute metrics such as Codon A
 
   Calculate the codon frequency distribution (CFD) metric for a DNA sequence.
 
-- `get_cousin(dna: str, organism: str, ref_freq: AMINO2CODON_TYPE) -> float`
-
-  Compute the cousin score between a DNA sequence and reference frequencies.
-
 - `get_min_max_percentage(dna: str, codon_frequencies: Dict[str, Tuple[List[str], List[float]]], window_size: int = 18) -> List[float]`
 
   Calculate the %MinMax metric for a DNA sequence.
