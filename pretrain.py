@@ -56,9 +56,9 @@ class MaskedTokenizerCollator:
             list((map(TOKEN2MASK.__getitem__, inputs[replaced].numpy())))
         )
 
-        # 10% of the time, we replace masked input tokens with random vector.
+        # Randomize half of the remaining 20%: 10% of all selected tokens.
         randomized = (
-            torch.bernoulli(torch.full(selected.shape, 0.1)).bool()
+            torch.bernoulli(torch.full(selected.shape, 0.5)).bool()
             & selected
             & ~replaced
         )
