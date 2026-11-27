@@ -162,7 +162,12 @@ run `%pip install --prefer-binary .` from the repository directory. Keep install
 output visible, and avoid `--upgrade` on every run. Restart the runtime if packages
 already imported by the notebook were replaced. A new Colab runtime still needs
 installation. For the hosted Drive notebook, use `%pip install --prefer-binary
-CodonTransformer==1.6.8` to install the release containing these dependency fixes.
+CodonTransformer==1.6.9` to install the release containing these dependency fixes.
+Transformers 4 and 5 are supported, so current Colab environments can keep
+Transformers 5 and Hugging Face Hub 1.x without conflicting with Gradio or Diffusers.
+If you previously installed 1.6.8 in the same runtime, restore those dependencies
+with `%pip install --prefer-binary CodonTransformer==1.6.9 "transformers>=5.22.1,<6"
+"huggingface-hub>=1.32,<3"`, then restart the session before importing packages.
 <br><br><br>
 
 
