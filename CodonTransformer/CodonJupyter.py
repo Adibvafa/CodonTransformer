@@ -125,9 +125,9 @@ def create_organism_dropdown(container: UserContainer) -> widgets.Dropdown:
             "Selected Organisms",
             "All Organisms",
         ]:
-            organism = "".join(filter(str.isdigit, dropdown_choice))
-            organism_id = ID2ORGANISM[int(organism)]
-            container.organism = organism_id
+            organism_id_str = dropdown_choice.split(".", 1)[0].lstrip("\u200b").strip()
+            organism_name = ID2ORGANISM[int(organism_id_str)]
+            container.organism = organism_name
         else:
             container.organism = None
 
