@@ -5,7 +5,8 @@ from setuptools import find_packages, setup
 
 
 def read_requirements():
-    with open("requirements.txt") as f:
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 
@@ -19,7 +20,7 @@ def read_readme():
 
 setup(
     name="CodonTransformer",
-    version="1.6.7",
+    version="1.6.8",
     packages=find_packages(),
     install_requires=read_requirements(),
     author="Adibvafa Fallahpour",
@@ -37,5 +38,5 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.10",
 )

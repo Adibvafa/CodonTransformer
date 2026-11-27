@@ -133,15 +133,36 @@ Install CodonTransformer via pip:
 pip install CodonTransformer
 ```
 
-Or clone the repository:
+For development and the demo notebook, create one persistent environment (Python
+3.12 recommended):
 
 ```sh
 git clone https://github.com/adibvafa/CodonTransformer.git
 cd CodonTransformer
-pip install -r requirements.txt
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install --prefer-binary -e . jupyterlab
+python -m pip check
+python -m jupyterlab CodonTransformerDemo.ipynb
 ```
 
-The package requires `python>=3.9`, supports all major operating systems, and takes about 10-30 seconds depending on already installed requirements, [availabe here](requirements.txt).
+On Windows, activate with `.venv\Scripts\activate` instead. On subsequent visits,
+activate `.venv` and launch JupyterLab; no reinstall is needed. If your shell sets
+`PYTHONPATH` for another project, unset it before starting this environment.
+
+The package requires Python >=3.10 and supports NumPy 1.26 and 2.x. Runtime
+dependencies are defined in [requirements.txt](requirements.txt); setuptools is
+only a build dependency. Initial installation time depends on downloads,
+particularly PyTorch. Model weights are downloaded separately on first use.
+
+In Colab, install before importing packages and use `%pip` so installation targets
+the notebook's interpreter. When working from a checkout containing these fixes,
+run `%pip install --prefer-binary .` from the repository directory. Keep installation
+output visible, and avoid `--upgrade` on every run. Restart the runtime if packages
+already imported by the notebook were replaced. A new Colab runtime still needs
+installation. For the hosted Drive notebook, use `%pip install --prefer-binary
+CodonTransformer==1.6.8` to install the release containing these dependency fixes.
 <br><br><br>
 
 
