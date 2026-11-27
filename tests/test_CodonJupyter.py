@@ -11,7 +11,7 @@ from CodonTransformer.CodonJupyter import (
     display_protein_input,
     format_model_output,
 )
-from CodonTransformer.CodonUtils import ORGANISM2ID
+from CodonTransformer.CodonUtils import ID2ORGANISM, ORGANISM2ID
 
 
 class TestCodonJupyter(unittest.TestCase):
@@ -36,6 +36,40 @@ class TestCodonJupyter(unittest.TestCase):
         self.assertIn("", options)
         self.assertIn("Selected Organisms", options)
         self.assertIn("All Organisms", options)
+
+    def test_organism_dropdown_selection_resolves_all_organisms(self):
+        container = UserContainer()
+        dropdown = create_organism_dropdown(container)
+
+        # Start after the initial empty option so each change fires the observer.
+        for option in (*dropdown.options[1:], dropdown.options[0]):
+            dropdown.value = option
+            if not option or option in ("Selected Organisms", "All Organisms"):
+                self.assertIsNone(container.organism)
+            else:
+                expected_id = int(option.split(".", 1)[0].lstrip("\u200b").strip())
+                self.assertEqual(container.organism, ID2ORGANISM[expected_id])
+
+    def test_organism_dropdown_selection_with_digits_in_name(self):
+        container = UserContainer()
+        dropdown = create_organism_dropdown(container)
+
+        cases = [
+            (7, "Candidatus Hamiltonella defensa 5AT (Acyrthosiphon pisum)"),
+            (50, "Escherichia coli O157-H7 str. Sakai"),
+            (52, "Escherichia coli str. K-12 substr. MG1655"),
+        ]
+        for expected_id, expected_name in cases:
+            matching = [
+                opt
+                for opt in dropdown.options
+                if opt.endswith(f".  {expected_name}")
+            ]
+            self.assertGreaterEqual(len(matching), 1)
+            for opt in matching:
+                dropdown.value = opt
+                self.assertEqual(container.organism, expected_name)
+                self.assertEqual(ORGANISM2ID[container.organism], expected_id)
 
     def test_create_dropdown_options(self):
         options = create_dropdown_options(ORGANISM2ID)
